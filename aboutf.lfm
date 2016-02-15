@@ -29,6 +29,7 @@ object AboutForm: TAboutForm
     Width = 136
     BorderSpacing.Top = 8
     Caption = 'Скопировать e-mail'
+    OnClick = btCopyEmailClick
     TabOrder = 0
   end
   object btOpenGitHub: TButton
