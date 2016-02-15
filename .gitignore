@@ -46,6 +46,12 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+*.bak
+*.o
+*.ppu
+*.log
+*.dbg
+
 backup
 lib
 local

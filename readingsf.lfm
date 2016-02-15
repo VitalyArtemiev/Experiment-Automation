@@ -1,0 +1,995 @@
+object ReadingsForm: TReadingsForm
+  Left = 754
+  Height = 600
+  Top = 185
+  Width = 800
+  HorzScrollBar.Visible = False
+  Caption = 'Снятие показаний'
+  ClientHeight = 600
+  ClientWidth = 800
+  Constraints.MinHeight = 600
+  Constraints.MinWidth = 800
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  ShowInTaskBar = stAlways
+  LCLVersion = '1.4.4.0'
+  object StatusBar1: TStatusBar
+    Left = 0
+    Height = 23
+    Top = 577
+    Width = 800
+    Panels = <    
+      item
+        Width = 50
+      end>
+  end
+  object cbSensitivity: TComboBox
+    AnchorSideLeft.Control = cbTimeConstant
+    AnchorSideTop.Control = cbTimeConstant
+    AnchorSideTop.Side = asrBottom
+    Left = 662
+    Height = 23
+    Top = 486
+    Width = 130
+    BorderSpacing.Top = 8
+    Enabled = False
+    ItemHeight = 15
+    ItemIndex = 14
+    Items.Strings = (
+      '100 нВ'
+      '300 нВ'
+      '1 мкВ'
+      '3мкВ'
+      '10 мкВ'
+      '30 мкВ'
+      '100 мВ'
+      '300 мкВ'
+      '1 мВ'
+      '3мВ'
+      '10 мВ'
+      '30 мВ'
+      '100 мВ'
+      '300 мВ'
+      '1 В'
+    )
+    TabOrder = 8
+    Text = '1 В'
+  end
+  object btApply: TButton
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = cbSensitivity
+    AnchorSideTop.Side = asrBottom
+    AnchorSideBottom.Control = StatusBar1
+    Left = 682
+    Height = 22
+    Top = 525
+    Width = 91
+    BorderSpacing.Top = 16
+    BorderSpacing.Bottom = 8
+    Caption = 'Применить'
+    Default = True
+    Enabled = False
+    OnClick = btApplyClick
+    TabOrder = 9
+  end
+  object cbSampleRate: TComboBox
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = Label13
+    AnchorSideTop.Side = asrBottom
+    Left = 662
+    Height = 23
+    Top = 208
+    Width = 130
+    BorderSpacing.Top = 8
+    Enabled = False
+    ItemHeight = 15
+    ItemIndex = 13
+    Items.Strings = (
+      '62.5 мГц'
+      '125 мГц'
+      '250 мГц'
+      '500 мГц'
+      '1 Гц'
+      '2 Гц'
+      '4 Гц'
+      '8 Гц'
+      '16 Гц'
+      '32 Гц'
+      '64 Гц'
+      '128 Гц'
+      '256 Гц'
+      '512 Гц'
+      'По триггеру'
+    )
+    TabOrder = 4
+    Text = '512 Гц'
+  end
+  object PairSplitter1: TPairSplitter
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = pnConnection
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = cbReadingsMode
+    AnchorSideBottom.Control = pnGraphControl
+    Left = 8
+    Height = 339
+    Top = 108
+    Width = 638
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 16
+    BorderSpacing.Bottom = 8
+    OnResize = PairSplitter1Resize
+    Position = 323
+    object PairSplitterSide1: TPairSplitterSide
+      Cursor = crArrow
+      Left = 0
+      Height = 339
+      Top = 0
+      Width = 323
+      ClientWidth = 323
+      ClientHeight = 339
+      Constraints.MinWidth = 290
+      object Chart1: TChart
+        AnchorSideLeft.Control = PairSplitterSide1
+        AnchorSideTop.Control = cbCh1
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = PairSplitterSide1
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = cbChart1Show
+        Left = 0
+        Height = 293
+        Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для просмотра'#13#10'Сброс - выделение вверх'
+        Top = 23
+        Width = 323
+        AxisList = <        
+          item
+            Minors = <>
+            Title.LabelFont.Orientation = 900
+          end        
+          item
+            Alignment = calBottom
+            Minors = <>
+            Range.Max = 20
+          end>
+        BackColor = clWhite
+        ExpandPercentage = 5
+        Extent.XMax = 20
+        ExtentSizeLimit.XMax = 20
+        Foot.Brush.Color = clBtnFace
+        Foot.Font.Color = clBlue
+        ReticuleMode = rmCross
+        Title.Brush.Color = clBtnFace
+        Title.Font.Color = clBlue
+        Title.Text.Strings = (
+          'TAChart'
+        )
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        DoubleBuffered = True
+        ParentShowHint = False
+        ShowHint = True
+        object Chart1LineSeries1: TLineSeries
+          LinePen.Color = clBlue
+          Source = Source1
+        end
+      end
+      object cbChart1Show: TComboBox
+        AnchorSideLeft.Control = Label11
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = Chart1
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = Chart1
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = PairSplitterSide1
+        AnchorSideBottom.Side = asrBottom
+        Left = 100
+        Height = 23
+        Hint = 'Что отображается на графике 1'
+        Top = 316
+        Width = 100
+        Anchors = [akLeft, akBottom]
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'X'
+          'Y'
+          'R (V)'
+          'R (dBm)'
+          'Φ'
+          'AUX IN 1'
+          'AUX IN 2'
+          'Опорная частота'
+          'Дисплей 1'
+          'Дисплей 2'
+        )
+        OnChange = cbChart1ShowChange
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 1
+        Text = 'X'
+      end
+      object Label11: TLabel
+        AnchorSideLeft.Control = Chart1
+        AnchorSideTop.Control = cbChart1Show
+        AnchorSideRight.Control = cbChart1Show
+        Left = 0
+        Height = 15
+        Top = 316
+        Width = 92
+        BorderSpacing.Right = 8
+        Caption = 'График 1 - Ось Y'
+        ParentColor = False
+      end
+      object cbCh1: TComboBox
+        AnchorSideLeft.Control = Label9
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = PairSplitterSide1
+        Left = 65
+        Height = 23
+        Hint = 'Что регистрируется в Ch1 прибора'#13#10'и отображается на дисплее 1 прибора'
+        Top = 0
+        Width = 74
+        BorderSpacing.Left = 4
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'X'
+          'R (V)'
+          'R (dBm)'
+          'X Noise'
+          'AUX IN 1'
+        )
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+        Text = 'X'
+      end
+      object Label9: TLabel
+        AnchorSideLeft.Control = Chart1
+        AnchorSideTop.Control = cbCh1
+        Left = 4
+        Height = 15
+        Top = 0
+        Width = 57
+        BorderSpacing.Left = 4
+        Caption = 'Дисплей 1'
+        ParentColor = False
+      end
+      object Label14: TLabel
+        AnchorSideLeft.Control = Label13
+        AnchorSideTop.Control = cbRatio1
+        AnchorSideRight.Control = cbRatio1
+        Left = 171
+        Height = 15
+        Top = 0
+        Width = 74
+        Anchors = [akTop, akRight]
+        BorderSpacing.Right = 4
+        Caption = 'Отношение 1'
+        ParentColor = False
+      end
+      object cbRatio1: TComboBox
+        AnchorSideTop.Control = cbCh1
+        AnchorSideRight.Control = Chart1
+        AnchorSideRight.Side = asrBottom
+        Left = 249
+        Height = 23
+        Top = 0
+        Width = 74
+        Anchors = [akTop, akRight]
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Нет'
+          'AUX IN 1'
+          'AUX IN 2'
+        )
+        TabOrder = 3
+        Text = 'Нет'
+      end
+    end
+    object PairSplitterSide2: TPairSplitterSide
+      Cursor = crArrow
+      Left = 328
+      Height = 339
+      Top = 0
+      Width = 310
+      ClientWidth = 310
+      ClientHeight = 339
+      Constraints.MinWidth = 290
+      object Chart2: TChart
+        AnchorSideLeft.Control = PairSplitterSide2
+        AnchorSideTop.Control = cbCh2
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = PairSplitterSide2
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = cbChart2Show
+        Left = 0
+        Height = 293
+        Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для просмотра'#13#10'Сброс - выделение вверх'
+        Top = 23
+        Width = 310
+        AxisList = <        
+          item
+            Minors = <>
+            Title.LabelFont.Orientation = 900
+          end        
+          item
+            Alignment = calBottom
+            Minors = <>
+            Range.Max = 20
+          end>
+        BackColor = clWhite
+        ExpandPercentage = 5
+        Extent.XMax = 20
+        ExtentSizeLimit.XMax = 20
+        Foot.Brush.Color = clBtnFace
+        Foot.Font.Color = clBlue
+        ReticuleMode = rmCross
+        Title.Brush.Color = clBtnFace
+        Title.Font.Color = clBlue
+        Title.Text.Strings = (
+          'TAChart'
+        )
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        DoubleBuffered = True
+        ParentShowHint = False
+        ShowHint = True
+        object Chart2LineSeries1: TLineSeries
+          LinePen.Color = clBlue
+          Source = Source2
+        end
+      end
+      object cbChart2Show: TComboBox
+        AnchorSideLeft.Control = Label12
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = PairSplitterSide2
+        AnchorSideRight.Control = Chart2
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = PairSplitterSide2
+        AnchorSideBottom.Side = asrBottom
+        Left = 100
+        Height = 23
+        Hint = 'Что отображается на графике 2'
+        Top = 316
+        Width = 100
+        Anchors = [akLeft, akBottom]
+        ItemHeight = 15
+        ItemIndex = 1
+        Items.Strings = (
+          'X'
+          'Y'
+          'R (V)'
+          'R (dBm)'
+          'Φ'
+          'AUX IN 1'
+          'AUX IN 2'
+          'Опорная частота'
+          'Дисплей 1'
+          'Дисплей 2'
+        )
+        OnChange = cbChart2ShowChange
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 1
+        Text = 'Y'
+      end
+      object Label12: TLabel
+        AnchorSideLeft.Control = Chart2
+        AnchorSideTop.Control = cbChart2Show
+        AnchorSideRight.Control = cbChart2Show
+        Left = 0
+        Height = 15
+        Top = 316
+        Width = 92
+        BorderSpacing.Right = 8
+        Caption = 'График 2 - Ось Y'
+        ParentColor = False
+      end
+      object Label10: TLabel
+        AnchorSideLeft.Control = Chart2
+        AnchorSideTop.Control = cbCh2
+        Left = 4
+        Height = 15
+        Top = 0
+        Width = 57
+        BorderSpacing.Left = 4
+        Caption = 'Дисплей 2'
+        ParentColor = False
+      end
+      object cbCh2: TComboBox
+        AnchorSideLeft.Control = Label10
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = PairSplitterSide2
+        Left = 65
+        Height = 23
+        Hint = 'Что регистрируется в Ch2 прибора'#13#10'и отображается на дисплее 2 прибора'
+        Top = 0
+        Width = 74
+        BorderSpacing.Left = 4
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Y'
+          'Φ'
+          'Y Noise (V)'
+          'Y Noise (dBm)'
+          'AUX IN 2'
+        )
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
+        Text = 'Y'
+      end
+      object cbRatio2: TComboBox
+        AnchorSideTop.Control = cbCh2
+        AnchorSideRight.Control = Chart2
+        AnchorSideRight.Side = asrBottom
+        Left = 236
+        Height = 23
+        Top = 0
+        Width = 74
+        Anchors = [akTop, akRight]
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Нет'
+          'AUX IN 3'
+          'AUX IN 4'
+        )
+        TabOrder = 3
+        Text = 'Нет'
+      end
+      object Label15: TLabel
+        AnchorSideLeft.Control = Label13
+        AnchorSideTop.Control = cbRatio2
+        AnchorSideRight.Control = cbRatio2
+        Left = 158
+        Height = 15
+        Top = 0
+        Width = 74
+        Anchors = [akTop, akRight]
+        BorderSpacing.Right = 4
+        Caption = 'Отношение 2'
+        ParentColor = False
+      end
+    end
+  end
+  object cbReadingsMode: TComboBox
+    AnchorSideLeft.Control = cbShowPoints
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 662
+    Height = 23
+    Hint = 'Использовать команду TRCL (быстрее, внутренний'#13#10'буфер, снимаются параметры только с Ch1 и Ch2),'#13#10'либо команду SNAP (снятие от 2 до 6 параметров в'#13#10'один момент времени)'
+    Top = 127
+    Width = 130
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 4
+    BorderSpacing.Right = 8
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'Внутренний буфер'
+      'Одновременный запрос'
+    )
+    OnChange = cbReadingsModeChange
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 2
+    Text = 'Внутренний буфер'
+  end
+  object cbTimeConstant: TComboBox
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = pnGraphControl
+    Left = 662
+    Height = 23
+    Top = 455
+    Width = 130
+    Enabled = False
+    ItemHeight = 15
+    ItemIndex = 6
+    Items.Strings = (
+      '100 мкс'
+      '300 мкс'
+      '1 мс'
+      '3 мс'
+      '10 мс'
+      '30 мс'
+      '100 мс'
+      '300 мс'
+      '1 с'
+      '3 с'
+      '10 с'
+      '30 с'
+      '100 с'
+      '300 с'
+      '1 кс'
+      '3 кс'
+      '10 кс'
+      '30 кс'
+    )
+    TabOrder = 7
+    Text = '100 мс'
+  end
+  object cgTransfer: TCheckGroup
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = cbUseGenFreq
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = cbReadingsMode
+    AnchorSideRight.Side = asrBottom
+    Left = 662
+    Height = 222
+    Top = 181
+    Width = 130
+    Anchors = [akTop, akLeft, akRight]
+    AutoFill = True
+    BorderSpacing.Top = 4
+    BorderSpacing.CellAlignHorizontal = ccaLeftTop
+    BorderSpacing.CellAlignVertical = ccaLeftTop
+    Caption = 'Параметры'
+    ChildSizing.LeftRightSpacing = 6
+    ChildSizing.TopBottomSpacing = 6
+    ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+    ChildSizing.EnlargeVertical = crsHomogenousChildResize
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 1
+    ClientHeight = 202
+    ClientWidth = 126
+    Items.Strings = (
+      'X'
+      'Y'
+      'R (V)'
+      'R (dBm)'
+      'Φ'
+      'AUX IN 1'
+      'AUX IN 2'
+      'Опорная частота'
+      'Дисплей 1'
+      'Дисплей 2'
+    )
+    OnItemClick = cgTransferItemClick
+    TabOrder = 5
+    Data = {
+      0A00000002020202020202030303
+    }
+  end
+  object cbUseGenFreq: TCheckBox
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = cbReadingsMode
+    AnchorSideTop.Side = asrBottom
+    Left = 662
+    Height = 19
+    Hint = 'Брать значение частоты входного сигнала с генератора'#13#10'(не всегда совпадает со значением на входе детектора)'
+    Top = 158
+    Width = 120
+    BorderSpacing.Top = 8
+    Caption = 'Частота с генерат.'
+    OnChange = cbUseGenFreqChange
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 3
+  end
+  object Label6: TLabel
+    AnchorSideTop.Control = cbTimeConstant
+    AnchorSideRight.Control = PairSplitter1
+    AnchorSideRight.Side = asrBottom
+    Left = 539
+    Height = 15
+    Top = 455
+    Width = 107
+    Anchors = [akTop, akRight]
+    Caption = 'Константа времени'
+    Color = clWhite
+    ParentColor = False
+    Transparent = False
+  end
+  object Label7: TLabel
+    AnchorSideLeft.Control = Label6
+    AnchorSideTop.Control = cbSensitivity
+    Left = 539
+    Height = 15
+    Top = 486
+    Width = 99
+    Caption = 'Чувствительность'
+    Color = clWhite
+    ParentColor = False
+    Transparent = False
+  end
+  object pnConnection: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = cbReadingsMode
+    AnchorSideRight.Side = asrBottom
+    Left = 4
+    Height = 100
+    Top = 0
+    Width = 788
+    BorderSpacing.Left = 4
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    ClientHeight = 96
+    ClientWidth = 784
+    TabOrder = 0
+    object btReset: TSpeedButton
+      AnchorSideLeft.Control = btnConnect
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = Label3
+      Left = 332
+      Height = 54
+      Top = 7
+      Width = 102
+      BorderSpacing.Left = 16
+      Caption = 'Сброс'
+      Enabled = False
+      OnClick = btResetClick
+    end
+    object btQuery: TSpeedButton
+      AnchorSideLeft.Control = btReset
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = btReset
+      AnchorSideBottom.Control = btReset
+      Left = 442
+      Height = 54
+      Top = 7
+      Width = 102
+      BorderSpacing.Left = 8
+      BorderSpacing.Bottom = 8
+      Caption = 'Запрос'
+      Enabled = False
+      OnClick = btQueryClick
+    end
+    object btCustomCommand: TSpeedButton
+      AnchorSideLeft.Control = btQuery
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = btReset
+      Left = 552
+      Height = 54
+      Hint = 'Сконструировать команду,'#13#10'не поддерживаемую интерфейсом'
+      Top = 7
+      Width = 102
+      BorderSpacing.Left = 8
+      BorderSpacing.Bottom = 8
+      Caption = 'Польз.'
+      Enabled = False
+      OnClick = btCustomCommandClick
+      ShowHint = True
+      ParentShowHint = False
+    end
+    object Label8: TLabel
+      AnchorSideLeft.Control = Label3
+      AnchorSideTop.Control = seRecvTimeout
+      Left = 8
+      Height = 15
+      Top = 69
+      Width = 67
+      Caption = 'Таймаут, мс'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object seRecvTimeout: TSpinEdit
+      AnchorSideLeft.Control = cbPortSelect
+      AnchorSideTop.Control = btnTest
+      Left = 88
+      Height = 23
+      Hint = 'Время ожидания ответа прибора'
+      Top = 69
+      Width = 121
+      MaxValue = 10000
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      Value = 800
+    end
+    object btnTest: TButton
+      AnchorSideLeft.Control = btnConnect
+      AnchorSideTop.Control = btnDisconnect
+      AnchorSideTop.Side = asrBottom
+      Left = 225
+      Height = 23
+      Top = 69
+      Width = 91
+      BorderSpacing.Top = 8
+      Caption = 'Тест'
+      OnClick = btnTestClick
+      TabOrder = 4
+    end
+    object btnDisconnect: TButton
+      AnchorSideLeft.Control = btnConnect
+      AnchorSideTop.Control = btnConnect
+      AnchorSideTop.Side = asrBottom
+      Left = 225
+      Height = 23
+      Top = 38
+      Width = 91
+      BorderSpacing.Top = 8
+      Caption = 'Отключение'
+      OnClick = btnDisconnectClick
+      TabOrder = 2
+    end
+    object btnConnect: TButton
+      AnchorSideLeft.Control = cbPortSelect
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = Label3
+      Left = 225
+      Height = 23
+      Top = 7
+      Width = 91
+      BorderSpacing.Left = 16
+      Caption = 'Подключение'
+      OnClick = btnConnectClick
+      TabOrder = 1
+    end
+    object Label3: TLabel
+      AnchorSideLeft.Control = pnConnection
+      AnchorSideTop.Control = pnConnection
+      Left = 8
+      Height = 15
+      Top = 7
+      Width = 72
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 7
+      Caption = 'Выбор порта'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object cbPortSelect: TComboBox
+      AnchorSideLeft.Control = Label3
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = Label3
+      Left = 88
+      Height = 23
+      Top = 7
+      Width = 121
+      BorderSpacing.Left = 8
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 0
+    end
+    object btStatus: TSpeedButton
+      AnchorSideLeft.Control = btCustomCommand
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = btReset
+      Left = 662
+      Height = 54
+      Top = 7
+      Width = 102
+      BorderSpacing.Left = 8
+      Caption = 'Статус'
+      Enabled = False
+      OnClick = btStatusClick
+    end
+  end
+  object Label1: TLabel
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = PairSplitter1
+    Left = 662
+    Height = 15
+    Top = 108
+    Width = 78
+    Caption = 'Режим снятия'
+    ParentColor = False
+  end
+  object Label13: TLabel
+    AnchorSideLeft.Control = Label1
+    AnchorSideTop.Control = cbUseGenFreq
+    AnchorSideTop.Side = asrBottom
+    Left = 662
+    Height = 15
+    Top = 185
+    Width = 87
+    BorderSpacing.Top = 8
+    Caption = 'Частота буфера'
+    ParentColor = False
+  end
+  object pnGraphControl: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideBottom.Control = StatusBar1
+    Left = 4
+    Height = 118
+    Top = 455
+    Width = 350
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Left = 4
+    BorderSpacing.Bottom = 4
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    ClientHeight = 114
+    ClientWidth = 346
+    TabOrder = 6
+    object Label5: TLabel
+      AnchorSideLeft.Control = cbShowPoints
+      AnchorSideTop.Control = cbXAxis
+      Left = 8
+      Height = 15
+      Top = 55
+      Width = 31
+      Caption = 'Ось Х'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object Label4: TLabel
+      AnchorSideLeft.Control = cbShowPoints
+      AnchorSideTop.Control = eAxisLimit
+      Left = 8
+      Height = 15
+      Top = 86
+      Width = 66
+      Caption = 'Секунд по Х'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object Label2: TLabel
+      AnchorSideLeft.Control = cbShowPoints
+      AnchorSideTop.Control = cbShowPoints
+      AnchorSideTop.Side = asrBottom
+      Left = 8
+      Height = 30
+      Top = 24
+      Width = 88
+      BorderSpacing.Top = 4
+      Caption = 'Интервал'#13#10'обновления, мс'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object cbXAxis: TComboBox
+      AnchorSideLeft.Control = eUpdateInterval
+      AnchorSideTop.Control = eUpdateInterval
+      AnchorSideTop.Side = asrBottom
+      Left = 120
+      Height = 23
+      Top = 55
+      Width = 104
+      BorderSpacing.Top = 8
+      ItemHeight = 15
+      ItemIndex = 0
+      Items.Strings = (
+        'Время, с'
+        'Частота, Гц'
+        'Амплитуда, В'
+      )
+      OnChange = cbXAxisChange
+      TabOrder = 0
+      Text = 'Время, с'
+    end
+    object eAxisLimit: TFloatSpinEdit
+      AnchorSideLeft.Control = eUpdateInterval
+      AnchorSideTop.Control = cbXAxis
+      AnchorSideTop.Side = asrBottom
+      AnchorSideBottom.Control = StatusBar1
+      Left = 120
+      Height = 23
+      Hint = 'Максимальный интервал времени,'#13#10'отображающийся на графиках'
+      Top = 86
+      Width = 104
+      BorderSpacing.Top = 8
+      BorderSpacing.Bottom = 8
+      Increment = 1
+      MaxValue = 100
+      MinValue = 0
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 1
+      Value = 0
+    end
+    object btClear: TButton
+      AnchorSideLeft.Control = btStartPauseLog
+      AnchorSideTop.Control = eAxisLimit
+      AnchorSideBottom.Control = StatusBar1
+      Left = 248
+      Height = 22
+      Top = 86
+      Width = 91
+      BorderSpacing.Bottom = 9
+      Caption = 'Очистить'
+      OnClick = btClearClick
+      TabOrder = 2
+    end
+    object eUpdateInterval: TSpinEdit
+      AnchorSideLeft.Control = cbShowPoints
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = cbShowPoints
+      AnchorSideTop.Side = asrBottom
+      Left = 120
+      Height = 23
+      Hint = 'Интервал обработки буфера'#13#10'и обновления графика'
+      Top = 24
+      Width = 104
+      BorderSpacing.Top = 4
+      MaxValue = 90000
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      Value = 500
+    end
+    object cbShowPoints: TCheckBox
+      AnchorSideLeft.Control = pnGraphControl
+      AnchorSideTop.Control = pnGraphControl
+      AnchorSideRight.Control = Owner
+      AnchorSideRight.Side = asrBottom
+      Left = 8
+      Height = 19
+      Top = 1
+      Width = 104
+      AutoSize = False
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 1
+      BorderSpacing.Right = 8
+      Caption = 'Показать точки'
+      Color = clWhite
+      OnChange = cbShowPointsChange
+      ParentColor = False
+      TabOrder = 4
+    end
+    object btStopLog: TButton
+      AnchorSideLeft.Control = btStartPauseLog
+      AnchorSideTop.Control = cbXAxis
+      Left = 248
+      Height = 22
+      Top = 55
+      Width = 91
+      Caption = 'Остановить'
+      Enabled = False
+      OnClick = btStopLogClick
+      TabOrder = 5
+    end
+    object btStartPauseLog: TButton
+      AnchorSideLeft.Control = eUpdateInterval
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = eUpdateInterval
+      Left = 248
+      Height = 22
+      Hint = 'Изменения параметров будут'#13#10'автоматически применены '
+      Top = 24
+      Width = 91
+      BorderSpacing.Left = 24
+      Caption = 'Начать снятие'
+      Enabled = False
+      OnClick = btStartPauseLogClick
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 6
+    end
+  end
+  object ChartToolset1: TChartToolset
+    left = 376
+    top = 64
+    object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
+    end
+    object ChartToolset1DataPointHintTool1: TDataPointHintTool
+    end
+    object ChartToolset1ZoomDragTool1: TZoomDragTool
+    end
+    object ChartToolset1PanDragTool1: TPanDragTool
+      Enabled = False
+    end
+  end
+  object Source1: TUserDefinedChartSource
+    OnGetChartDataItem = Source1GetChartDataItem
+    left = 408
+    top = 64
+  end
+  object Source2: TUserDefinedChartSource
+    OnGetChartDataItem = Source2GetChartDataItem
+    left = 440
+    top = 64
+  end
+  object UpdateTimer: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = UpdateTimerTimer
+    left = 344
+    top = 64
+  end
+end
