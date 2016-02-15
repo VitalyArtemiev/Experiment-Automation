@@ -19,9 +19,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="7"/>
-      <RevisionNr Value="2"/>
-      <BuildNr Value="4"/>
+      <MinorVersionNr Value="8"/>
       <Language Value="0419"/>
       <StringTable LegalCopyright="Виталий Артемьев, кафедра Фотоники МФТИ" OriginalFilename="Generator Control" ProductVersion=""/>
     </VersionInfo>
