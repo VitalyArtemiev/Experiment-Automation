@@ -384,6 +384,7 @@ begin
           end;
           //AddCommand(STRT, false);
           //PassCommands;
+          { TODO 1 -cBug : Continuos buffer }
           if OnePointPerStep then ReadingNeeded:= false
         end;
 
@@ -410,7 +411,7 @@ begin
           if OnePointPerStep then ReadingNeeded:= false
         end;
       end
-    else StopSync;
+    else StopSync;    { TODO 2 -cImprovement : Fix this thread shit }
 
   until Terminated;
 end;
@@ -1296,7 +1297,7 @@ begin
   if cbSampleRate.ItemIndex <> 14 then
     SampleRate:= (intpower(2, cbSampleRate.ItemIndex)) * 0.0625
   else SampleRate:= 0;
-
+   { TODO 2 -cFeature : Autosens }
   with Params do
   begin
     GenFreq:= UseGenFreq;

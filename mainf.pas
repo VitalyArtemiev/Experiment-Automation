@@ -174,7 +174,7 @@ const
      (Manufacturer: 'Stanford_Research_Systems'; Model: 'SR844'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
      (Manufacturer: 'Stanford_Research_Systems'; Model: 'SR830'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR)
      );
-
+    { TODO 3 -cFeature : Custom device support }
   PointsInSR844Buffer = 16383;
 
   TestTimeOut = 2000;
