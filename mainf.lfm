@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 342
+  Left = 628
   Height = 600
-  Top = 106
+  Top = 154
   Width = 524
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -1120,6 +1120,10 @@ object MainForm: TMainForm
     end
     object miAbout: TMenuItem
       Caption = 'Справка'
+      object About: TMenuItem
+        Caption = 'О программе'
+        OnClick = AboutClick
+      end
     end
   end
   object OpenDialog: TOpenDialog

@@ -56,7 +56,10 @@ type
     Label26: TLabel;
     Label28: TLabel;
     Label29: TLabel;
+
     Label30: TLabel;
+
+    About: TMenuItem;
 
     miShowReadingsF: TMenuItem;
 
@@ -68,6 +71,7 @@ type
     SaveDialog: TSaveDialog;
     ReadingTimer: TTimer;
     eDelay: TSpinEdit;
+
 
     TotalTime: TLabel;
     NewReport: TMenuItem;
@@ -100,6 +104,7 @@ type
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     TabSheet3: TTabSheet;
+    procedure AboutClick(Sender: TObject);
     procedure cbPointPerStepChange(Sender: TObject);
     procedure cbAmplUnitChange(Sender: TObject);
     procedure DebugBoxClick(Sender: TObject);
@@ -197,7 +202,7 @@ var
 implementation
 
 uses
-  Math, MemoF, StepF, OptionF, ReadingsF, Variants, GenConst;
+  Math, MemoF, StepF, OptionF, ReadingsF, AboutF, Variants, GenConst;
 
 {$R *.lfm}
 
@@ -669,6 +674,11 @@ begin
     ShowMessage('Доступно только в режиме "Одновременный запрос".' + LineEnding +
     'Режим снятия переключен');
   end;
+end;
+
+procedure TMainForm.AboutClick(Sender: TObject);
+begin
+  AboutForm.ShowModal;
 end;
 
 procedure TMainForm.cbAmplUnitChange(Sender: TObject);

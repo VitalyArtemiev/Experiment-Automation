@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, {tachartlazaruspkg,} MainF, memof, stepf, optionf, ReadingsF,
-  CustomCommandF, StatusF, GenConst, DetConst, serconf, AxisSource;
+  CustomCommandF, StatusF, GenConst, DetConst, serconf, AxisSource, AboutF;
 
 {$R *.res}
 
@@ -25,6 +25,7 @@ begin
 
   Application.MainFormOnTaskBar:= true;
   Application.CreateForm(TStatusForm, StatusForm);
+  Application.CreateForm(TAboutForm, AboutForm);
   Application.Run;
 end.
 

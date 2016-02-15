@@ -1,0 +1,60 @@
+object AboutForm: TAboutForm
+  Left = 815
+  Height = 210
+  Top = 282
+  Width = 397
+  Caption = 'О программе'
+  ClientHeight = 210
+  ClientWidth = 397
+  LCLVersion = '1.4.4.0'
+  object Label1: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Left = 8
+    Height = 120
+    Top = 8
+    Width = 382
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    Caption = 'МФТИ'#13#10'Кафедра фотоники'#13#10#13#10#13#10'Артемьев Виталий'#13#10#13#10'E-mail:  vitaly.artemiev@yandex.ru'#13#10'Github: https://github.com/VitalyArtemiev/Generator-Amplifier-Control'
+    ParentColor = False
+  end
+  object btCopyEmail: TButton
+    AnchorSideLeft.Control = Label1
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 25
+    Top = 136
+    Width = 136
+    BorderSpacing.Top = 8
+    Caption = 'Скопировать e-mail'
+    TabOrder = 0
+  end
+  object btOpenGitHub: TButton
+    AnchorSideLeft.Control = btCopyEmail
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btCopyEmail
+    Left = 152
+    Height = 25
+    Top = 136
+    Width = 136
+    BorderSpacing.Left = 8
+    Caption = 'Перейти на GitHub'
+    OnClick = btOpenGitHubClick
+    TabOrder = 1
+  end
+  object btReportIssue: TButton
+    AnchorSideLeft.Control = btCopyEmail
+    AnchorSideTop.Control = btCopyEmail
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 25
+    Top = 177
+    Width = 136
+    BorderSpacing.Top = 16
+    Caption = 'Сообщить о проблеме'
+    OnClick = btReportIssueClick
+    TabOrder = 2
+  end
+end
