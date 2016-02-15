@@ -972,7 +972,7 @@ var
 begin
   //try
   DataList:= ThreadList.LockList;
-  WriteProgramLog(strf(DataList.Count) + ' buff elements');
+  //WriteProgramLog(strf(DataList.Count) + ' buff elements');
 
   if LogFreq and UseGenFreq then f:= StepF.F;
   if LogAmpl then a:= StepF.A;
@@ -984,10 +984,10 @@ begin
       for i:= 0 to (DataList.Count div 2) - 1 do
       begin
         ProcessedPoints+= length(Buffer(DataList.Items[i * 2]^));
-        WriteProgramLog('high'+strf(high(Buffer(DataList.Items[i * 2]^))));
+        //WriteProgramLog('high'+strf(high(Buffer(DataList.Items[i * 2]^))));
         for j:= 0 to high(Buffer(DataList.Items[i * 2]^)) do
         begin
-          WriteProgramLog('i '+strf(i)+' j '+strf(j));
+          //WriteProgramLog('i '+strf(i)+' j '+strf(j));
           s:= '';
 
           if LogFreq and UseGenFreq then

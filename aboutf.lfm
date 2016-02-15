@@ -55,6 +55,7 @@ object AboutForm: TAboutForm
     Width = 136
     BorderSpacing.Top = 16
     Caption = 'Сообщить о проблеме'
+    Default = True
     OnClick = btReportIssueClick
     TabOrder = 2
   end
