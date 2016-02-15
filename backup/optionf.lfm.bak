@@ -1,0 +1,607 @@
+object OptionForm: TOptionForm
+  Left = 1161
+  Height = 350
+  Top = 151
+  Width = 350
+  BorderStyle = bsToolWindow
+  Caption = 'Настройки'
+  ClientHeight = 350
+  ClientWidth = 350
+  Constraints.MinHeight = 350
+  Constraints.MinWidth = 350
+  OnCloseQuery = FormCloseQuery
+  OnShow = FormShow
+  LCLVersion = '1.4.4.0'
+  object btSave: TButton
+    AnchorSideLeft.Control = btCancel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btDefaults
+    Left = 241
+    Height = 25
+    Top = 320
+    Width = 100
+    BorderSpacing.Left = 16
+    Caption = 'Сохранить'
+    OnClick = btSaveClick
+    TabOrder = 0
+  end
+  object btDefaults: TButton
+    AnchorSideTop.Control = TabControl
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = btCancel
+    Left = 9
+    Height = 25
+    Top = 320
+    Width = 100
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 16
+    Caption = 'По умолчанию'
+    OnClick = btDefaultsClick
+    TabOrder = 1
+  end
+  object TabControl: TPageControl
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 0
+    Height = 312
+    Top = 0
+    Width = 350
+    ActivePage = ConnectionTab
+    Anchors = [akTop, akLeft, akRight]
+    TabIndex = 1
+    TabOrder = 2
+    object GeneralTab: TTabSheet
+      Caption = 'Общие настройки'
+      ClientHeight = 284
+      ClientWidth = 342
+      object rgOnConnect: TRadioGroup
+        AnchorSideLeft.Control = GeneralTab
+        AnchorSideTop.Control = cgFiles
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = GeneralTab
+        AnchorSideRight.Side = asrBottom
+        Left = 0
+        Height = 76
+        Top = 120
+        Width = 342
+        Anchors = [akTop, akLeft, akRight]
+        AutoFill = True
+        Caption = 'При подключении:'
+        ChildSizing.LeftRightSpacing = 6
+        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+        ChildSizing.EnlargeVertical = crsHomogenousChildResize
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 1
+        ClientHeight = 56
+        ClientWidth = 338
+        ItemIndex = 0
+        Items.Strings = (
+          'ничего не делать'
+          'запрашивать текущие параметры у прибора'
+          'выполнять сброс параметров прибора'
+        )
+        TabOrder = 0
+      end
+      object cgFiles: TCheckGroup
+        AnchorSideLeft.Control = GeneralTab
+        AnchorSideTop.Control = GeneralTab
+        AnchorSideRight.Control = GeneralTab
+        AnchorSideRight.Side = asrBottom
+        Left = 0
+        Height = 120
+        Top = 0
+        Width = 342
+        Anchors = [akTop, akLeft, akRight]
+        AutoFill = True
+        Caption = 'Файлы'
+        ChildSizing.LeftRightSpacing = 6
+        ChildSizing.TopBottomSpacing = 6
+        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+        ChildSizing.EnlargeVertical = crsHomogenousChildResize
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 1
+        ClientHeight = 100
+        ClientWidth = 338
+        Items.Strings = (
+          'Загружать параметры при запуске'
+          'Сохранять параметры программы при выходе'
+          'Сохранять данные эксперимента автоматически'
+          'Запрашивать комментарий при автосохранении'
+          'Вести журнал программы'
+        )
+        TabOrder = 1
+        Data = {
+          050000000303020202
+        }
+        object btConfDir: TButton
+          Left = 288
+          Height = 34
+          Top = 4
+          Width = 43
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          OnClick = btConfDirClick
+          TabOrder = 0
+        end
+      end
+      object cgReadings: TCheckGroup
+        AnchorSideLeft.Control = GeneralTab
+        AnchorSideTop.Control = rgOnConnect
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = GeneralTab
+        AnchorSideRight.Side = asrBottom
+        Left = 0
+        Height = 84
+        Top = 196
+        Width = 342
+        Anchors = [akTop, akLeft, akRight]
+        AutoFill = True
+        Caption = 'Автоматическое снятие показаний:'
+        ChildSizing.LeftRightSpacing = 6
+        ChildSizing.TopBottomSpacing = 6
+        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+        ChildSizing.EnlargeVertical = crsHomogenousChildResize
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 1
+        ClientHeight = 64
+        ClientWidth = 338
+        Items.Strings = (
+          'При постоянной частоте'
+          'При сканировании'
+          'При пошаговом проходе'
+        )
+        TabOrder = 2
+        Data = {
+          03000000020203
+        }
+        object Label7: TLabel
+          AnchorSideTop.Control = eReadingTime
+          AnchorSideRight.Control = eReadingTime
+          Left = 196
+          Height = 15
+          Top = 12
+          Width = 77
+          Anchors = [akTop, akRight]
+          BorderSpacing.Right = 8
+          Caption = 'Длительность'
+          ParentColor = False
+        end
+        object eReadingTime: TSpinEdit
+          AnchorSideLeft.Control = Label7
+          AnchorSideLeft.Side = asrBottom
+          Left = 281
+          Height = 23
+          Top = 12
+          Width = 50
+          Anchors = []
+          BorderSpacing.Left = 4
+          Increment = 10
+          MaxValue = 3600000
+          TabOrder = 3
+        end
+      end
+    end
+    object ConnectionTab: TTabSheet
+      Caption = 'Настройки подключения'
+      ClientHeight = 284
+      ClientWidth = 342
+      object DevicePage: TPageControl
+        AnchorSideLeft.Control = ConnectionTab
+        AnchorSideTop.Control = ConnectionTab
+        AnchorSideRight.Control = ConnectionTab
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = ConnectionTab
+        AnchorSideBottom.Side = asrBottom
+        Left = 0
+        Height = 282
+        Top = 2
+        Width = 342
+        ActivePage = GenTab
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        BorderSpacing.Top = 2
+        TabIndex = 0
+        TabOrder = 0
+        object GenTab: TTabSheet
+          Caption = 'Генератор'
+          ClientHeight = 254
+          ClientWidth = 334
+          object eDeviceName: TEdit
+            AnchorSideTop.Control = Label6
+            AnchorSideRight.Control = GenTab
+            AnchorSideRight.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 12
+            Width = 120
+            Anchors = [akTop, akRight]
+            BorderSpacing.Right = 8
+            TabOrder = 0
+            Text = 'eDeviceName'
+          end
+          object Label6: TLabel
+            AnchorSideLeft.Control = GenTab
+            AnchorSideTop.Control = GenTab
+            Left = 4
+            Height = 15
+            Top = 12
+            Width = 193
+            BorderSpacing.Left = 4
+            BorderSpacing.Top = 12
+            Caption = 'Модель прибора (ответ на "*IDN?")'
+            ParentColor = False
+          end
+          object Label5: TLabel
+            AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label4
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 187
+            Width = 151
+            BorderSpacing.Top = 20
+            Caption = 'Рукопожатие (подтв. связи)'
+            ParentColor = False
+          end
+          object Label4: TLabel
+            AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label3
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 152
+            Width = 53
+            BorderSpacing.Top = 20
+            Caption = 'Парность'
+            ParentColor = False
+          end
+          object Label3: TLabel
+            AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label2
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 117
+            Width = 60
+            BorderSpacing.Top = 20
+            Caption = 'Стоп-биты'
+            ParentColor = False
+          end
+          object Label2: TLabel
+            AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label1
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 82
+            Width = 71
+            BorderSpacing.Top = 20
+            Caption = 'Биты данных'
+            ParentColor = False
+          end
+          object Label1: TLabel
+            AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label6
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 47
+            Width = 188
+            BorderSpacing.Top = 20
+            Caption = 'Бод-частота (символов в секунду)'
+            ParentColor = False
+          end
+          object cbHandshake: TComboBox
+            AnchorSideLeft.Control = eDeviceName
+            AnchorSideTop.Control = Label5
+            Left = 206
+            Height = 23
+            Top = 187
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              'Отсутствует'
+              'Программное'
+              'Аппаратное'
+              'Программное + аппаратное'
+            )
+            TabOrder = 1
+            Text = 'cbHandshake'
+          end
+          object cbParity: TComboBox
+            AnchorSideLeft.Control = eDeviceName
+            AnchorSideTop.Control = Label4
+            Left = 206
+            Height = 23
+            Top = 152
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              'Отсутствует'
+              'Нечетная'
+              'Четная'
+              'Всегда 1 (неиспользуемый бит)'
+              'Всегда 0 (неиспользуемый бит)'
+            )
+            TabOrder = 2
+            Text = 'cbParity'
+          end
+          object cbStopBits: TComboBox
+            AnchorSideLeft.Control = eDeviceName
+            AnchorSideTop.Control = Label3
+            Left = 206
+            Height = 23
+            Top = 117
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              '1'
+              '1,5 (2 при передаче, 1 при приёме)'
+              '2'
+            )
+            TabOrder = 3
+            Text = 'cbStopBits'
+          end
+          object eDataBits: TSpinEdit
+            AnchorSideLeft.Control = eDeviceName
+            AnchorSideTop.Control = Label2
+            Left = 206
+            Height = 23
+            Top = 82
+            Width = 120
+            MaxValue = 1024
+            MinValue = 1
+            TabOrder = 4
+            Value = 8
+          end
+          object eBaudRate: TSpinEdit
+            AnchorSideLeft.Control = eDeviceName
+            AnchorSideTop.Control = Label1
+            Left = 206
+            Height = 23
+            Top = 47
+            Width = 120
+            Increment = 1200
+            MaxValue = 4000000
+            MinValue = 50
+            TabOrder = 5
+            Value = 9600
+          end
+          object Label14: TLabel
+            AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label5
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 222
+            Width = 160
+            BorderSpacing.Top = 20
+            Caption = 'Команда для инициализации'
+            ParentColor = False
+          end
+          object eInitCommand: TEdit
+            AnchorSideLeft.Control = eDeviceName
+            AnchorSideTop.Control = Label14
+            Left = 206
+            Height = 23
+            Top = 222
+            Width = 120
+            TabOrder = 6
+            Text = 'eInitCommand'
+          end
+        end
+        object DetTab: TTabSheet
+          Caption = 'Детектор'
+          ClientHeight = 254
+          ClientWidth = 334
+          object eBaudRate1: TSpinEdit
+            AnchorSideLeft.Control = eDeviceName1
+            AnchorSideTop.Control = Label8
+            Left = 206
+            Height = 23
+            Top = 47
+            Width = 120
+            Increment = 1200
+            MaxValue = 4000000
+            MinValue = 50
+            TabOrder = 0
+            Value = 9600
+          end
+          object eDataBits1: TSpinEdit
+            AnchorSideLeft.Control = eDeviceName1
+            AnchorSideTop.Control = Label9
+            Left = 206
+            Height = 23
+            Top = 82
+            Width = 120
+            MaxValue = 1024
+            MinValue = 1
+            TabOrder = 1
+            Value = 8
+          end
+          object cbStopBits1: TComboBox
+            AnchorSideLeft.Control = eDeviceName1
+            AnchorSideTop.Control = Label10
+            Left = 206
+            Height = 23
+            Top = 117
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              '1'
+              '1,5 (2 при передаче, 1 при приёме)'
+              '2'
+            )
+            TabOrder = 2
+            Text = 'cbStopBits1'
+          end
+          object cbParity1: TComboBox
+            AnchorSideLeft.Control = eDeviceName1
+            AnchorSideTop.Control = Label11
+            Left = 206
+            Height = 23
+            Top = 152
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              'Отсутствует'
+              'Нечетная'
+              'Четная'
+              'Всегда 1 (неиспользуемый бит)'
+              'Всегда 0 (неиспользуемый бит)'
+            )
+            TabOrder = 3
+            Text = 'cbParity1'
+          end
+          object cbHandshake1: TComboBox
+            AnchorSideLeft.Control = eDeviceName1
+            AnchorSideTop.Control = Label12
+            Left = 206
+            Height = 23
+            Top = 187
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              'Отсутствует'
+              'Программное'
+              'Аппаратное'
+              'Программное + аппаратное'
+            )
+            TabOrder = 4
+            Text = 'cbHandshake1'
+          end
+          object Label8: TLabel
+            AnchorSideLeft.Control = Label13
+            AnchorSideTop.Control = Label13
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 47
+            Width = 188
+            BorderSpacing.Top = 20
+            Caption = 'Бод-частота (символов в секунду)'
+            ParentColor = False
+          end
+          object Label9: TLabel
+            AnchorSideLeft.Control = Label13
+            AnchorSideTop.Control = Label8
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 82
+            Width = 71
+            BorderSpacing.Top = 20
+            Caption = 'Биты данных'
+            ParentColor = False
+          end
+          object Label10: TLabel
+            AnchorSideLeft.Control = Label13
+            AnchorSideTop.Control = Label9
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 117
+            Width = 60
+            BorderSpacing.Top = 20
+            Caption = 'Стоп-биты'
+            ParentColor = False
+          end
+          object Label11: TLabel
+            AnchorSideLeft.Control = Label13
+            AnchorSideTop.Control = Label10
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 152
+            Width = 53
+            BorderSpacing.Top = 20
+            Caption = 'Парность'
+            ParentColor = False
+          end
+          object Label12: TLabel
+            AnchorSideLeft.Control = Label13
+            AnchorSideTop.Control = Label11
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 187
+            Width = 151
+            BorderSpacing.Top = 20
+            Caption = 'Рукопожатие (подтв. связи)'
+            ParentColor = False
+          end
+          object Label13: TLabel
+            AnchorSideLeft.Control = DetTab
+            AnchorSideTop.Control = DetTab
+            Left = 4
+            Height = 15
+            Top = 12
+            Width = 193
+            BorderSpacing.Left = 4
+            BorderSpacing.Top = 12
+            Caption = 'Модель прибора (ответ на "*IDN?")'
+            ParentColor = False
+          end
+          object eDeviceName1: TEdit
+            AnchorSideTop.Control = Label13
+            AnchorSideRight.Control = DetTab
+            AnchorSideRight.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 12
+            Width = 120
+            Anchors = [akTop, akRight]
+            BorderSpacing.Right = 8
+            TabOrder = 5
+            Text = 'eDeviceName1'
+          end
+          object Label15: TLabel
+            AnchorSideLeft.Control = Label13
+            AnchorSideTop.Control = Label12
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 222
+            Width = 160
+            BorderSpacing.Top = 20
+            Caption = 'Команда для инициализации'
+            ParentColor = False
+          end
+          object eInitCommand1: TEdit
+            AnchorSideLeft.Control = eDeviceName1
+            AnchorSideTop.Control = Label15
+            Left = 206
+            Height = 23
+            Top = 222
+            Width = 120
+            TabOrder = 6
+            Text = 'eInitCommand1'
+          end
+        end
+      end
+    end
+  end
+  object btCancel: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = TabControl
+    AnchorSideTop.Side = asrBottom
+    Left = 125
+    Height = 25
+    Top = 320
+    Width = 100
+    BorderSpacing.Top = 8
+    Cancel = True
+    Caption = 'Отмена'
+    OnClick = btCancelClick
+    TabOrder = 3
+  end
+end

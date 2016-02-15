@@ -1,0 +1,50 @@
+object MemoForm: TMemoForm
+  Left = 1269
+  Height = 314
+  Top = 30
+  Width = 609
+  ActiveControl = btSaveComment
+  BorderStyle = bsSizeToolWin
+  Caption = 'Комментарий'
+  ClientHeight = 314
+  ClientWidth = 609
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 300
+  OnCloseQuery = FormCloseQuery
+  OnShow = FormShow
+  LCLVersion = '1.4.4.0'
+  object mComment: TMemo
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = btSaveComment
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 287
+    Top = 0
+    Width = 609
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Bottom = 24
+    ScrollBars = ssAutoBoth
+    TabOrder = 0
+  end
+  object btSaveComment: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = mComment
+    AnchorSideTop.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 259
+    Height = 22
+    Top = 289
+    Width = 91
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Top = 3
+    BorderSpacing.Bottom = 3
+    Caption = 'Готово'
+    Default = True
+    OnClick = btSaveCommentClick
+    TabOrder = 1
+  end
+end

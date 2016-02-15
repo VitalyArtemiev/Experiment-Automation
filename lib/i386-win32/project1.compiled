@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\Lazarus\fpc\2.6.4\bin\i386-win32\fpc.exe" Date="1211726250"/>
+  <Params Value=" -MObjFPC -Scghi -CX -O3 -Xs -XX -WG -l -vewnhibq &quot;-FiC:\Program Files\FPC\Projects\Generator Control\lib\i386-win32&quot; &quot;-FuC:\Program Files\FPC\2.6.4\units\i386-win32\synapse\source\lib&quot; -FuC:\Lazarus\components\tachart\lib\i386-win32\win32 -FuC:\Lazarus\components\ideintf\units\i386-win32\win32 -FuC:\Lazarus\components\lazcontrols\lib\i386-win32\win32 -FuC:\Lazarus\lcl\units\i386-win32\win32 -FuC:\Lazarus\lcl\units\i386-win32 -FuC:\Lazarus\components\lazutils\lib\i386-win32 -FuC:\Lazarus\packager\units\i386-win32 &quot;-FuC:\Program Files\FPC\Projects\Generator Control\&quot; &quot;-FUC:\Program Files\FPC\Projects\Generator Control\lib\i386-win32\&quot; &quot;-oGenerator Control.exe&quot; -dLCL -dLCLwin32 project1.lpr"/>
+</CONFIG>

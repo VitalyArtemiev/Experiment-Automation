@@ -1,0 +1,555 @@
+msgid "автоматически применены "
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "автоматически применены "
+msgstr ""
+
+#: tmainform.amplitudereading.caption
+msgctxt "TMAINFORM.AMPLITUDEREADING.CAPTION"
+msgid "?"
+msgstr ""
+
+#: tmainform.btapply.caption
+msgctxt "tmainform.btapply.caption"
+msgid "Применить"
+msgstr ""
+
+#: tmainform.btcustomcommand.caption
+msgid "btCustomCommand"
+msgstr ""
+
+#: tmainform.btcustomcommand.hint
+msgctxt "tmainform.btcustomcommand.hint"
+msgid "Сконструировать команду,"
+msgstr ""
+
+#: tmainform.btnconnect.caption
+msgctxt "tmainform.btnconnect.caption"
+msgid "Подключение"
+msgstr ""
+
+#: tmainform.btndisconnect.caption
+msgctxt "tmainform.btndisconnect.caption"
+msgid "Отключение"
+msgstr ""
+
+#: tmainform.btntest.caption
+msgctxt "tmainform.btntest.caption"
+msgid "Тест"
+msgstr ""
+
+#: tmainform.btprogram.caption
+msgid "Управление"
+msgstr ""
+
+#: tmainform.btquery.caption
+msgctxt "tmainform.btquery.caption"
+msgid "Запрос"
+msgstr ""
+
+#: tmainform.btreset.caption
+msgctxt "tmainform.btreset.caption"
+msgid "Сброс"
+msgstr ""
+
+#: tmainform.btstatus.caption
+msgctxt "tmainform.btstatus.caption"
+msgid "Статус"
+msgstr ""
+
+#: tmainform.btstop.caption
+msgctxt "tmainform.btstop.caption"
+msgid "Остановить"
+msgstr ""
+
+#: tmainform.bttrigger.caption
+msgid "Триггер"
+msgstr ""
+
+#: tmainform.caption
+msgid "Управление генератором"
+msgstr ""
+
+#: tmainform.cbacenable.hint
+msgid "Вкл./выкл. переменный ток"
+msgstr ""
+
+#: tmainform.cbfuncselect.text
+msgid "Синусоида"
+msgstr ""
+
+#: tmainform.cbimpedance.text
+msgid "50 Ом"
+msgstr ""
+
+#: tmainform.cbpointperstep.caption
+msgid "Снимать только 1 точку на шаг"
+msgstr ""
+
+#: tmainform.cbsweepdirection.text
+msgid "Вверх"
+msgstr ""
+
+#: tmainform.cbsweeprate.hint
+msgid "Вкл./выкл. автоматическое сканирование/по триггеру"
+msgstr ""
+
+#: tmainform.cbsweeptype.text
+msgid "Линейное"
+msgstr ""
+
+#: tmainform.frequencyreading.caption
+msgctxt "tmainform.frequencyreading.caption"
+msgid "?"
+msgstr ""
+
+#: tmainform.label1.caption
+msgctxt "TMAINFORM.LABEL1.CAPTION"
+msgid "Амплитуда"
+msgstr ""
+
+#: tmainform.label10.caption
+msgctxt "TMAINFORM.LABEL10.CAPTION"
+msgid "Частота"
+msgstr ""
+
+#: tmainform.label11.caption
+msgctxt "tmainform.label11.caption"
+msgid "Начальная"
+msgstr ""
+
+#: tmainform.label12.caption
+msgctxt "tmainform.label12.caption"
+msgid "Конечная"
+msgstr ""
+
+#: tmainform.label13.caption
+msgctxt "TMAINFORM.LABEL13.CAPTION"
+msgid "Частота"
+msgstr ""
+
+#: tmainform.label14.caption
+msgid "Тип"
+msgstr ""
+
+#: tmainform.label15.caption
+msgctxt "tmainform.label15.caption"
+msgid "Амплитуда"
+msgstr ""
+
+#: tmainform.label16.caption
+msgctxt "TMAINFORM.LABEL16.CAPTION"
+msgid "Начальная"
+msgstr ""
+
+#: tmainform.label17.caption
+msgctxt "TMAINFORM.LABEL17.CAPTION"
+msgid "Конечная"
+msgstr ""
+
+#: tmainform.label18.caption
+msgid "Шаг"
+msgstr ""
+
+#: tmainform.label19.caption
+msgctxt "tmainform.label19.caption"
+msgid "Интервал"
+msgstr ""
+
+#: tmainform.label2.caption
+msgid "Смещение"
+msgstr ""
+
+#: tmainform.label20.caption
+msgid "мс      Всего:"
+msgstr ""
+
+#: tmainform.label21.caption
+msgctxt "TMAINFORM.LABEL21.CAPTION"
+msgid "Гц"
+msgstr ""
+
+#: tmainform.label22.caption
+msgctxt "tmainform.label22.caption"
+msgid "В"
+msgstr ""
+
+#: tmainform.label23.caption
+msgctxt "TMAINFORM.LABEL23.CAPTION"
+msgid "Гц"
+msgstr ""
+
+#: tmainform.label24.caption
+msgctxt "TMAINFORM.LABEL24.CAPTION"
+msgid "Гц"
+msgstr ""
+
+#: tmainform.label25.caption
+msgctxt "TMAINFORM.LABEL25.CAPTION"
+msgid "Гц"
+msgstr ""
+
+#: tmainform.label26.caption
+msgctxt "tmainform.label26.caption"
+msgid "Гц"
+msgstr ""
+
+#: tmainform.label27.caption
+msgctxt "TMAINFORM.LABEL27.CAPTION"
+msgid "В"
+msgstr ""
+
+#: tmainform.label28.caption
+msgctxt "TMAINFORM.LABEL28.CAPTION"
+msgid "В"
+msgstr ""
+
+#: tmainform.label3.caption
+msgctxt "tmainform.label3.caption"
+msgid "Выбор порта"
+msgstr ""
+
+#: tmainform.label4.caption
+msgctxt "tmainform.label4.caption"
+msgid "Частота"
+msgstr ""
+
+#: tmainform.label5.caption
+msgid "Функция"
+msgstr ""
+
+#: tmainform.label6.caption
+msgid "Целевое значение"
+msgstr ""
+
+#: tmainform.label7.caption
+msgid "Текущее значение"
+msgstr ""
+
+#: tmainform.label8.caption
+msgctxt "tmainform.label8.caption"
+msgid "Таймаут, мс"
+msgstr ""
+
+#: tmainform.label9.caption
+msgid "Сопротивление"
+msgstr ""
+
+#: tmainform.miabout.caption
+msgid "Справка"
+msgstr ""
+
+#: tmainform.miexportparams.caption
+msgid "Сохранить параметры эксперимента"
+msgstr ""
+
+#: tmainform.mifile.caption
+msgid "Файл"
+msgstr ""
+
+#: tmainform.miloadcfg.caption
+msgid "Загрузить конфигурацию"
+msgstr ""
+
+#: tmainform.miloadpar.caption
+msgid "Загрузить параметры"
+msgstr ""
+
+#: tmainform.mioptions.caption
+msgid "Настройки"
+msgstr ""
+
+#: tmainform.misavecfg.caption
+msgid "Сохранить конфигурацию"
+msgstr ""
+
+#: tmainform.misavepar.caption
+msgid "Сохранить параметры"
+msgstr ""
+
+#: tmainform.mishowreadingsf.caption
+msgid "Окно снятия показаний"
+msgstr ""
+
+#: tmainform.miview.caption
+msgid "Вид"
+msgstr ""
+
+#: tmainform.newreport.caption
+msgid "Новый отчет"
+msgstr ""
+
+#: tmainform.offsetreading.caption
+msgctxt "TMAINFORM.OFFSETREADING.CAPTION"
+msgid "?"
+msgstr ""
+
+#: tmainform.savedialog.title
+msgid "Сохранить файл конфигурации как"
+msgstr ""
+
+#: tmainform.serecvtimeout.hint
+msgctxt "tmainform.serecvtimeout.hint"
+msgid "Время ожидания ответа прибора"
+msgstr ""
+
+#: tmainform.sweepratereading.caption
+msgctxt "TMAINFORM.SWEEPRATEREADING.CAPTION"
+msgid "?"
+msgstr ""
+
+#: tmainform.sweepstartfreading.caption
+msgctxt "TMAINFORM.SWEEPSTARTFREADING.CAPTION"
+msgid "?"
+msgstr ""
+
+#: tmainform.sweepstopfreading.caption
+msgctxt "TMAINFORM.SWEEPSTOPFREADING.CAPTION"
+msgid "?"
+msgstr ""
+
+#: tmainform.tabsheet1.caption
+msgid "Постоянная частота"
+msgstr ""
+
+#: tmainform.tabsheet2.caption
+msgid "Сканирование"
+msgstr ""
+
+#: tmainform.tabsheet3.caption
+msgid "Пошагово"
+msgstr ""
+
+#: tmainform.totaltime.caption
+msgid "0 ч 0 м 0 с, 0 шагов"
+msgstr ""
+
+#: treadingsform.btapply.caption
+msgctxt "TREADINGSFORM.BTAPPLY.CAPTION"
+msgid "Применить"
+msgstr ""
+
+#: treadingsform.btclear.caption
+msgid "Очистить"
+msgstr ""
+
+#: treadingsform.btcustomcommand.caption
+msgid "Польз."
+msgstr ""
+
+#: treadingsform.btcustomcommand.hint
+msgctxt "TREADINGSFORM.BTCUSTOMCOMMAND.HINT"
+msgid "Сконструировать команду,"
+msgstr ""
+
+#: treadingsform.btnconnect.caption
+msgctxt "TREADINGSFORM.BTNCONNECT.CAPTION"
+msgid "Подключение"
+msgstr ""
+
+#: treadingsform.btndisconnect.caption
+msgctxt "TREADINGSFORM.BTNDISCONNECT.CAPTION"
+msgid "Отключение"
+msgstr ""
+
+#: treadingsform.btntest.caption
+msgctxt "TREADINGSFORM.BTNTEST.CAPTION"
+msgid "Тест"
+msgstr ""
+
+#: treadingsform.btquery.caption
+msgctxt "TREADINGSFORM.BTQUERY.CAPTION"
+msgid "Запрос"
+msgstr ""
+
+#: treadingsform.btreset.caption
+msgctxt "TREADINGSFORM.BTRESET.CAPTION"
+msgid "Сброс"
+msgstr ""
+
+#: treadingsform.btstartpauselog.caption
+msgid "Начать снятие"
+msgstr ""
+
+#: treadingsform.btstartpauselog.hint
+msgid "Изменения параметров будут"
+msgstr ""
+
+#: treadingsform.btstatus.caption
+msgctxt "TREADINGSFORM.BTSTATUS.CAPTION"
+msgid "Статус"
+msgstr ""
+
+#: treadingsform.btstoplog.caption
+msgctxt "TREADINGSFORM.BTSTOPLOG.CAPTION"
+msgid "Остановить"
+msgstr ""
+
+#: treadingsform.caption
+msgid "Снятие показаний"
+msgstr ""
+
+#: treadingsform.cbch1.hint
+msgid "Что регистрируется в Ch1 прибора"
+msgstr ""
+
+#: treadingsform.cbch1.text
+msgctxt "TREADINGSFORM.CBCH1.TEXT"
+msgid "X"
+msgstr ""
+
+#: treadingsform.cbch2.hint
+msgid "Что регистрируется в Ch2 прибора"
+msgstr ""
+
+#: treadingsform.cbch2.text
+msgctxt "TREADINGSFORM.CBCH2.TEXT"
+msgid "Y"
+msgstr ""
+
+#: treadingsform.cbchart1show.hint
+msgid "Что отображается на графике 1"
+msgstr ""
+
+#: treadingsform.cbchart1show.text
+msgctxt "treadingsform.cbchart1show.text"
+msgid "X"
+msgstr ""
+
+#: treadingsform.cbchart2show.hint
+msgid "Что отображается на графике 2"
+msgstr ""
+
+#: treadingsform.cbchart2show.text
+msgctxt "treadingsform.cbchart2show.text"
+msgid "Y"
+msgstr ""
+
+#: treadingsform.cbratio1.text
+msgctxt "treadingsform.cbratio1.text"
+msgid "Нет"
+msgstr ""
+
+#: treadingsform.cbratio2.text
+msgctxt "TREADINGSFORM.CBRATIO2.TEXT"
+msgid "Нет"
+msgstr ""
+
+#: treadingsform.cbreadingsmode.hint
+msgid "Использовать команду TRCL (быстрее, внутренний"
+msgstr ""
+
+#: treadingsform.cbreadingsmode.text
+msgid "Внутренний буфер"
+msgstr ""
+
+#: treadingsform.cbsamplerate.text
+msgid "512 Гц"
+msgstr ""
+
+#: treadingsform.cbsensitivity.text
+msgid "1 В"
+msgstr ""
+
+#: treadingsform.cbshowpoints.caption
+msgid "Показать точки"
+msgstr ""
+
+#: treadingsform.cbtimeconstant.text
+msgid "100 мс"
+msgstr ""
+
+#: treadingsform.cbusegenfreq.caption
+msgid "Частота с генерат."
+msgstr ""
+
+#: treadingsform.cbusegenfreq.hint
+msgid "Брать значение частоты входного сигнала с генератора"
+msgstr ""
+
+#: treadingsform.cbxaxis.text
+msgid "Время, с"
+msgstr ""
+
+#: treadingsform.cgtransfer.caption
+msgid "Параметры"
+msgstr ""
+
+#: treadingsform.eaxislimit.hint
+msgid "Максимальный интервал времени,"
+msgstr ""
+
+#: treadingsform.eupdateinterval.hint
+msgid "Интервал обработки буфера"
+msgstr ""
+
+#: treadingsform.label1.caption
+msgid "Режим снятия"
+msgstr ""
+
+#: treadingsform.label10.caption
+msgid "Дисплей 2"
+msgstr ""
+
+#: treadingsform.label11.caption
+msgctxt "treadingsform.label11.caption"
+msgid "Отобр."
+msgstr ""
+
+#: treadingsform.label12.caption
+msgctxt "TREADINGSFORM.LABEL12.CAPTION"
+msgid "Отобр."
+msgstr ""
+
+#: treadingsform.label13.caption
+msgid "Частота буфера"
+msgstr ""
+
+#: treadingsform.label14.caption
+msgid "Отношение 1"
+msgstr ""
+
+#: treadingsform.label15.caption
+msgid "Отношение 2"
+msgstr ""
+
+#: treadingsform.label2.caption
+msgctxt "TREADINGSFORM.LABEL2.CAPTION"
+msgid "Интервал"
+msgstr ""
+
+#: treadingsform.label3.caption
+msgctxt "TREADINGSFORM.LABEL3.CAPTION"
+msgid "Выбор порта"
+msgstr ""
+
+#: treadingsform.label4.caption
+msgid "Секунд по Х"
+msgstr ""
+
+#: treadingsform.label5.caption
+msgid "Ось Х"
+msgstr ""
+
+#: treadingsform.label6.caption
+msgid "Константа времени"
+msgstr ""
+
+#: treadingsform.label7.caption
+msgid "Чувствительность"
+msgstr ""
+
+#: treadingsform.label8.caption
+msgctxt "TREADINGSFORM.LABEL8.CAPTION"
+msgid "Таймаут, мс"
+msgstr ""
+
+#: treadingsform.label9.caption
+msgid "Дисплей 1"
+msgstr ""
+
+#: treadingsform.serecvtimeout.hint
+msgctxt "TREADINGSFORM.SERECVTIMEOUT.HINT"
+msgid "Время ожидания ответа прибора"
+msgstr ""
+
