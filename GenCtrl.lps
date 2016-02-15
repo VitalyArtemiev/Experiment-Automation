@@ -6,9 +6,10 @@
     <BuildModes Active="Release"/>
     <Units Count="29">
       <Unit0>
-        <Filename Value="project1.lpr"/>
+        <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="8" Y="3"/>
+        <IsVisibleTab Value="True"/>
+        <CursorPos X="16"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -47,7 +48,6 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="StepF"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="8"/>
         <TopLine Value="212"/>
         <CursorPos X="57" Y="235"/>
@@ -154,7 +154,7 @@
         <Loaded Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="C:\Lazarus\lcl\forms.pp"/>
+        <Filename Value="..\..\lcl\forms.pp"/>
         <UnitName Value="Forms"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="584"/>
@@ -169,14 +169,14 @@
         <UsageCount Value="96"/>
       </Unit13>
       <Unit14>
-        <Filename Value="C:\Lazarus\fpc\2.6.4\source\rtl\objpas\classes\classesh.inc"/>
+        <Filename Value="..\..\fpc\2.6.4\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1576"/>
         <CursorPos X="15" Y="1597"/>
         <UsageCount Value="61"/>
       </Unit14>
       <Unit15>
-        <Filename Value="C:\Lazarus\lcl\controls.pp"/>
+        <Filename Value="..\..\lcl\controls.pp"/>
         <UnitName Value="Controls"/>
         <EditorIndex Value="6"/>
         <TopLine Value="134"/>
@@ -185,7 +185,7 @@
         <Loaded Value="True"/>
       </Unit15>
       <Unit16>
-        <Filename Value="C:\Lazarus\components\tachart\taseries.pas"/>
+        <Filename Value="..\..\components\tachart\taseries.pas"/>
         <UnitName Value="TASeries"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="184"/>
@@ -193,7 +193,7 @@
         <UsageCount Value="43"/>
       </Unit16>
       <Unit17>
-        <Filename Value="C:\Lazarus\lcl\extctrls.pp"/>
+        <Filename Value="..\..\lcl\extctrls.pp"/>
         <UnitName Value="ExtCtrls"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="753"/>
@@ -201,21 +201,21 @@
         <UsageCount Value="44"/>
       </Unit17>
       <Unit18>
-        <Filename Value="C:\Lazarus\lcl\interfaces\win32\win32object.inc"/>
+        <Filename Value="..\..\lcl\interfaces\win32\win32object.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="344"/>
         <CursorPos Y="367"/>
         <UsageCount Value="43"/>
       </Unit18>
       <Unit19>
-        <Filename Value="C:\Lazarus\lcl\include\application.inc"/>
+        <Filename Value="..\..\lcl\include\application.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2150"/>
         <CursorPos X="3" Y="2158"/>
         <UsageCount Value="88"/>
       </Unit19>
       <Unit20>
-        <Filename Value="C:\Lazarus\components\tachart\tasources.pas"/>
+        <Filename Value="..\..\components\tachart\tasources.pas"/>
         <UnitName Value="TASources"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="902"/>
@@ -223,42 +223,42 @@
         <UsageCount Value="116"/>
       </Unit20>
       <Unit21>
-        <Filename Value="C:\Lazarus\fpc\2.6.4\source\rtl\inc\objpash.inc"/>
+        <Filename Value="..\..\fpc\2.6.4\source\rtl\inc\objpash.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="168"/>
         <CursorPos X="23" Y="192"/>
         <UsageCount Value="97"/>
       </Unit21>
       <Unit22>
-        <Filename Value="C:\Lazarus\fpc\2.6.4\source\rtl\inc\objpas.inc"/>
+        <Filename Value="..\..\fpc\2.6.4\source\rtl\inc\objpas.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="265"/>
         <CursorPos X="9" Y="267"/>
         <UsageCount Value="97"/>
       </Unit22>
       <Unit23>
-        <Filename Value="C:\Lazarus\fpc\2.6.4\source\rtl\inc\systemh.inc"/>
+        <Filename Value="..\..\fpc\2.6.4\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="342"/>
         <CursorPos X="3" Y="366"/>
         <UsageCount Value="51"/>
       </Unit23>
       <Unit24>
-        <Filename Value="C:\Lazarus\lcl\include\wincontrol.inc"/>
+        <Filename Value="..\..\lcl\include\wincontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4353"/>
         <CursorPos X="3" Y="4355"/>
         <UsageCount Value="39"/>
       </Unit24>
       <Unit25>
-        <Filename Value="C:\Lazarus\lcl\include\control.inc"/>
+        <Filename Value="..\..\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4336"/>
         <CursorPos X="3" Y="4341"/>
         <UsageCount Value="39"/>
       </Unit25>
       <Unit26>
-        <Filename Value="C:\Lazarus\lcl\stdctrls.pp"/>
+        <Filename Value="..\..\lcl\stdctrls.pp"/>
         <UnitName Value="StdCtrls"/>
         <EditorIndex Value="5"/>
         <TopLine Value="1476"/>
@@ -275,7 +275,7 @@
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit27>
       <Unit28>
-        <Filename Value="C:\Lazarus\lcl\include\customform.inc"/>
+        <Filename Value="..\..\lcl\include\customform.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2191"/>
         <CursorPos X="3" Y="2196"/>

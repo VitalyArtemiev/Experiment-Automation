@@ -121,7 +121,7 @@
     </RequiredPackages>
     <Units Count="12">
       <Unit0>
-        <Filename Value="project1.lpr"/>
+        <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
