@@ -201,6 +201,7 @@
         <Filename Value="aboutf.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="AboutForm"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="AboutF"/>
       </Unit12>

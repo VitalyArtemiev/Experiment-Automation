@@ -9,7 +9,8 @@
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos X="14" Y="3"/>
+        <TopLine Value="6"/>
+        <CursorPos X="16" Y="8"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -20,9 +21,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainF"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="160"/>
-        <CursorPos X="49" Y="177"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="22"/>
+        <CursorPos X="28" Y="199"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -34,7 +35,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MemoF"/>
-        <EditorIndex Value="14"/>
+        <EditorIndex Value="11"/>
         <TopLine Value="10"/>
         <CursorPos X="18" Y="35"/>
         <UsageCount Value="300"/>
@@ -48,7 +49,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="StepF"/>
-        <EditorIndex Value="10"/>
+        <EditorIndex Value="7"/>
         <TopLine Value="212"/>
         <CursorPos X="57" Y="235"/>
         <UsageCount Value="203"/>
@@ -62,9 +63,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="OptionF"/>
-        <EditorIndex Value="9"/>
+        <EditorIndex Value="6"/>
         <TopLine Value="107"/>
-        <CursorPos X="76" Y="109"/>
+        <CursorPos X="15" Y="111"/>
         <UsageCount Value="251"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -76,7 +77,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ReadingsF"/>
-        <EditorIndex Value="4"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="378"/>
         <CursorPos X="70" Y="414"/>
         <UsageCount Value="208"/>
@@ -95,7 +96,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="CustomCommandF"/>
-        <EditorIndex Value="13"/>
+        <EditorIndex Value="10"/>
         <TopLine Value="56"/>
         <CursorPos X="78" Y="58"/>
         <UsageCount Value="292"/>
@@ -109,8 +110,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="StatusF"/>
-        <EditorIndex Value="6"/>
-        <TopLine Value="34"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="144"/>
         <CursorPos X="79" Y="41"/>
         <UsageCount Value="210"/>
         <Loaded Value="True"/>
@@ -120,7 +121,7 @@
         <Filename Value="genconst.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GenConst"/>
-        <EditorIndex Value="11"/>
+        <EditorIndex Value="8"/>
         <CursorPos X="16" Y="41"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -129,7 +130,7 @@
         <Filename Value="detconst.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="DetConst"/>
-        <EditorIndex Value="12"/>
+        <EditorIndex Value="9"/>
         <CursorPos X="13" Y="7"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -137,7 +138,7 @@
       <Unit10>
         <Filename Value="serconf.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="4"/>
         <TopLine Value="8"/>
         <CursorPos X="18" Y="34"/>
         <UsageCount Value="203"/>
@@ -147,150 +148,148 @@
         <Filename Value="axissource.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="AxisSource"/>
-        <EditorIndex Value="15"/>
+        <EditorIndex Value="12"/>
         <TopLine Value="5"/>
         <CursorPos X="6" Y="37"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit11>
       <Unit12>
-        <Filename Value="..\..\lcl\forms.pp"/>
-        <UnitName Value="Forms"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="86"/>
+        <Filename Value="aboutf.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="AboutForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="AboutF"/>
+        <EditorIndex Value="2"/>
+        <CursorPos X="32" Y="29"/>
+        <UsageCount Value="27"/>
         <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit12>
       <Unit13>
+        <Filename Value="..\..\lcl\forms.pp"/>
+        <UnitName Value="Forms"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="86"/>
+      </Unit13>
+      <Unit14>
         <Filename Value="..\..\2.6.4\units\i386-win32\synapse\source\lib\synaser.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="984"/>
         <CursorPos X="3" Y="1008"/>
         <UsageCount Value="95"/>
-      </Unit13>
-      <Unit14>
+      </Unit14>
+      <Unit15>
         <Filename Value="..\..\fpc\2.6.4\source\rtl\objpas\classes\classesh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1576"/>
         <CursorPos X="15" Y="1597"/>
         <UsageCount Value="60"/>
-      </Unit14>
-      <Unit15>
+      </Unit15>
+      <Unit16>
         <Filename Value="..\..\lcl\controls.pp"/>
         <UnitName Value="Controls"/>
-        <EditorIndex Value="8"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="134"/>
         <CursorPos X="3" Y="161"/>
         <UsageCount Value="58"/>
-        <Loaded Value="True"/>
-      </Unit15>
-      <Unit16>
+      </Unit16>
+      <Unit17>
         <Filename Value="..\..\components\tachart\taseries.pas"/>
         <UnitName Value="TASeries"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="184"/>
         <CursorPos X="3" Y="181"/>
         <UsageCount Value="42"/>
-      </Unit16>
-      <Unit17>
+      </Unit17>
+      <Unit18>
         <Filename Value="..\..\lcl\extctrls.pp"/>
         <UnitName Value="ExtCtrls"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="753"/>
         <CursorPos X="3" Y="744"/>
         <UsageCount Value="43"/>
-      </Unit17>
-      <Unit18>
+      </Unit18>
+      <Unit19>
         <Filename Value="..\..\lcl\interfaces\win32\win32object.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="344"/>
         <CursorPos Y="367"/>
         <UsageCount Value="42"/>
-      </Unit18>
-      <Unit19>
+      </Unit19>
+      <Unit20>
         <Filename Value="..\..\lcl\include\application.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2150"/>
         <CursorPos X="3" Y="2158"/>
         <UsageCount Value="87"/>
-      </Unit19>
-      <Unit20>
+      </Unit20>
+      <Unit21>
         <Filename Value="..\..\components\tachart\tasources.pas"/>
         <UnitName Value="TASources"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="902"/>
         <CursorPos X="3" Y="904"/>
         <UsageCount Value="115"/>
-      </Unit20>
-      <Unit21>
+      </Unit21>
+      <Unit22>
         <Filename Value="..\..\fpc\2.6.4\source\rtl\inc\objpash.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="168"/>
         <CursorPos X="23" Y="192"/>
         <UsageCount Value="96"/>
-      </Unit21>
-      <Unit22>
+      </Unit22>
+      <Unit23>
         <Filename Value="..\..\fpc\2.6.4\source\rtl\inc\objpas.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="265"/>
         <CursorPos X="9" Y="267"/>
         <UsageCount Value="96"/>
-      </Unit22>
-      <Unit23>
+      </Unit23>
+      <Unit24>
         <Filename Value="..\..\fpc\2.6.4\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="342"/>
         <CursorPos X="3" Y="366"/>
         <UsageCount Value="50"/>
-      </Unit23>
-      <Unit24>
+      </Unit24>
+      <Unit25>
         <Filename Value="..\..\lcl\include\wincontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4353"/>
         <CursorPos X="3" Y="4355"/>
         <UsageCount Value="38"/>
-      </Unit24>
-      <Unit25>
+      </Unit25>
+      <Unit26>
         <Filename Value="..\..\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="4336"/>
         <CursorPos X="3" Y="4341"/>
         <UsageCount Value="38"/>
-      </Unit25>
-      <Unit26>
+      </Unit26>
+      <Unit27>
         <Filename Value="..\..\lcl\stdctrls.pp"/>
         <UnitName Value="StdCtrls"/>
-        <EditorIndex Value="7"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="1476"/>
         <CursorPos X="14" Y="1502"/>
         <UsageCount Value="100"/>
-        <Loaded Value="True"/>
-      </Unit26>
-      <Unit27>
+      </Unit27>
+      <Unit28>
         <Filename Value="statusf.lfm"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="112"/>
         <CursorPos X="18" Y="30"/>
         <UsageCount Value="8"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
-      </Unit27>
-      <Unit28>
+      </Unit28>
+      <Unit29>
         <Filename Value="..\..\lcl\include\customform.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2191"/>
         <CursorPos X="3" Y="2196"/>
         <UsageCount Value="9"/>
-      </Unit28>
-      <Unit29>
-        <Filename Value="aboutf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="AboutForm"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="AboutF"/>
-        <EditorIndex Value="3"/>
-        <CursorPos X="32" Y="29"/>
-        <UsageCount Value="26"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit29>
       <Unit30>
         <Filename Value="..\..\lcl\clipbrd.pp"/>

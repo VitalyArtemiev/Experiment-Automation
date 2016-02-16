@@ -32,8 +32,8 @@ uses
 {$R *.res}
 
 begin
-  Application.Title:='Generator Control';
-  RequireDerivedFormResource := True;
+  Application.Title:= 'Generator Control';
+  RequireDerivedFormResource:= True;
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TMemoForm, MemoForm);
