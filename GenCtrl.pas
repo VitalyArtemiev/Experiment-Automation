@@ -27,8 +27,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, {tachartlazaruspkg,} MainF, memof, stepf, optionf, ReadingsF,
-  CustomCommandF, StatusF, GenConst, DetConst, serconf, AxisSource, AboutF;
+  Forms, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
+  GenConst, DetConst, serconf, AxisSource, AboutF, DeviceF;
 
 {$R *.res}
 
@@ -46,6 +46,7 @@ begin
   Application.MainFormOnTaskBar:= true;
   Application.CreateForm(TStatusForm, StatusForm);
   Application.CreateForm(TAboutForm, AboutForm);
+  Application.CreateForm(TDeviceForm, DeviceForm);
   Application.Run;
 end.
 

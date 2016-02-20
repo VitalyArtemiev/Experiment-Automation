@@ -1,12 +1,12 @@
 object ReadingsForm: TReadingsForm
-  Left = 612
+  Left = 297
   Height = 600
-  Top = 353
+  Top = 424
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
-  ClientHeight = 600
-  ClientWidth = 800
+  ClientHeight = 0
+  ClientWidth = 0
   Constraints.MinHeight = 600
   Constraints.MinWidth = 800
   OnCloseQuery = FormCloseQuery
@@ -17,8 +17,8 @@ object ReadingsForm: TReadingsForm
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 577
-    Width = 800
+    Top = -23
+    Width = 0
     Panels = <    
       item
         Width = 50
@@ -28,9 +28,9 @@ object ReadingsForm: TReadingsForm
     AnchorSideLeft.Control = cbTimeConstant
     AnchorSideTop.Control = cbTimeConstant
     AnchorSideTop.Side = asrBottom
-    Left = 662
+    Left = -138
     Height = 23
-    Top = 486
+    Top = -114
     Width = 130
     BorderSpacing.Top = 8
     Enabled = False
@@ -62,9 +62,9 @@ object ReadingsForm: TReadingsForm
     AnchorSideTop.Control = cbReserve
     AnchorSideTop.Side = asrBottom
     AnchorSideBottom.Control = StatusBar1
-    Left = 682
+    Left = -118
     Height = 22
-    Top = 548
+    Top = -52
     Width = 91
     BorderSpacing.Top = 8
     BorderSpacing.Bottom = 8
@@ -78,7 +78,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = Label13
     AnchorSideTop.Side = asrBottom
-    Left = 662
+    Left = -138
     Height = 23
     Top = 208
     Width = 130
@@ -113,9 +113,9 @@ object ReadingsForm: TReadingsForm
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideBottom.Control = pnGraphControl
     Left = 8
-    Height = 339
+    Height = 0
     Top = 108
-    Width = 638
+    Width = 0
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 8
@@ -126,11 +126,11 @@ object ReadingsForm: TReadingsForm
     object PairSplitterSide1: TPairSplitterSide
       Cursor = crArrow
       Left = 0
-      Height = 339
+      Height = 0
       Top = 0
       Width = 323
       ClientWidth = 323
-      ClientHeight = 339
+      ClientHeight = 0
       Constraints.MinWidth = 290
       object Chart1: TChart
         AnchorSideLeft.Control = PairSplitterSide1
@@ -140,7 +140,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = cbChart1Show
         Left = 0
-        Height = 293
+        Height = 0
         Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для просмотра'#13#10'Сброс - выделение вверх'
         Top = 23
         Width = 323
@@ -187,7 +187,7 @@ object ReadingsForm: TReadingsForm
         Left = 100
         Height = 23
         Hint = 'Что отображается на графике 1'
-        Top = 316
+        Top = -23
         Width = 100
         Anchors = [akLeft, akBottom]
         ItemHeight = 15
@@ -216,7 +216,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideRight.Control = cbChart1Show
         Left = 0
         Height = 15
-        Top = 316
+        Top = -23
         Width = 92
         BorderSpacing.Right = 8
         Caption = 'График 1 - Ось Y'
@@ -292,12 +292,12 @@ object ReadingsForm: TReadingsForm
     end
     object PairSplitterSide2: TPairSplitterSide
       Cursor = crArrow
-      Left = 328
-      Height = 339
+      Left = 0
+      Height = 0
       Top = 0
-      Width = 310
-      ClientWidth = 310
-      ClientHeight = 339
+      Width = 290
+      ClientWidth = 290
+      ClientHeight = 0
       Constraints.MinWidth = 290
       object Chart2: TChart
         AnchorSideLeft.Control = PairSplitterSide2
@@ -307,10 +307,10 @@ object ReadingsForm: TReadingsForm
         AnchorSideRight.Side = asrBottom
         AnchorSideBottom.Control = cbChart2Show
         Left = 0
-        Height = 293
+        Height = 0
         Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для просмотра'#13#10'Сброс - выделение вверх'
         Top = 23
-        Width = 310
+        Width = 290
         AxisList = <        
           item
             Minors = <>
@@ -353,7 +353,7 @@ object ReadingsForm: TReadingsForm
         Left = 100
         Height = 23
         Hint = 'Что отображается на графике 2'
-        Top = 316
+        Top = -23
         Width = 100
         Anchors = [akLeft, akBottom]
         ItemHeight = 15
@@ -382,7 +382,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideRight.Control = cbChart2Show
         Left = 0
         Height = 15
-        Top = 316
+        Top = -23
         Width = 92
         BorderSpacing.Right = 8
         Caption = 'График 2 - Ось Y'
@@ -427,7 +427,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideTop.Control = cbCh2
         AnchorSideRight.Control = Chart2
         AnchorSideRight.Side = asrBottom
-        Left = 236
+        Left = 216
         Height = 23
         Top = 0
         Width = 74
@@ -446,7 +446,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideLeft.Control = Label13
         AnchorSideTop.Control = cbRatio2
         AnchorSideRight.Control = cbRatio2
-        Left = 158
+        Left = 138
         Height = 15
         Top = 0
         Width = 74
@@ -463,7 +463,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 662
+    Left = -138
     Height = 23
     Hint = 'Использовать команду TRCL (быстрее, внутренний'#13#10'буфер, снимаются параметры только с Ch1 и Ch2),'#13#10'либо команду SNAP (снятие от 2 до 6 параметров в'#13#10'один момент времени)'
     Top = 127
@@ -486,9 +486,9 @@ object ReadingsForm: TReadingsForm
   object cbTimeConstant: TComboBox
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = pnGraphControl
-    Left = 662
+    Left = -138
     Height = 23
-    Top = 455
+    Top = -145
     Width = 130
     Enabled = False
     ItemHeight = 15
@@ -522,7 +522,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideRight.Side = asrBottom
-    Left = 662
+    Left = -138
     Height = 222
     Top = 181
     Width = 130
@@ -564,7 +564,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = cbReadingsMode
     AnchorSideTop.Side = asrBottom
-    Left = 662
+    Left = -138
     Height = 19
     Hint = 'Брать значение частоты входного сигнала с генератора'#13#10'(не всегда совпадает со значением на входе детектора)'
     Top = 158
@@ -580,9 +580,9 @@ object ReadingsForm: TReadingsForm
     AnchorSideTop.Control = cbTimeConstant
     AnchorSideRight.Control = PairSplitter1
     AnchorSideRight.Side = asrBottom
-    Left = 539
+    Left = -99
     Height = 15
-    Top = 455
+    Top = -145
     Width = 107
     Anchors = [akTop, akRight]
     Caption = 'Константа времени'
@@ -593,9 +593,9 @@ object ReadingsForm: TReadingsForm
   object Label7: TLabel
     AnchorSideLeft.Control = Label6
     AnchorSideTop.Control = cbSensitivity
-    Left = 539
+    Left = -99
     Height = 15
-    Top = 486
+    Top = -114
     Width = 99
     Caption = 'Чувствительность'
     Color = clWhite
@@ -771,7 +771,7 @@ object ReadingsForm: TReadingsForm
   object Label1: TLabel
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = PairSplitter1
-    Left = 662
+    Left = -138
     Height = 15
     Top = 108
     Width = 78
@@ -782,7 +782,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideLeft.Control = Label1
     AnchorSideTop.Control = cbUseGenFreq
     AnchorSideTop.Side = asrBottom
-    Left = 662
+    Left = -138
     Height = 15
     Top = 185
     Width = 87
@@ -795,7 +795,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideBottom.Control = StatusBar1
     Left = 4
     Height = 118
-    Top = 455
+    Top = -145
     Width = 350
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 4
@@ -965,9 +965,9 @@ object ReadingsForm: TReadingsForm
   object Label16: TLabel
     AnchorSideLeft.Control = Label6
     AnchorSideTop.Control = cbReserve
-    Left = 539
+    Left = -99
     Height = 15
-    Top = 517
+    Top = -83
     Width = 65
     Caption = 'Дин. резерв'
     Color = clWhite
@@ -979,7 +979,7 @@ object ReadingsForm: TReadingsForm
     AnchorSideTop.Side = asrBottom
     Left = 662
     Height = 23
-    Top = 517
+    Top = -83
     Width = 130
     BorderSpacing.Top = 8
     ItemHeight = 15

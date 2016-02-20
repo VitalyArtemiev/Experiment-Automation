@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 104
+  Left = 350
   Height = 600
-  Top = 273
+  Top = 174
   Width = 524
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -17,7 +17,7 @@ object MainForm: TMainForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   ShowInTaskBar = stAlways
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '1.4.4.0'
   object cbPortSelect: TComboBox
     AnchorSideLeft.Control = Label3
     AnchorSideLeft.Side = asrBottom
@@ -158,15 +158,15 @@ object MainForm: TMainForm
     Height = 192
     Top = 325
     Width = 402
-    ActivePage = TabSheet3
+    ActivePage = TabSheet2
     BorderSpacing.Left = 12
     BorderSpacing.Top = 24
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 7
     object TabSheet1: TTabSheet
       Caption = 'Постоянная частота'
       ClientHeight = 164
-      ClientWidth = 422
+      ClientWidth = 394
       object FrequencyReading: TLabel
         AnchorSideLeft.Control = eFrequency
         AnchorSideLeft.Side = asrBottom
