@@ -13,8 +13,10 @@ type
   tAxisSource = class
     Count, Capacity: longword;
     Values: array of double;
-    constructor Create(InitialCap: longword);
+
+    constructor Create(InitialCap: longword = 4);
     destructor Destroy; override;
+
     procedure Add(v: double);
     procedure Clear;
   end;

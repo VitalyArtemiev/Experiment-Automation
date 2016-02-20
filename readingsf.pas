@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
   TATransformations, TADbSource, Forms, Controls, Graphics,
-  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, synaser,
+  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, synaser,
   MainF, SerConF, TACustomSource, AxisSource;
 
 type
@@ -52,6 +52,7 @@ type
     ChartToolset1PanDragTool1: TPanDragTool;
     ChartToolset1ZoomDragTool1: TZoomDragTool;
     ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
+    cbReserve: TComboBox;
 
     eAxisLimit: TFloatSpinEdit;
     Label1: TLabel;
@@ -61,11 +62,14 @@ type
     Label13: TLabel;
     Label14: TLabel;
     Label15: TLabel;
+    Label16: TLabel;
     Label2: TLabel;
+
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
+
     Label9: TLabel;
 
     PairSplitter1: TPairSplitter;

@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 754
+  Left = 612
   Height = 600
-  Top = 185
+  Top = 353
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
@@ -13,7 +13,7 @@ object ReadingsForm: TReadingsForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ShowInTaskBar = stAlways
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.6.0.4'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
@@ -59,14 +59,14 @@ object ReadingsForm: TReadingsForm
   object btApply: TButton
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideLeft.Side = asrCenter
-    AnchorSideTop.Control = cbSensitivity
+    AnchorSideTop.Control = cbReserve
     AnchorSideTop.Side = asrBottom
     AnchorSideBottom.Control = StatusBar1
     Left = 682
     Height = 22
-    Top = 525
+    Top = 548
     Width = 91
-    BorderSpacing.Top = 16
+    BorderSpacing.Top = 8
     BorderSpacing.Bottom = 8
     Caption = 'Применить'
     Default = True
@@ -961,6 +961,30 @@ object ReadingsForm: TReadingsForm
       ShowHint = True
       TabOrder = 6
     end
+  end
+  object Label16: TLabel
+    AnchorSideLeft.Control = Label6
+    AnchorSideTop.Control = cbReserve
+    Left = 539
+    Height = 15
+    Top = 517
+    Width = 65
+    Caption = 'Дин. резерв'
+    Color = clWhite
+    ParentColor = False
+    Transparent = False
+  end
+  object cbReserve: TComboBox
+    AnchorSideTop.Control = cbSensitivity
+    AnchorSideTop.Side = asrBottom
+    Left = 662
+    Height = 23
+    Top = 517
+    Width = 130
+    BorderSpacing.Top = 8
+    ItemHeight = 15
+    TabOrder = 11
+    Text = 'cbReserve'
   end
   object ChartToolset1: TChartToolset
     left = 376

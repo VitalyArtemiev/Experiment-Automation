@@ -264,7 +264,7 @@ begin
         ShowMessage('Ошибка' + SerPort.LastErrorDesc);
         SerPort.CloseSocket;
         SerPort.RaiseExcept:= true;
-        exit
+        exit(-1)
       end;
 
         InitDevice;

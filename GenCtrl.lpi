@@ -72,7 +72,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib"/>
+            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
