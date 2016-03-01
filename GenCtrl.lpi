@@ -20,6 +20,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
       <MinorVersionNr Value="8"/>
+      <BuildNr Value="1"/>
       <Language Value="0419"/>
       <StringTable LegalCopyright="Виталий Артемьев, кафедра Фотоники МФТИ" OriginalFilename="Generator Control" ProductVersion=""/>
     </VersionInfo>
@@ -34,7 +35,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib"/>
+            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -117,7 +118,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="14">
+    <Units Count="15">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -213,6 +214,10 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="DeviceF"/>
       </Unit13>
+      <Unit14>
+        <Filename Value="synapse\source\lib\dnssend.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit14>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -223,7 +228,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib"/>
+      <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

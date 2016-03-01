@@ -6,9 +6,14 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  ValEdit, Buttons, StdCtrls, ComCtrls, Spin;
+  Buttons, StdCtrls, ComCtrls; { TODO 2 -cImprovement : check out valedit }
 
 type
+  eHeaderRow = (
+    hModel, hManufacturer, hInterface, hParSeparator,
+    hCommSeparator, hTerminator, hBaudRate, hDataBits, hStopBits, hParity,
+    hHandShake, hInitString, hTimeOut, hMinDelay
+                );
 
   { TDeviceForm }
 
@@ -19,6 +24,7 @@ type
     btSaveToFile: TButton;
     btLoadFromFile: TButton;
     btSetDefaultFile: TButton;
+    btDone: TButton;
     cbHandshake: TComboBox;
     cbParity: TComboBox;
     cbStopBits: TComboBox;
@@ -38,18 +44,26 @@ type
     procedure btAddDeviceClick(Sender: TObject);
     procedure btApplyClick(Sender: TObject);
     procedure btDeleteDeviceClick(Sender: TObject);
+    procedure btDoneClick(Sender: TObject);
     procedure btLoadFromFileClick(Sender: TObject);
     procedure btSaveToFileClick(Sender: TObject);
+    procedure btSetDefaultFileClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure pcDeviceChange(Sender: TObject);
     procedure sgGenCommandsSelection(Sender: TObject; aCol, aRow: Integer);
   private
     { private declarations }
     CurrColumn: integer;  //stringgrid.row
+    CurrGenFileName, CurrDetFileName: string;
     sg: tStringGrid;
   public
     { public declarations }
   end;
+
+const
+  DefaultGen = 'DefaultGenCommands.xml';
+  DefaultDet = 'DefaultDetCommands.xml';
 
 var
   DeviceForm: TDeviceForm;
@@ -59,7 +73,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType;
+  LCLType, MainF, OptionF;
 
 const
   StopBitsRow = 8;
@@ -84,6 +98,7 @@ end;
 
 procedure TDeviceForm.btApplyClick(Sender: TObject);
 begin
+  if CurrColumn < 0 then exit;
   with sg do
   begin
     Cells[CurrColumn, StopBitsRow]:= cbStopBits.Text;
@@ -105,55 +120,113 @@ begin
     sg.DeleteCol(CurrColumn);
 end;
 
+procedure TDeviceForm.btDoneClick(Sender: TObject);
+begin
+  OptionForm.GetOptions;
+  Close;
+end;
+
 procedure TDeviceForm.btLoadFromFileClick(Sender: TObject);
-var
-  s: string;
 begin
   with OpenDialog do
   begin
     case pcDevice.TabIndex of
-        0: FileName:= 'DefaultGenCommands';
-        1: FileName:= 'DefaultDetCommands';
+      0: FileName:= DefaultGen;
+      1: FileName:= DefaultDet;
     end;
     Title:= 'Загрузить файл устройств';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
     if Execute then
     begin
-      s:= UTF8toANSI(FileName); //  проверить на доп символы
-      if s <> '' then sg.LoadFromFile(s);
+      case pcDevice.TabIndex of
+        0: begin
+             CurrGenFileName:= UTF8toANSI(FileName); //  проверить на доп символы
+             if FileExists(CurrGenFileName) then
+             with sg do
+             begin
+                { TODO 3 -cBug : how to clear }
+                //sg.Clean;
+               LoadFromFile(CurrGenFileName);
+             end;
+           end;
+        1: begin
+             CurrDetFileName:= UTF8toANSI(FileName);
+             if FileExists(CurrDetFileName) then
+             with sg do
+             begin
+                { TODO 3 -cBug : how to clear }
+                //sg.Clean;
+               LoadFromFile(CurrDetFileName);
+             end;
+           end;
+      end;
     end;
   end;
 end;
 
 procedure TDeviceForm.btSaveToFileClick(Sender: TObject);
-var
-  s: string;
 begin
   with SaveDialog do
   begin
     case pcDevice.TabIndex of
-        0: FileName:= 'DefaultGenCommands';
-        1: FileName:= 'DefaultDetCommands';
+      0: FileName:= 'DefaultGenCommands';
+      1: FileName:= 'DefaultDetCommands';
     end;
 
     Title:= 'Сохранить файл устройств как';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
     if Execute then
     begin
-      s:= UTF8toANSI(FileName);
-      if s <> '' then sg.SaveToFile(s);
+      case pcDevice.TabIndex of
+        0: begin
+             CurrGenFileName:= UTF8toANSI(FileName); //  проверить на доп символы
+             if CurrGenFileName <> '' then sg.SaveToFile(CurrGenFileName);
+           end;
+        1: begin
+             CurrDetFileName:= UTF8toANSI(FileName);
+             if CurrDetFileName <> '' then sg.SaveToFile(CurrDetFileName);
+           end;
+      end;
     end;
   end;
 end;
 
+procedure TDeviceForm.btSetDefaultFileClick(Sender: TObject);
+begin
+  case pcDevice.TabIndex of
+    0: if CurrGenFileName <> '' then
+         Config.DefaultGens:= CurrGenFileName;
+    1: if CurrDetFileName <> '' then
+         Config.DefaultDets:= CurrDetFileName;
+  end;
+end;
+
+procedure TDeviceForm.FormCreate(Sender: TObject);
+begin
+  if FileExists(Config.DefaultGens) then
+    sgGenCommands.LoadFromFile(Config.DefaultGens)
+  else
+  if Config.DefaultGens <> DefaultGen then
+    ShowMessage('Не найден файл ' + Config.DefaultGens);
+
+  if FileExists(Config.DefaultDets) then
+    sgDetCommands.LoadFromFile(Config.DefaultDets)
+  else
+  if Config.DefaultDets <> DefaultDet then
+    ShowMessage('Не найден файл ' + Config.DefaultDets);
+end;
+
 procedure TDeviceForm.FormShow(Sender: TObject);
 begin
+  CurrGenFileName:= '';
+  CurrDetFileName:= '';
   CurrColumn:= -1;
   pcDeviceChange(Self);
 end;
 
 procedure TDeviceForm.pcDeviceChange(Sender: TObject);
 begin
+  CurrColumn:= -1;
   case pcDevice.TabIndex of
       0: sg:= sgGenCommands;
       1: sg:= sgDetCommands;

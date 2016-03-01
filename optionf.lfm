@@ -1,7 +1,7 @@
 object OptionForm: TOptionForm
-  Left = 959
+  Left = 543
   Height = 350
-  Top = 389
+  Top = 584
   Width = 350
   BorderStyle = bsToolWindow
   Caption = 'Настройки'
@@ -11,7 +11,7 @@ object OptionForm: TOptionForm
   Constraints.MinWidth = 350
   OnCloseQuery = FormCloseQuery
   OnShow = FormShow
-  LCLVersion = '1.6.0.4'
+  LCLVersion = '1.4.4.0'
   object btSave: TButton
     AnchorSideLeft.Control = btCancel
     AnchorSideLeft.Side = asrBottom
@@ -206,10 +206,10 @@ object OptionForm: TOptionForm
         Height = 251
         Top = 33
         Width = 342
-        ActivePage = GenTab
+        ActivePage = DetTab
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 4
-        TabIndex = 0
+        TabIndex = 1
         TabOrder = 0
         object GenTab: TTabSheet
           AnchorSideTop.Side = asrBottom
@@ -234,7 +234,7 @@ object OptionForm: TOptionForm
             AnchorSideTop.Side = asrBottom
             Left = 4
             Height = 15
-            Top = 187
+            Top = 117
             Width = 151
             BorderSpacing.Top = 20
             Caption = 'Рукопожатие (подтв. связи)'
@@ -242,10 +242,11 @@ object OptionForm: TOptionForm
           end
           object Label4: TLabel
             AnchorSideLeft.Control = Label6
+            AnchorSideTop.Control = Label1
             AnchorSideTop.Side = asrBottom
             Left = 4
             Height = 15
-            Top = 152
+            Top = 82
             Width = 53
             BorderSpacing.Top = 20
             Caption = 'Парность'
@@ -264,10 +265,11 @@ object OptionForm: TOptionForm
             ParentColor = False
           end
           object cbHandshake: TComboBox
+            AnchorSideLeft.Control = eDevice
             AnchorSideTop.Control = Label5
             Left = 206
             Height = 23
-            Top = 187
+            Top = 117
             Width = 120
             ItemHeight = 15
             Items.Strings = (
@@ -280,10 +282,11 @@ object OptionForm: TOptionForm
             Text = 'cbHandshake'
           end
           object cbParity: TComboBox
+            AnchorSideLeft.Control = eDevice
             AnchorSideTop.Control = Label4
             Left = 206
             Height = 23
-            Top = 152
+            Top = 82
             Width = 120
             ItemHeight = 15
             Items.Strings = (
@@ -297,6 +300,7 @@ object OptionForm: TOptionForm
             Text = 'cbParity'
           end
           object eBaudRate: TSpinEdit
+            AnchorSideLeft.Control = eDevice
             AnchorSideTop.Control = Label1
             Left = 206
             Height = 23
@@ -308,7 +312,7 @@ object OptionForm: TOptionForm
             TabOrder = 2
             Value = 9600
           end
-          object eDeviceName: TComboBox
+          object eDevice: TComboBox
             AnchorSideTop.Control = Label6
             AnchorSideRight.Control = GenTab
             AnchorSideRight.Side = asrBottom
@@ -319,93 +323,54 @@ object OptionForm: TOptionForm
             Anchors = [akTop, akRight]
             BorderSpacing.Right = 8
             ItemHeight = 15
+            OnChange = eDeviceChange
             TabOrder = 3
-            Text = 'eDeviceName'
+            Text = 'eDevice'
           end
         end
         object DetTab: TTabSheet
           Caption = 'Детектор'
-          ClientHeight = 254
+          ClientHeight = 223
           ClientWidth = 334
-          object eBaudRate1: TSpinEdit
-            AnchorSideLeft.Control = eDeviceName1
-            AnchorSideTop.Control = Label8
-            Left = 206
-            Height = 23
-            Top = 47
-            Width = 120
-            Increment = 1200
-            MaxValue = 4000000
-            MinValue = 50
-            TabOrder = 0
-            Value = 9600
-          end
-          object eDataBits1: TSpinEdit
-            AnchorSideLeft.Control = eDeviceName1
-            AnchorSideTop.Control = Label9
-            Left = 206
-            Height = 23
-            Top = 82
-            Width = 120
-            MaxValue = 1024
-            MinValue = 1
-            TabOrder = 1
-            Value = 8
-          end
-          object cbStopBits1: TComboBox
-            AnchorSideLeft.Control = eDeviceName1
-            AnchorSideTop.Control = Label10
-            Left = 206
-            Height = 23
-            Top = 117
-            Width = 120
-            ItemHeight = 15
-            Items.Strings = (
-              '1'
-              '1,5 (2 при передаче, 1 при приёме)'
-              '2'
-            )
-            TabOrder = 2
-            Text = 'cbStopBits1'
-          end
-          object cbParity1: TComboBox
-            AnchorSideLeft.Control = eDeviceName1
-            AnchorSideTop.Control = Label11
-            Left = 206
-            Height = 23
-            Top = 152
-            Width = 120
-            ItemHeight = 15
-            Items.Strings = (
-              'Отсутствует'
-              'Нечетная'
-              'Четная'
-              'Всегда 1 (неиспользуемый бит)'
-              'Всегда 0 (неиспользуемый бит)'
-            )
-            TabOrder = 3
-            Text = 'cbParity1'
-          end
-          object cbHandshake1: TComboBox
-            AnchorSideLeft.Control = eDeviceName1
-            AnchorSideTop.Control = Label12
-            Left = 206
-            Height = 23
-            Top = 187
-            Width = 120
-            ItemHeight = 15
-            Items.Strings = (
-              'Отсутствует'
-              'Программное'
-              'Аппаратное'
-              'Программное + аппаратное'
-            )
-            TabOrder = 4
-            Text = 'cbHandshake1'
-          end
           object Label8: TLabel
-            AnchorSideLeft.Control = Label13
-            AnchorSideTop.Control = Label13
+            AnchorSideLeft.Control = DetTab
+            AnchorSideTop.Control = DetTab
+            Left = 4
+            Height = 15
+            Top = 12
+            Width = 44
+            BorderSpacing.Left = 4
+            BorderSpacing.Top = 12
+            Caption = 'Прибор'
+            ParentColor = False
+          end
+          object Label9: TLabel
+            AnchorSideLeft.Control = Label8
+            AnchorSideTop.Control = Label10
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 117
+            Width = 151
+            BorderSpacing.Top = 20
+            Caption = 'Рукопожатие (подтв. связи)'
+            ParentColor = False
+          end
+          object Label10: TLabel
+            AnchorSideLeft.Control = Label8
+            AnchorSideTop.Control = Label2
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 82
+            Width = 53
+            BorderSpacing.Top = 20
+            Caption = 'Парность'
+            ParentColor = False
+          end
+          object Label2: TLabel
+            AnchorSideLeft.Control = Label8
+            AnchorSideTop.Control = Label8
             AnchorSideTop.Side = asrBottom
             Left = 4
             Height = 15
@@ -415,68 +380,56 @@ object OptionForm: TOptionForm
             Caption = 'Бод-частота (символов в секунду)'
             ParentColor = False
           end
-          object Label9: TLabel
-            AnchorSideLeft.Control = Label13
-            AnchorSideTop.Control = Label8
-            AnchorSideTop.Side = asrBottom
-            Left = 4
-            Height = 15
-            Top = 82
-            Width = 71
-            BorderSpacing.Top = 20
-            Caption = 'Биты данных'
-            ParentColor = False
-          end
-          object Label10: TLabel
-            AnchorSideLeft.Control = Label13
+          object cbHandshake1: TComboBox
+            AnchorSideLeft.Control = eDevice1
             AnchorSideTop.Control = Label9
-            AnchorSideTop.Side = asrBottom
-            Left = 4
-            Height = 15
+            Left = 206
+            Height = 23
             Top = 117
-            Width = 60
-            BorderSpacing.Top = 20
-            Caption = 'Стоп-биты'
-            ParentColor = False
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              'Отсутствует'
+              'Программное'
+              'Аппаратное'
+              'Программное + аппаратное'
+            )
+            TabOrder = 0
+            Text = 'cbHandshake1'
           end
-          object Label11: TLabel
-            AnchorSideLeft.Control = Label13
+          object cbParity1: TComboBox
+            AnchorSideLeft.Control = eDevice1
             AnchorSideTop.Control = Label10
-            AnchorSideTop.Side = asrBottom
-            Left = 4
-            Height = 15
-            Top = 152
-            Width = 53
-            BorderSpacing.Top = 20
-            Caption = 'Парность'
-            ParentColor = False
+            Left = 206
+            Height = 23
+            Top = 82
+            Width = 120
+            ItemHeight = 15
+            Items.Strings = (
+              'Отсутствует'
+              'Нечетная'
+              'Четная'
+              'Всегда 1 (неиспользуемый бит)'
+              'Всегда 0 (неиспользуемый бит)'
+            )
+            TabOrder = 1
+            Text = 'cbParity1'
           end
-          object Label12: TLabel
-            AnchorSideLeft.Control = Label13
-            AnchorSideTop.Control = Label11
-            AnchorSideTop.Side = asrBottom
-            Left = 4
-            Height = 15
-            Top = 187
-            Width = 151
-            BorderSpacing.Top = 20
-            Caption = 'Рукопожатие (подтв. связи)'
-            ParentColor = False
+          object eBaudRate1: TSpinEdit
+            AnchorSideLeft.Control = eDevice1
+            AnchorSideTop.Control = Label2
+            Left = 206
+            Height = 23
+            Top = 47
+            Width = 120
+            Increment = 1200
+            MaxValue = 4000000
+            MinValue = 50
+            TabOrder = 2
+            Value = 9600
           end
-          object Label13: TLabel
-            AnchorSideLeft.Control = DetTab
-            AnchorSideTop.Control = DetTab
-            Left = 4
-            Height = 15
-            Top = 12
-            Width = 193
-            BorderSpacing.Left = 4
-            BorderSpacing.Top = 12
-            Caption = 'Модель прибора (ответ на "*IDN?")'
-            ParentColor = False
-          end
-          object eDeviceName1: TEdit
-            AnchorSideTop.Control = Label13
+          object eDevice1: TComboBox
+            AnchorSideTop.Control = Label8
             AnchorSideRight.Control = DetTab
             AnchorSideRight.Side = asrBottom
             Left = 206
@@ -485,30 +438,10 @@ object OptionForm: TOptionForm
             Width = 120
             Anchors = [akTop, akRight]
             BorderSpacing.Right = 8
-            TabOrder = 5
-            Text = 'eDeviceName1'
-          end
-          object Label15: TLabel
-            AnchorSideLeft.Control = Label13
-            AnchorSideTop.Control = Label12
-            AnchorSideTop.Side = asrBottom
-            Left = 4
-            Height = 15
-            Top = 222
-            Width = 160
-            BorderSpacing.Top = 20
-            Caption = 'Команда для инициализации'
-            ParentColor = False
-          end
-          object eInitCommand1: TEdit
-            AnchorSideLeft.Control = eDeviceName1
-            AnchorSideTop.Control = Label15
-            Left = 206
-            Height = 23
-            Top = 222
-            Width = 120
-            TabOrder = 6
-            Text = 'eInitCommand1'
+            ItemHeight = 15
+            OnChange = eDevice1Change
+            TabOrder = 3
+            Text = 'eDevice1'
           end
         end
       end

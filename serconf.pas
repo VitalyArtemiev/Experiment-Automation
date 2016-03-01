@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons,
-  Dialogs, synaser, StatusF, CustomCommandF;
+  Dialogs, Grids, synaser, StatusF, CustomCommandF;
 
 type
   ConnectAction = (ANo, AQuery, AReset);
@@ -14,21 +14,21 @@ type
   tSSA = array of ansistring;
   pSSA = ^tSSA;
 
-  RConfig = record
-    DefaultParams: ansistring;
+  rConfig = record
+    DefaultParams, DefaultGens, DefaultDets: shortstring;
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
     AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
   end;
 
-  RConnectParams = record
+  rConnectParams = record
     Device, Port, InitString: shortstring;
     Parity, StopBits: byte;
     SoftFlow, HardFlow: boolean;
     BaudRate, DataBits, Timeout: longword;
   end;
 
-  RParams = record
+  rParams = record
     Amplitude, Offset, Frequency, SweepStartF, SweepStopF, SweepRate, StepStartF,
       StepStopF, StepF, StepStartA, StepStopA, StepA, AxisLimit: double;
     Impedance, AmpUnit, SweepType, SweepDir, SampleRate, TimeConstant, Sensitivity,
@@ -36,26 +36,26 @@ type
     ACOn, AutoSweep, GenFreq, OnePoint: boolean;
     TransferPars: array [1..11] of boolean;
     CurrFunc, UpdateInterval, ReadingTime, TimeStep, Delay: longint;
-    GeneratorCP, DetectorCP: RConnectParams;
+    GeneratorPort, DetectorPort, LastGenerator, LastDetector: shortstring;
   end;
 
   tDevice = record   //device to each tserconform so that get rid of commcs
-    Manufacturer, Model: shortstring;
+    Manufacturer, Model: string;
     Commands: tSSA;
     ParSeparator, CommSeparator, Terminator: string;
   end;
 
-  tUnits =       (
-                  NOUNIT, VP,   VR
-                  );
+  tUnits = (
+    NOUNIT, VP,   VR
+            );
 
   tCommonCommand = (
-                    RST, IDN, RCL, SAV, TST, CAL, CLS, STB, SRE, ESR, ESE, PSC , TRG
+    RST, IDN, RCL, SAV, TST, CAL, CLS, STB, SRE, ESR, ESE, PSC, TRG
                     );
 
   { TSerConnectForm }
 
-  TSerConnectForm = class(TForm)
+  tSerConnectForm = class(tForm)
     btApply: TButton;
     btnConnect: TButton;
     btnDisconnect: TButton;
@@ -82,15 +82,18 @@ type
   private
     fTimeOuts: longword;
     procedure SetTOE(AValue: longword);
+
   public
     CommCS: TRTLCriticalSection;
     SerPort: TBlockSerial;
     ConnectParams: RConnectParams;
     CommandString, PresumedDevice, CurrentDevice: shortstring;
     DeviceIndex: longint;
+    SupportedDevices: array of tDevice;
 
     property TimeOutErrors: longword read fTimeOuts write SetTOE;
 
+    procedure GetSupportedDevices(sg: tStringGrid);
     procedure InitDevice;
     function Connect: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
@@ -105,8 +108,10 @@ type
   procedure WriteProgramLog(Log: string);
   function strf(x: double): string;
   function strf(x: longint): string;
+  function valf(s: string): integer;
 
 const
+  SGHeaderLength = 16; //кол-во строк в tStringGrid, не относящ. к командам
   sUnits: array[0..2] of shortstring =   (
                   '', 'VP', 'VR'
                   );
@@ -132,6 +137,11 @@ end;
 function strf(x: longint): string;
 begin
   str(x, Result);
+end;
+
+function valf(s: string): integer;
+begin
+  val(s, Result);
 end;
 
 procedure WriteProgramLog(Log: string);
@@ -210,10 +220,35 @@ begin
   fTimeOuts:= AValue;
 end;
 
+procedure TSerConnectForm.GetSupportedDevices(sg: tStringGrid);
+var
+  i, j: integer;
+begin
+  with sg do
+  begin
+    setlength(SupportedDevices, ColCount); //0th is defdevice
+    //idefdev
+    for i:= 1 to high(SupportedDevices) do
+    begin
+      with SupportedDevices[i] do
+      begin
+        Manufacturer:= sg.Cells[i, 1];
+        Model:= Cells[i, 0];
+        CommSeparator:= Cells[i, 0];
+        ParSeparator:= Cells[i, 0];
+        Terminator:= Cells[i, 0];
+        setlength(Commands, RowCount - SGHeaderLength);
+        for j:= 0 to RowCount - SGHeaderLength  - 1 do
+          Commands[j]:= Cells[i, j + SGHeaderLength];
+      end;
+    end;
+  end;
+end;
+
 procedure TSerConnectForm.InitDevice;
 var
   s, t: string;
-  i: word;
+  i: integer;
 begin
   s:= ConnectParams.InitString;
   if s = '' then exit;
@@ -234,7 +269,7 @@ end;
 function TSerConnectForm.Connect: longint;
 var
   P: char;
-  i: longint;
+  i: integer;
 begin
   if cbPortSelect.ItemIndex >= 0 then
   begin
@@ -430,7 +465,7 @@ begin
   begin
     SerPort.RaiseExcept:= false;
     Result:= SerPort.RecvString(ConnectParams.Timeout);
-    SerPort.RaiseExcept:= false;
+    SerPort.RaiseExcept:= true;
 
     writeprogramlog('Получена строка ' + Result);
 

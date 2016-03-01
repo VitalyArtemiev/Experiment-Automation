@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 350
+  Left = 323
   Height = 600
-  Top = 174
+  Top = 114
   Width = 524
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]

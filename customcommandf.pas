@@ -130,9 +130,12 @@ var
   i: longint;
 begin
   cbCommands.Clear;
-  i:= TSerConnectForm(Form).DeviceIndex;
+  with TSerConnectForm(Form)do
+  begin
+    i:= DeviceIndex;
     cbCommands.Items.AddStrings(SupportedDevices[i].Commands);
-    while cbCommands.Items[0] = '' do cbCommands.Items.Delete(0);
+  end;
+  while cbCommands.Items[0] = '' do cbCommands.Items.Delete(0);
 end;
 
 end.

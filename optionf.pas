@@ -20,23 +20,17 @@ type
     btDeviceList: TButton;
     cbHandshake1: TComboBox;
     cbParity1: TComboBox;
-    cbStopBits1: TComboBox;
     cgFiles: TCheckGroup;
     cbParity: TComboBox;
     cbHandshake: TComboBox;
     cgReadings: TCheckGroup;
     eBaudRate: TSpinEdit;
     eBaudRate1: TSpinEdit;
-    eDataBits1: TSpinEdit;
-    eDeviceName: TComboBox;
-    eDeviceName1: TEdit;
-    eInitCommand1: TEdit;
+    eDevice: TComboBox;
+    eDevice1: TComboBox;
     Label1: TLabel;
     Label10: TLabel;
-    Label11: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
-    Label15: TLabel;
+    Label2: TLabel;
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
@@ -56,6 +50,8 @@ type
     procedure btDefaultsClick(Sender: TObject);
     procedure btDeviceListClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
+    procedure eDevice1Change(Sender: TObject);
+    procedure eDeviceChange(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
   private
@@ -90,6 +86,38 @@ begin
   OptionForm.Close;
 end;
 
+procedure TOptionForm.eDeviceChange(Sender: TObject);
+var
+  s: string;
+begin
+  with DeviceForm.sgGenCommands do
+  begin
+    eBaudRate.Value:= valf(Cells[eDevice.ItemIndex + 1, longint(hBaudRate)]);
+
+    s:= Cells[eDevice.ItemIndex + 1, longint(hParity)];
+    cbParity.ItemIndex:= DeviceForm.cbParity.Items.IndexOf(s);
+
+    s:= Cells[eDevice.ItemIndex + 1, longint(hHandShake)];
+    cbHandShake.ItemIndex:= DeviceForm.cbHandShake.Items.IndexOf(s);
+  end;
+end;
+
+procedure TOptionForm.eDevice1Change(Sender: TObject);
+var
+  s: string;
+begin
+  with DeviceForm.sgDetCommands do
+  begin
+    eBaudRate1.Value:= valf(Cells[eDevice1.ItemIndex + 1, longint(hBaudRate)]);
+
+    s:= Cells[eDevice1.ItemIndex + 1, longint(hParity)];
+    cbParity1.ItemIndex:= DeviceForm.cbParity.Items.IndexOf(s);
+
+    s:= Cells[eDevice1.ItemIndex + 1, longint(hHandShake)];
+    cbHandShake1.ItemIndex:= DeviceForm.cbHandShake.Items.IndexOf(s);
+  end;
+end;
+
 procedure TOptionForm.btConfDirClick(Sender: TObject);
 begin
   MainForm.OpenDialog.FileName:= Config.DefaultParams;
@@ -112,7 +140,7 @@ end;
 
 procedure TOptionForm.btDeviceListClick(Sender: TObject);
 begin
-  DeviceForm.Show;
+  DeviceForm.ShowModal;  { TODO 2 -cBug : fix hiding forms }
 end;
 
 procedure TOptionForm.btCancelClick(Sender: TObject);
@@ -133,6 +161,9 @@ begin
 end;
 
 procedure TOptionForm.GetOptions;
+var
+  i: integer;
+  PreviousDevice: string;
 begin
   with Config do
   begin
@@ -149,15 +180,27 @@ begin
     {showmessage(DefaultParams);}                 //!!!!!!!!!!1
     NewDefaultParams:= DefaultParams;
   end;
-  with MainForm, Mainform.ConnectParams do
+
+  with DeviceForm do
+  begin
+    eDevice.Clear;
+    for i:= 1 to sgGenCommands.ColCount - 1 do
+      eDevice.AddItem(sgGenCommands.Cells[i, 0], nil);
+
+    eDevice1.Clear;
+    for i:= 1 to sgDetCommands.ColCount - 1 do
+      eDevice1.AddItem(sgDetCommands.Cells[i, 0], nil);
+  end;
+
+  with MainForm, Mainform.ConnectParams, eDevice do
   begin
     if CurrentDevice <> '' then
-      eDeviceName.Text:= CurrentDevice          //!!!???
+      ItemIndex:= Items.IndexOf(CurrentDevice)          //!!!???
     else
-      eDeviceName.Text:= PresumedDevice;
+      ItemIndex:= Items.IndexOf(PresumedDevice);
+    if ItemIndex < 0 then ItemIndex:= 0;
+
     eBaudRate.Value:= BaudRate;
-    //eDataBits.Value:= Databits;
-    //cbStopBits.ItemIndex:= StopBits;
     cbParity.ItemIndex:= Parity;
     if not (SoftFlow or HardFlow) then cbHandShake.ItemIndex:= 0
     else
@@ -167,15 +210,15 @@ begin
     else cbHandShake.ItemIndex:= 2;
     //eInitCommand.Text:= InitString;
   end;
-  with ReadingsForm, ReadingsForm.ConnectParams do
+  with ReadingsForm, ReadingsForm.ConnectParams, eDevice1 do
   begin
     if CurrentDevice <> '' then
-      eDeviceName1.Text:= CurrentDevice
+      ItemIndex:= Items.IndexOf(CurrentDevice)          //!!!???
     else
-      eDeviceName1.Text:= PresumedDevice;
+      ItemIndex:= Items.IndexOf(PresumedDevice);
+    if ItemIndex < 0 then ItemIndex:= 0;
+
     eBaudRate1.Value:= BaudRate;
-    eDataBits1.Value:= Databits;
-    cbStopBits1.ItemIndex:= StopBits;
     cbParity1.ItemIndex:= Parity;
     if not (SoftFlow or HardFlow) then cbHandShake1.ItemIndex:= 0
     else
@@ -183,11 +226,15 @@ begin
     else
     if SoftFlow then cbHandShake1.ItemIndex:= 1
     else cbHandShake1.ItemIndex:= 2;
-    eInitCommand1.Text:= InitString;
   end;
+
+  eDeviceChange(Self);
+  eDevice1Change(Self);
 end;
 
 procedure TOptionForm.SaveOptions;
+var
+  s: string;
 begin
   with Config do
   begin
@@ -205,12 +252,15 @@ begin
     OnConnect:= ConnectAction(rgOnConnect.ItemIndex);
   end;
 
-  with MainForm, Mainform.ConnectParams do
+  with MainForm, Mainform.ConnectParams, DeviceForm.sgGenCommands do
   begin
-    PresumedDevice:= eDeviceName.Text;
+    PresumedDevice:= eDevice.Text;
     BaudRate:= eBaudRate.Value;
-    //Databits:= eDataBits.Value;
-    //StopBits:= cbStopBits.ItemIndex;
+    Databits:= valf(Cells[eDevice.ItemIndex , longint(hDataBits)]);
+
+    s:= Cells[eDevice.ItemIndex + 1, longint(hStopBits)];
+    StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
+
     Parity:= cbParity.ItemIndex;
     Timeout:= seRecvTimeOut.Value;
     case cbHandShake.ItemIndex of
@@ -234,12 +284,15 @@ begin
     //InitString:= eInitCommand.Text;
   end;
 
-  with ReadingsForm, ReadingsForm.ConnectParams do
+  with ReadingsForm, ReadingsForm.ConnectParams, DeviceForm.sgDetCommands do
   begin
-    PresumedDevice:= eDeviceName1.Text;
-    BaudRate:= eBaudRate1.Value;
-    Databits:= eDataBits1.Value;
-    StopBits:= cbStopBits1.ItemIndex;
+    PresumedDevice:= eDevice1.Text;
+    BaudRate:= eBaudRate.Value;
+    Databits:= valf(Cells[eDevice.ItemIndex + 1, longint(hDataBits)]);
+
+    s:= Cells[eDevice.ItemIndex + 1, longint(hStopBits)];
+    StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
+
     Parity:= cbParity1.ItemIndex;
     Timeout:= seRecvTimeOut.Value;
     case cbHandShake1.ItemIndex of
@@ -260,7 +313,7 @@ begin
            HardFlow:= true;
          end;
     end;
-    InitString:= eInitCommand1.Text;
+   // InitString:= eInitCommand1.Text;
   end;
 end;
 

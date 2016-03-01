@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <grid version="3">
+    <saveoptions create="False" position="False" content="True"/>
+    <content>
+      <cells cellcount="115">
+        <cell1 column="0" row="0" text="Модель"/>
+        <cell2 column="0" row="1" text="Изготовитель"/>
+        <cell3 column="0" row="2" text="Интерфейс"/>
+        <cell4 column="0" row="3" text="Разделитель параметров"/>
+        <cell5 column="0" row="4" text="Разделитель команд"/>
+        <cell6 column="0" row="5" text="Терминатор"/>
+        <cell7 column="0" row="6" text="Baud rate"/>
+        <cell8 column="0" row="7" text="Биты данных"/>
+        <cell9 column="0" row="8" text="Стор-биты"/>
+        <cell10 column="0" row="9" text="Парность"/>
+        <cell11 column="0" row="10" text="Handshake"/>
+        <cell12 column="0" row="11" text="Строка инициализации"/>
+        <cell13 column="0" row="12" text="Таймаут"/>
+        <cell14 column="0" row="13" text="Мин. задержка при передаче"/>
+        <cell15 column="0" row="15" text="Команды:"/>
+        <cell16 column="0" row="16" text="Сброс"/>
+        <cell17 column="0" row="17" text="Идентификация"/>
+        <cell18 column="0" row="18" text="Загрузить профиль"/>
+        <cell19 column="0" row="19" text="Сохранить профиль"/>
+        <cell20 column="0" row="20" text="Проверка"/>
+        <cell21 column="0" row="21" text="Калибровка"/>
+        <cell22 column="0" row="22" text="Очистить статус"/>
+        <cell23 column="0" row="23" text="Байт опроса STB"/>
+        <cell24 column="0" row="24" text="Байт слежения за STB"/>
+        <cell25 column="0" row="25" text="Байт стд. событий ESR"/>
+        <cell26 column="0" row="26" text="Байт слежения за ESR"/>
+        <cell27 column="0" row="27" text="Байт DDS"/>
+        <cell28 column="0" row="28" text="Байт слежения за DDS"/>
+        <cell29 column="0" row="29" text="Сброс статуса при включении PSC"/>
+        <cell30 column="0" row="30" text="Триггер"/>
+        <cell31 column="0" row="31" text="Перезагрузка"/>
+        <cell32 column="0" row="33" text="Сопротивление"/>
+        <cell33 column="0" row="34" text="Функция"/>
+        <cell34 column="0" row="35" text="Амплитуда"/>
+        <cell35 column="0" row="36" text="Смещение"/>
+        <cell36 column="0" row="37" text="Постоянная частота"/>
+        <cell37 column="0" row="38" text="Источник сканирования"/>
+        <cell38 column="0" row="39" text="Сканирование вкл/выкл"/>
+        <cell39 column="0" row="40" text="Частота сканирования"/>
+        <cell40 column="0" row="41" text="Начальная частота"/>
+        <cell41 column="0" row="42" text="Конечная частота"/>
+        <cell42 column="0" row="43" text="Тип сканирования"/>
+        <cell43 column="0" row="44" text="Направление сканирования"/>
+        <cell44 column="1" row="0" text="DS345"/>
+        <cell45 column="1" row="1" text="StanfordResearchSystems"/>
+        <cell46 column="1" row="2" text="RS232"/>
+        <cell47 column="1" row="3" text=","/>
+        <cell48 column="1" row="4" text=";"/>
+        <cell49 column="1" row="5" text="CR"/>
+        <cell50 column="1" row="6" text="9600"/>
+        <cell51 column="1" row="7" text="8"/>
+        <cell52 column="1" row="8" text="2"/>
+        <cell53 column="1" row="9" text="Отсутствует"/>
+        <cell54 column="1" row="10" text="Аппаратное"/>
+        <cell55 column="1" row="12" text="300"/>
+        <cell56 column="1" row="13" text="140"/>
+        <cell57 column="1" row="16" text="*RST"/>
+        <cell58 column="1" row="17" text="*IDN"/>
+        <cell59 column="1" row="18" text="*RCL"/>
+        <cell60 column="1" row="19" text="*SAV"/>
+        <cell61 column="1" row="20" text="*TST"/>
+        <cell62 column="1" row="21" text="*CAL"/>
+        <cell63 column="1" row="22" text="*CLS"/>
+        <cell64 column="1" row="23" text="*STB"/>
+        <cell65 column="1" row="24" text="*SRE"/>
+        <cell66 column="1" row="25" text="*ESR"/>
+        <cell67 column="1" row="26" text="*ESE"/>
+        <cell68 column="1" row="27" text="STAT"/>
+        <cell69 column="1" row="28" text="DENA"/>
+        <cell70 column="1" row="29" text="*PSC"/>
+        <cell71 column="1" row="30" text="*TRG"/>
+        <cell72 column="1" row="34" text="FUNC"/>
+        <cell73 column="1" row="35" text="AMPL"/>
+        <cell74 column="1" row="36" text="OFFS"/>
+        <cell75 column="1" row="37" text="FREQ"/>
+        <cell76 column="1" row="38" text="FREQ"/>
+        <cell77 column="2" row="0" text="DS335"/>
+        <cell78 column="2" row="1" text="StanfordResearchSystems"/>
+        <cell79 column="2" row="2" text="RS232"/>
+        <cell80 column="2" row="3" text=","/>
+        <cell81 column="2" row="4" text=";"/>
+        <cell82 column="2" row="5" text="CR"/>
+        <cell83 column="2" row="6" text="9600"/>
+        <cell84 column="2" row="7" text="8"/>
+        <cell85 column="2" row="8" text="2"/>
+        <cell86 column="2" row="9" text="Отсутствует"/>
+        <cell87 column="2" row="10" text="Аппаратное"/>
+        <cell88 column="2" row="12" text="300"/>
+        <cell89 column="2" row="13" text="140"/>
+        <cell90 column="2" row="16" text="*RST"/>
+        <cell91 column="2" row="17" text="*IDN"/>
+        <cell92 column="2" row="18" text="*RCL"/>
+        <cell93 column="2" row="19" text="*SAV"/>
+        <cell94 column="2" row="20" text="*TST"/>
+        <cell95 column="2" row="22" text="*CLS"/>
+        <cell96 column="2" row="23" text="*STB"/>
+        <cell97 column="2" row="24" text="*SRE"/>
+        <cell98 column="2" row="25" text="*ESR"/>
+        <cell99 column="2" row="26" text="*ESE"/>
+        <cell100 column="2" row="27" text="STAT"/>
+        <cell101 column="2" row="28" text="DENA"/>
+        <cell102 column="2" row="29" text="*PSC"/>
+        <cell103 column="2" row="30" text="*TRG"/>
+        <cell104 column="2" row="33" text="TERM"/>
+        <cell105 column="2" row="34" text="FUNC"/>
+        <cell106 column="2" row="35" text="AMPL"/>
+        <cell107 column="2" row="36" text="OFFS"/>
+        <cell108 column="2" row="37" text="FREQ"/>
+        <cell109 column="2" row="38" text="TSRC"/>
+        <cell110 column="2" row="39" text="SWEN"/>
+        <cell111 column="2" row="40" text="SRAT"/>
+        <cell112 column="2" row="41" text="STFR"/>
+        <cell113 column="2" row="42" text="SPFR"/>
+        <cell114 column="2" row="43" text="STYP"/>
+        <cell115 column="2" row="44" text="SDIR"/>
+      </cells>
+    </content>
+  </grid>
+</CONFIG>

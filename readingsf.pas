@@ -13,13 +13,13 @@ uses
 type
   SR844Buffer = array[0..PointsInSR844Buffer - 1] of double;
   Buffer = array of double;
-  PBuffer = ^Buffer;
+  pBuffer = ^Buffer;
 
   tLogState = (lInActive, lActive, lPaused);
 
   { TReadingsThread }
 
-  TReadingsThread = class(TThread)
+  tReadingsThread = class(TThread)
     procedure Execute; override;
   private
     BuffByte1, BuffByte2: array [0..4 * (PointsInSR844Buffer - 1)] of byte;
@@ -28,7 +28,7 @@ type
 
   { TReadingsForm }
 
-  TReadingsForm = class(TSerConnectForm)
+  tReadingsForm = class(TSerConnectForm)
     btStartPauseLog: TButton;
     btStopLog: TButton;
     btClear: TButton;
@@ -108,6 +108,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure PairSplitter1Resize(Sender: TObject);
     procedure Source1GetChartDataItem(ASource: TUserDefinedChartSource;
       AIndex: Integer; var AItem: TChartDataItem);
@@ -188,9 +189,9 @@ type
     function CreateLog: string;
    // procedure UpdateLog;
     function RecvSnap(p1, p2: word; p3: word = 0;
-                                              p4: word = 0;
-                                              p5: word = 0;
-                                              p6: word = 0): PBuffer;
+                                    p4: word = 0;
+                                    p5: word = 0;
+                                    p6: word = 0): PBuffer;
     procedure ProcessBuffers;
   end;
 
@@ -200,7 +201,7 @@ var
 
 implementation
 
-uses Dateutils, math, stepf, optionf, DetConst;
+uses Dateutils, math, stepf, optionf, DetConst, DeviceF;
 
 { TReadingsThread }
 
@@ -455,8 +456,8 @@ begin
   LogTime:= true;
   LogAmpl:= false;
 
-  SupportedDevices[iSR844].Commands:= SR844Command;
-  SupportedDevices[iSR830].Commands:= SR830Command;
+  {SupportedDevices[iSR844].Commands:= SR844Command;
+  SupportedDevices[iSR830].Commands:= SR830Command; }
   for i:= 0 to PortCount - 1 do
     cbPortSelect.AddItem(MainForm.cbPortSelect.Items[i], nil);
 
@@ -468,7 +469,6 @@ begin
   InitCriticalSection(TimeCS);
   InitCriticalSection(OPSCS);
   InitCriticalSection(RTDCS);
-  Show;
 end;
 
 procedure TReadingsForm.FormDestroy(Sender: TObject);
@@ -485,6 +485,11 @@ begin
   DoneCriticalSection(TimeCS);
   DoneCriticalSection(OPSCS);
   DoneCriticalSection(RTDCS);
+end;
+
+procedure TReadingsForm.FormShow(Sender: TObject);
+begin
+  GetSupportedDevices(DeviceForm.sgDetCommands);
 end;
 
 procedure TReadingsForm.PairSplitter1Resize(Sender: TObject);

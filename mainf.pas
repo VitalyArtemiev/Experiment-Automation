@@ -6,12 +6,13 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons, Synaser, SerConF;
+  StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons, Synaser, SerConF,
+  DeviceF;
 
 type
   { TMainForm }
 
-  TMainForm = class(TSerConnectForm)
+  tMainForm = class(TSerConnectForm)
     btProgram: TSpeedButton;
 
     btTrigger: TButton;
@@ -166,14 +167,14 @@ const
   iSR844 = 3;
   iSR830 = 4;
 
-  SupportedDevices: array [0..4] of tDevice =
+  {SupportedDevices: array [0..4] of tDevice =
     (
      (Manufacturer: '';                          Model: '';      Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
      (Manufacturer: 'StanfordResearchSystems';   Model: 'DS345'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
      (Manufacturer: 'StanfordResearchSystems';   Model: 'DS335'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
      (Manufacturer: 'Stanford_Research_Systems'; Model: 'SR844'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
      (Manufacturer: 'Stanford_Research_Systems'; Model: 'SR830'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR)
-     );
+     );   }
     { TODO 3 -cFeature : Custom device support }
   PointsInSR844Buffer = 16383;
 
@@ -202,7 +203,7 @@ var
 implementation
 
 uses
-  Math, MemoF, StepF, OptionF, ReadingsF, AboutF, Variants, GenConst;
+  Math, Variants, GenConst, MemoF, StepF, OptionF, ReadingsF, AboutF;
 
 {$R *.lfm}
 
@@ -224,9 +225,8 @@ begin
   begin
     with Params do
     begin
-      cbPortSelect.Text:= GeneratorCP.Port;
-      seRecvTimeout.Value:= GeneratorCP.Timeout;
-      PresumedDevice:= GeneratorCP.Device;
+      cbPortSelect.Text:= GeneratorPort;
+      PresumedDevice:= LastGenerator;
 
       cbImpedance.ItemIndex:= Impedance;
       cbFuncSelect.ItemIndex:= CurrFunc;
@@ -256,11 +256,10 @@ begin
       eDelay.Value:= Delay;
 
 
-      with ReadingsForm, DetectorCP do
+      with ReadingsForm do
       begin
-        cbPortSelect.Text:= Port;
-        seRecvTimeout.Value:= Timeout;
-        PresumedDevice:= Device;
+        cbPortSelect.Text:= DetectorPort;
+        PresumedDevice:= LastDetector;
 
         cbReadingsMode.ItemIndex:= ReadingsMode;
         cbUseGenFreq.Checked:= GenFreq;
@@ -299,9 +298,8 @@ begin
     ShowMessage('Ошибка загрузки параметров. Код ошибки ' + s);
     with Params do
     begin
-      GeneratorCP.Port    := cbPortSelect.Text;
-      GeneratorCP.Timeout := seRecvTimeout.Value;
-      GeneratorCP.Device  := PresumedDevice;
+      GeneratorPort       := cbPortSelect.Text;
+      LastGenerator       := PresumedDevice;
       Impedance           := cbImpedance.ItemIndex;
       CurrFunc            := cbFuncSelect.ItemIndex;
       Amplitude           := eAmplitude.Value;
@@ -322,11 +320,10 @@ begin
       StepStopA           := eStepStopA.Value;
       TimeStep            := eTimeStep.Value;
 
-      with ReadingsForm, DetectorCP do
+      with ReadingsForm do
       begin
-        Port                := cbPortSelect.Text;
-        Timeout             := seRecvTimeout.Value;
-        Device              := PresumedDevice;
+        DetectorPort        := cbPortSelect.Text;
+        LastDetector        := PresumedDevice;
         ReadingsMode        := cbReadingsMode.ItemIndex;
         GenFreq             := cbUseGenFreq.Checked;
         SampleRate          := cbSampleRate.ItemIndex;
@@ -345,10 +342,13 @@ begin
     end;
   end;
 
-  MainForm.ConnectParams:= Params.GeneratorCP;
-  ReadingsForm.ConnectParams:= Params.DetectorCP;
-  MainForm.PresumedDevice:= Params.GeneratorCP.Device;
-  ReadingsForm.PresumedDevice:= Params.DetectorCP.Device;
+  { TODO 1 -cFeature : new proc to load connectparams }
+  //MainForm.ConnectParams:= Params.GeneratorCP;
+  //ReadingsForm.ConnectParams:= Params.DetectorCP;
+  MainForm.ConnectParams.Port:= Params.GeneratorPort;
+  ReadingsForm.ConnectParams.Port:= Params.DetectorPort;
+  MainForm.PresumedDevice:= Params.LastGenerator;
+  ReadingsForm.PresumedDevice:= Params.LastDetector;
 
   system.close(f);
   {$I+}
@@ -358,8 +358,10 @@ function TMainForm.SaveParams(FileName: ansistring): word;
 var
   f: file;
 begin
-  Params.GeneratorCP:= MainForm.ConnectParams;
-  Params.DetectorCP:= ReadingsForm.ConnectParams;
+  Params.GeneratorPort:= MainForm.ConnectParams.Port;
+  Params.LastGenerator:= MainForm.ConnectParams.Device;
+  Params.DetectorPort:= ReadingsForm.ConnectParams.Port;
+  Params.LastDetector:= ReadingsForm.ConnectParams.Device;
   system.assign(f, FileName);
   {$I-}
   rewrite(f, sizeof(RParams));
@@ -411,6 +413,11 @@ begin
   else LoadConfig:= 2;
   str(LoadConfig, s);
   if LoadConfig <> 0 then ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
+  if (LoadConfig <> 0) or (Config.DefaultGens = '') or (Config.DefaultDets = '') then
+  begin
+    Config.DefaultGens:= DefaultGen;
+    Config.DefaultDets:= DefaultDet;
+  end;
 end;
 
 function TMainForm.ExportParams(Manual: boolean; Header: boolean = false): word;
@@ -546,10 +553,10 @@ begin
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
   btCustomCommand.Caption:= 'Польз.' + LineEnding + 'команда';
 
-  SupportedDevices[iDefaultDevice].Commands:= CommonCommand;
+  {SupportedDevices[iDefaultDevice].Commands:= CommonCommand;
   SupportedDevices[iDS335].Commands:= DS335Command;
   SupportedDevices[iDS345].Commands:= DS345Command;
-  config.defaultparams:= defaultparams;
+  config.defaultparams:= defaultparams;  }
 
   //FrequencyTab.Color:= ;
   //:= TFileStream. Create;
@@ -575,7 +582,7 @@ begin
         if p = 0 then cbPortSelect.AddItem(PortList, nil)
         else
           begin
-            while p<>0 do
+            while p <> 0 do
             begin
               cbPortSelect.AddItem(copy(PortList, 1, p-1), nil);
               delete(PortList, 1, p);
@@ -586,6 +593,8 @@ begin
             inc(PortCount);
           end;
       end;
+
+  LoadConfig(DefaultConfig);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -1062,16 +1071,15 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  LoadConfig(DefaultConfig);
-
-  if not FileExists(Config.DefaultParams) then Config.DefaultParams:= DefaultParams; //strange filenames saved in config prolly on crash but maybe on recompile???
+  if not FileExists(Config.DefaultParams) then Config.DefaultParams:= DefaultParams;
   if Config.LoadParamsOnStart then LoadParams(Config.DefaultParams);
+
+  GetSupportedDevices(DeviceForm.sgGenCommands);
 
   cbImpedanceChange(Self);
   cbFuncSelectChange(Self);
   eStepChange(Self);
   ReadingsForm.cbReadingsModeChange(ReadingsForm);
-
 end;
 
 procedure TMainForm.btnConnectClick(Sender: TObject);
