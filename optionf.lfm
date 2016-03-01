@@ -1,7 +1,7 @@
 object OptionForm: TOptionForm
-  Left = 543
+  Left = 952
   Height = 350
-  Top = 584
+  Top = 241
   Width = 350
   BorderStyle = bsToolWindow
   Caption = 'Настройки'

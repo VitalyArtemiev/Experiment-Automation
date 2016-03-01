@@ -140,7 +140,7 @@ end;
 
 procedure TOptionForm.btDeviceListClick(Sender: TObject);
 begin
-  DeviceForm.ShowModal;  { TODO 2 -cBug : fix hiding forms }
+  DeviceForm.ShowModal;
 end;
 
 procedure TOptionForm.btCancelClick(Sender: TObject);

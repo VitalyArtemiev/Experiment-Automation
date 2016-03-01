@@ -891,7 +891,9 @@ object DeviceForm: TDeviceForm
     Width = 68
     BorderSpacing.Top = 20
     Caption = 'Терминатор'
+    Color = clWhite
     ParentColor = False
+    Transparent = False
   end
   object cbTerminator: TComboBox
     AnchorSideLeft.Control = cbStopBits
@@ -1009,7 +1011,9 @@ object DeviceForm: TDeviceForm
     Top = 130
     Width = 60
     Caption = 'Стоп-биты'
+    Color = clWhite
     ParentColor = False
+    Transparent = False
   end
   object Label4: TLabel
     AnchorSideLeft.Control = Label3
@@ -1021,7 +1025,9 @@ object DeviceForm: TDeviceForm
     Width = 53
     BorderSpacing.Top = 20
     Caption = 'Парность'
+    Color = clWhite
     ParentColor = False
+    Transparent = False
   end
   object Label5: TLabel
     AnchorSideLeft.Control = Label3
@@ -1033,7 +1039,9 @@ object DeviceForm: TDeviceForm
     Width = 59
     BorderSpacing.Top = 20
     Caption = 'Handshake'
+    Color = clWhite
     ParentColor = False
+    Transparent = False
   end
   object btAddDevice: TButton
     AnchorSideTop.Control = Label1

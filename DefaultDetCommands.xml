@@ -3,7 +3,7 @@
   <grid version="3">
     <saveoptions create="False" position="False" content="True"/>
     <content>
-      <cells cellcount="146">
+      <cells cellcount="129">
         <cell1 column="0" row="0" text="Модель"/>
         <cell2 column="0" row="1" text="Изготовитель"/>
         <cell3 column="0" row="2" text="Интерфейс"/>
@@ -133,23 +133,6 @@
         <cell127 column="3" row="10" text="Аппаратное"/>
         <cell128 column="3" row="11" text="192.168.1.1"/>
         <cell129 column="3" row="13" text="500"/>
-        <cell130 column="4" row="0" text="rtjfgnc"/>
-        <cell131 column="4" row="1" text="Stanford_Research_Systems"/>
-        <cell132 column="4" row="2" text="RS232"/>
-        <cell133 column="4" row="3" text=","/>
-        <cell134 column="4" row="4" text=";"/>
-        <cell135 column="4" row="5" text="CR"/>
-        <cell136 column="4" row="6" text="19200"/>
-        <cell137 column="4" row="7" text="8"/>
-        <cell138 column="4" row="8" text="1"/>
-        <cell139 column="4" row="9" text="Отсутствует"/>
-        <cell140 column="4" row="10" text="Аппаратное"/>
-        <cell141 column="4" row="12" text="OUTX0"/>
-        <cell142 column="4" row="13" text="800"/>
-        <cell143 column="4" row="16" text="*RST"/>
-        <cell144 column="4" row="17" text="*IDN"/>
-        <cell145 column="4" row="18" text="*RCL"/>
-        <cell146 column="4" row="19" text="*SAV"/>
       </cells>
     </content>
   </grid>

@@ -127,7 +127,7 @@ var
 implementation
 
 uses
-  GenConst, MainF, OptionF;
+  GenConst, MainF, DeviceF, OptionF;
 
 function strf(x: double): string;
 begin
@@ -232,11 +232,17 @@ begin
     begin
       with SupportedDevices[i] do
       begin
-        Manufacturer:= sg.Cells[i, 1];
-        Model:= Cells[i, 0];
-        CommSeparator:= Cells[i, 0];
-        ParSeparator:= Cells[i, 0];
-        Terminator:= Cells[i, 0];
+        Manufacturer:=  Cells[i, longint(hManufacturer)];
+        Model:=         Cells[i, longint(hModel)];
+        CommSeparator:= Cells[i, longint(hCommSeparator)];
+        ParSeparator:=  Cells[i, longint(hParSeparator)];
+
+        case Cells[i, longint(hTerminator)] of
+          'CR':   Terminator:= CR;
+          'LF':   Terminator:= LF;
+          'CRLF': Terminator:= CRLF;
+        end;
+
         setlength(Commands, RowCount - SGHeaderLength);
         for j:= 0 to RowCount - SGHeaderLength  - 1 do
           Commands[j]:= Cells[i, j + SGHeaderLength];

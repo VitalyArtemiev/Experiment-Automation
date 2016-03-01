@@ -4,49 +4,49 @@
     <saveoptions create="False" position="False" content="True"/>
     <content>
       <cells cellcount="115">
-        <cell1 column="0" row="0" text="ÐœÐ¾Ð´ÐµÐ»ÑŒ"/>
-        <cell2 column="0" row="1" text="Ð˜Ð·Ð³Ð¾Ñ‚Ð¾Ð²Ð¸Ñ‚ÐµÐ»ÑŒ"/>
-        <cell3 column="0" row="2" text="Ð˜Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹Ñ"/>
-        <cell4 column="0" row="3" text="Ð Ð°Ð·Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»ÑŒ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ð¾Ð²"/>
-        <cell5 column="0" row="4" text="Ð Ð°Ð·Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»ÑŒ ÐºÐ¾Ð¼Ð°Ð½Ð´"/>
-        <cell6 column="0" row="5" text="Ð¢ÐµÑ€Ð¼Ð¸Ð½Ð°Ñ‚Ð¾Ñ€"/>
+        <cell1 column="0" row="0" text="Ìîäåëü"/>
+        <cell2 column="0" row="1" text="Èçãîòîâèòåëü"/>
+        <cell3 column="0" row="2" text="Èíòåðôåéñ"/>
+        <cell4 column="0" row="3" text="Ðàçäåëèòåëü ïàðàìåòðîâ"/>
+        <cell5 column="0" row="4" text="Ðàçäåëèòåëü êîìàíä"/>
+        <cell6 column="0" row="5" text="Òåðìèíàòîð"/>
         <cell7 column="0" row="6" text="Baud rate"/>
-        <cell8 column="0" row="7" text="Ð‘Ð¸Ñ‚Ñ‹ Ð´Ð°Ð½Ð½Ñ‹Ñ…"/>
-        <cell9 column="0" row="8" text="Ð¡Ñ‚Ð¾Ñ€-Ð±Ð¸Ñ‚Ñ‹"/>
-        <cell10 column="0" row="9" text="ÐŸÐ°Ñ€Ð½Ð¾ÑÑ‚ÑŒ"/>
+        <cell8 column="0" row="7" text="Áèòû äàííûõ"/>
+        <cell9 column="0" row="8" text="Ñòîð-áèòû"/>
+        <cell10 column="0" row="9" text="Ïàðíîñòü"/>
         <cell11 column="0" row="10" text="Handshake"/>
-        <cell12 column="0" row="11" text="Ð¡Ñ‚Ñ€Ð¾ÐºÐ° Ð¸Ð½Ð¸Ñ†Ð¸Ð°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ð¸"/>
-        <cell13 column="0" row="12" text="Ð¢Ð°Ð¹Ð¼Ð°ÑƒÑ‚"/>
-        <cell14 column="0" row="13" text="ÐœÐ¸Ð½. Ð·Ð°Ð´ÐµÑ€Ð¶ÐºÐ° Ð¿Ñ€Ð¸ Ð¿ÐµÑ€ÐµÐ´Ð°Ñ‡Ðµ"/>
-        <cell15 column="0" row="15" text="ÐšÐ¾Ð¼Ð°Ð½Ð´Ñ‹:"/>
-        <cell16 column="0" row="16" text="Ð¡Ð±Ñ€Ð¾Ñ"/>
-        <cell17 column="0" row="17" text="Ð˜Ð´ÐµÐ½Ñ‚Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ"/>
-        <cell18 column="0" row="18" text="Ð—Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚ÑŒ Ð¿Ñ€Ð¾Ñ„Ð¸Ð»ÑŒ"/>
-        <cell19 column="0" row="19" text="Ð¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ Ð¿Ñ€Ð¾Ñ„Ð¸Ð»ÑŒ"/>
-        <cell20 column="0" row="20" text="ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ°"/>
-        <cell21 column="0" row="21" text="ÐšÐ°Ð»Ð¸Ð±Ñ€Ð¾Ð²ÐºÐ°"/>
-        <cell22 column="0" row="22" text="ÐžÑ‡Ð¸ÑÑ‚Ð¸Ñ‚ÑŒ ÑÑ‚Ð°Ñ‚ÑƒÑ"/>
-        <cell23 column="0" row="23" text="Ð‘Ð°Ð¹Ñ‚ Ð¾Ð¿Ñ€Ð¾ÑÐ° STB"/>
-        <cell24 column="0" row="24" text="Ð‘Ð°Ð¹Ñ‚ ÑÐ»ÐµÐ¶ÐµÐ½Ð¸Ñ Ð·Ð° STB"/>
-        <cell25 column="0" row="25" text="Ð‘Ð°Ð¹Ñ‚ ÑÑ‚Ð´. ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ð¹ ESR"/>
-        <cell26 column="0" row="26" text="Ð‘Ð°Ð¹Ñ‚ ÑÐ»ÐµÐ¶ÐµÐ½Ð¸Ñ Ð·Ð° ESR"/>
-        <cell27 column="0" row="27" text="Ð‘Ð°Ð¹Ñ‚ DDS"/>
-        <cell28 column="0" row="28" text="Ð‘Ð°Ð¹Ñ‚ ÑÐ»ÐµÐ¶ÐµÐ½Ð¸Ñ Ð·Ð° DDS"/>
-        <cell29 column="0" row="29" text="Ð¡Ð±Ñ€Ð¾Ñ ÑÑ‚Ð°Ñ‚ÑƒÑÐ° Ð¿Ñ€Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ð¸ PSC"/>
-        <cell30 column="0" row="30" text="Ð¢Ñ€Ð¸Ð³Ð³ÐµÑ€"/>
-        <cell31 column="0" row="31" text="ÐŸÐµÑ€ÐµÐ·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ°"/>
-        <cell32 column="0" row="33" text="Ð¡Ð¾Ð¿Ñ€Ð¾Ñ‚Ð¸Ð²Ð»ÐµÐ½Ð¸Ðµ"/>
-        <cell33 column="0" row="34" text="Ð¤ÑƒÐ½ÐºÑ†Ð¸Ñ"/>
-        <cell34 column="0" row="35" text="ÐÐ¼Ð¿Ð»Ð¸Ñ‚ÑƒÐ´Ð°"/>
-        <cell35 column="0" row="36" text="Ð¡Ð¼ÐµÑ‰ÐµÐ½Ð¸Ðµ"/>
-        <cell36 column="0" row="37" text="ÐŸÐ¾ÑÑ‚Ð¾ÑÐ½Ð½Ð°Ñ Ñ‡Ð°ÑÑ‚Ð¾Ñ‚Ð°"/>
-        <cell37 column="0" row="38" text="Ð˜ÑÑ‚Ð¾Ñ‡Ð½Ð¸Ðº ÑÐºÐ°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ"/>
-        <cell38 column="0" row="39" text="Ð¡ÐºÐ°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð²ÐºÐ»/Ð²Ñ‹ÐºÐ»"/>
-        <cell39 column="0" row="40" text="Ð§Ð°ÑÑ‚Ð¾Ñ‚Ð° ÑÐºÐ°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ"/>
-        <cell40 column="0" row="41" text="ÐÐ°Ñ‡Ð°Ð»ÑŒÐ½Ð°Ñ Ñ‡Ð°ÑÑ‚Ð¾Ñ‚Ð°"/>
-        <cell41 column="0" row="42" text="ÐšÐ¾Ð½ÐµÑ‡Ð½Ð°Ñ Ñ‡Ð°ÑÑ‚Ð¾Ñ‚Ð°"/>
-        <cell42 column="0" row="43" text="Ð¢Ð¸Ð¿ ÑÐºÐ°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ"/>
-        <cell43 column="0" row="44" text="ÐÐ°Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ ÑÐºÐ°Ð½Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ"/>
+        <cell12 column="0" row="11" text="Ñòðîêà èíèöèàëèçàöèè"/>
+        <cell13 column="0" row="12" text="Òàéìàóò"/>
+        <cell14 column="0" row="13" text="Ìèí. çàäåðæêà ïðè ïåðåäà÷å"/>
+        <cell15 column="0" row="15" text="Êîìàíäû:"/>
+        <cell16 column="0" row="16" text="Ñáðîñ"/>
+        <cell17 column="0" row="17" text="Èäåíòèôèêàöèÿ"/>
+        <cell18 column="0" row="18" text="Çàãðóçèòü ïðîôèëü"/>
+        <cell19 column="0" row="19" text="Ñîõðàíèòü ïðîôèëü"/>
+        <cell20 column="0" row="20" text="Ïðîâåðêà"/>
+        <cell21 column="0" row="21" text="Êàëèáðîâêà"/>
+        <cell22 column="0" row="22" text="Î÷èñòèòü ñòàòóñ"/>
+        <cell23 column="0" row="23" text="Áàéò îïðîñà STB"/>
+        <cell24 column="0" row="24" text="Áàéò ñëåæåíèÿ çà STB"/>
+        <cell25 column="0" row="25" text="Áàéò ñòä. ñîáûòèé ESR"/>
+        <cell26 column="0" row="26" text="Áàéò ñëåæåíèÿ çà ESR"/>
+        <cell27 column="0" row="27" text="Áàéò DDS"/>
+        <cell28 column="0" row="28" text="Áàéò ñëåæåíèÿ çà DDS"/>
+        <cell29 column="0" row="29" text="Ñáðîñ ñòàòóñà ïðè âêëþ÷åíèè PSC"/>
+        <cell30 column="0" row="30" text="Òðèããåð"/>
+        <cell31 column="0" row="31" text="Ïåðåçàãðóçêà"/>
+        <cell32 column="0" row="33" text="Ñîïðîòèâëåíèå"/>
+        <cell33 column="0" row="34" text="Ôóíêöèÿ"/>
+        <cell34 column="0" row="35" text="Àìïëèòóäà"/>
+        <cell35 column="0" row="36" text="Ñìåùåíèå"/>
+        <cell36 column="0" row="37" text="Ïîñòîÿííàÿ ÷àñòîòà"/>
+        <cell37 column="0" row="38" text="Èñòî÷íèê ñêàíèðîâàíèÿ"/>
+        <cell38 column="0" row="39" text="Ñêàíèðîâàíèå âêë/âûêë"/>
+        <cell39 column="0" row="40" text="×àñòîòà ñêàíèðîâàíèÿ"/>
+        <cell40 column="0" row="41" text="Íà÷àëüíàÿ ÷àñòîòà"/>
+        <cell41 column="0" row="42" text="Êîíå÷íàÿ ÷àñòîòà"/>
+        <cell42 column="0" row="43" text="Òèï ñêàíèðîâàíèÿ"/>
+        <cell43 column="0" row="44" text="Íàïðàâëåíèå ñêàíèðîâàíèÿ"/>
         <cell44 column="1" row="0" text="DS345"/>
         <cell45 column="1" row="1" text="StanfordResearchSystems"/>
         <cell46 column="1" row="2" text="RS232"/>
@@ -56,8 +56,8 @@
         <cell50 column="1" row="6" text="9600"/>
         <cell51 column="1" row="7" text="8"/>
         <cell52 column="1" row="8" text="2"/>
-        <cell53 column="1" row="9" text="ÐžÑ‚ÑÑƒÑ‚ÑÑ‚Ð²ÑƒÐµÑ‚"/>
-        <cell54 column="1" row="10" text="ÐÐ¿Ð¿Ð°Ñ€Ð°Ñ‚Ð½Ð¾Ðµ"/>
+        <cell53 column="1" row="9" text="Îòñóòñòâóåò"/>
+        <cell54 column="1" row="10" text="Àïïàðàòíîå"/>
         <cell55 column="1" row="12" text="300"/>
         <cell56 column="1" row="13" text="140"/>
         <cell57 column="1" row="16" text="*RST"/>
@@ -89,8 +89,8 @@
         <cell83 column="2" row="6" text="9600"/>
         <cell84 column="2" row="7" text="8"/>
         <cell85 column="2" row="8" text="2"/>
-        <cell86 column="2" row="9" text="ÐžÑ‚ÑÑƒÑ‚ÑÑ‚Ð²ÑƒÐµÑ‚"/>
-        <cell87 column="2" row="10" text="ÐÐ¿Ð¿Ð°Ñ€Ð°Ñ‚Ð½Ð¾Ðµ"/>
+        <cell86 column="2" row="9" text="Îòñóòñòâóåò"/>
+        <cell87 column="2" row="10" text="Àïïàðàòíîå"/>
         <cell88 column="2" row="12" text="300"/>
         <cell89 column="2" row="13" text="140"/>
         <cell90 column="2" row="16" text="*RST"/>

@@ -21,8 +21,8 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainF"/>
         <EditorIndex Value="4"/>
-        <TopLine Value="396"/>
-        <CursorPos X="36" Y="419"/>
+        <TopLine Value="324"/>
+        <CursorPos Y="345"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -62,9 +62,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="OptionF"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="11"/>
-        <TopLine Value="205"/>
-        <CursorPos X="23" Y="214"/>
+        <TopLine Value="79"/>
+        <CursorPos X="32" Y="93"/>
         <UsageCount Value="251"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -77,8 +78,8 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ReadingsF"/>
         <EditorIndex Value="6"/>
-        <TopLine Value="470"/>
-        <CursorPos Y="492"/>
+        <TopLine Value="490"/>
+        <CursorPos X="3" Y="492"/>
         <UsageCount Value="208"/>
         <Bookmarks Count="3">
           <Item0 Y="955"/>
@@ -139,8 +140,8 @@
         <Filename Value="serconf.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="8"/>
-        <TopLine Value="13"/>
-        <CursorPos X="44" Y="18"/>
+        <TopLine Value="187"/>
+        <CursorPos X="9" Y="245"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
       </Unit10>
@@ -161,8 +162,8 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="AboutF"/>
         <EditorIndex Value="5"/>
-        <TopLine Value="6"/>
-        <CursorPos X="57" Y="42"/>
+        <TopLine Value="11"/>
+        <CursorPos Y="52"/>
         <UsageCount Value="281"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -174,10 +175,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="DeviceF"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="3"/>
-        <TopLine Value="127"/>
-        <CursorPos X="45" Y="144"/>
+        <TopLine Value="199"/>
+        <CursorPos X="17" Y="157"/>
         <UsageCount Value="260"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -211,7 +211,7 @@
         <EditorIndex Value="12"/>
         <TopLine Value="646"/>
         <CursorPos X="14" Y="668"/>
-        <UsageCount Value="18"/>
+        <UsageCount Value="19"/>
         <Loaded Value="True"/>
       </Unit17>
       <Unit18>
@@ -297,14 +297,14 @@
         <EditorIndex Value="13"/>
         <TopLine Value="769"/>
         <CursorPos X="3" Y="789"/>
-        <UsageCount Value="15"/>
+        <UsageCount Value="16"/>
         <Loaded Value="True"/>
       </Unit28>
       <Unit29>
         <Filename Value="synapse\source\lib\synaser.pas"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="341"/>
-        <CursorPos X="3" Y="282"/>
+        <TopLine Value="101"/>
+        <CursorPos X="13" Y="123"/>
         <UsageCount Value="12"/>
         <Loaded Value="True"/>
       </Unit29>
@@ -312,123 +312,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="devicef.pas"/>
-        <Caret Line="159" Column="38" TopLine="154"/>
+        <Caret Line="172" Column="3" TopLine="153"/>
       </Position1>
       <Position2>
         <Filename Value="devicef.pas"/>
-        <Caret Line="168" Column="14" TopLine="154"/>
+        <Caret Line="57" Column="26" TopLine="23"/>
       </Position2>
       <Position3>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="102" Column="70" TopLine="75"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="162" Column="22" TopLine="123"/>
       </Position3>
       <Position4>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="91" Column="13" TopLine="86"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="170" Column="5" TopLine="150"/>
       </Position4>
       <Position5>
         <Filename Value="devicef.pas"/>
-        <Caret Line="168" Column="14" TopLine="154"/>
+        <Caret Line="172" Column="28" TopLine="146"/>
       </Position5>
       <Position6>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="135" Column="50" TopLine="133"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="133" Column="51" TopLine="147"/>
       </Position6>
       <Position7>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="93" Column="25" TopLine="85"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="200" Column="7" TopLine="177"/>
       </Position7>
       <Position8>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="95" Column="42" TopLine="85"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="139" Column="24" TopLine="160"/>
       </Position8>
       <Position9>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="99" Column="43" TopLine="89"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="196" Column="47" TopLine="180"/>
       </Position9>
       <Position10>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="253" TopLine="232"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1072" Column="3" TopLine="165"/>
       </Position10>
       <Position11>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="159" Column="3" TopLine="156"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="580" Column="21" TopLine="553"/>
       </Position11>
       <Position12>
-        <Filename Value="optionf.pas"/>
-        <Caret Line="196" Column="18" TopLine="181"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1066" Column="6" TopLine="1064"/>
       </Position12>
       <Position13>
-        <Filename Value="serconf.pas"/>
-        <Caret Line="88" Column="9" TopLine="71"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="592" Column="30" TopLine="553"/>
       </Position13>
       <Position14>
         <Filename Value="devicef.pas"/>
-        <Caret Line="120" Column="8" TopLine="116"/>
+        <Caret Line="66" Column="27" TopLine="26"/>
       </Position14>
       <Position15>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="172" Column="3" TopLine="153"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="206" Column="29" TopLine="175"/>
       </Position15>
       <Position16>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="57" Column="26" TopLine="23"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="419" Column="36" TopLine="396"/>
       </Position16>
       <Position17>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="162" Column="22" TopLine="123"/>
+        <Filename Value="readingsf.pas"/>
+        <Caret Line="492" Column="3" TopLine="490"/>
       </Position17>
       <Position18>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="170" Column="5" TopLine="150"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="419" Column="36" TopLine="149"/>
       </Position18>
       <Position19>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="172" Column="28" TopLine="146"/>
+        <Filename Value="optionf.pas"/>
+        <Caret Line="260" Column="66" TopLine="259"/>
       </Position19>
       <Position20>
         <Filename Value="devicef.pas"/>
-        <Caret Line="133" Column="51" TopLine="147"/>
+        <Caret Line="28" Column="11" TopLine="199"/>
       </Position20>
       <Position21>
         <Filename Value="devicef.pas"/>
-        <Caret Line="200" Column="7" TopLine="177"/>
+        <Caret Line="147" TopLine="125"/>
       </Position21>
       <Position22>
         <Filename Value="devicef.pas"/>
-        <Caret Line="139" Column="24" TopLine="160"/>
+        <Caret Line="157" TopLine="125"/>
       </Position22>
       <Position23>
         <Filename Value="devicef.pas"/>
-        <Caret Line="196" Column="47" TopLine="180"/>
+        <Caret Line="147" TopLine="125"/>
       </Position23>
       <Position24>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="1072" Column="3" TopLine="165"/>
+        <Filename Value="aboutf.pas"/>
+        <Caret Line="42" Column="57" TopLine="6"/>
       </Position24>
       <Position25>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="580" Column="21" TopLine="553"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="239" Column="95" TopLine="222"/>
       </Position25>
       <Position26>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="1066" Column="6" TopLine="1064"/>
+        <Filename Value="aboutf.pas"/>
+        <Caret Line="52" TopLine="11"/>
       </Position26>
       <Position27>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="592" Column="30" TopLine="553"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="239" TopLine="222"/>
       </Position27>
       <Position28>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="66" Column="27" TopLine="26"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="235" Column="28" TopLine="226"/>
       </Position28>
       <Position29>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="206" Column="29" TopLine="175"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="130" Column="27" TopLine="98"/>
       </Position29>
       <Position30>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="419" Column="36" TopLine="396"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="239" Column="35" TopLine="213"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>

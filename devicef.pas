@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  Buttons, StdCtrls, ComCtrls; { TODO 2 -cImprovement : check out valedit }
+  Buttons, StdCtrls, ComCtrls;
 
 type
   eHeaderRow = (
@@ -154,7 +154,7 @@ begin
              if FileExists(CurrDetFileName) then
              with sg do
              begin
-                { TODO 3 -cBug : how to clear }
+
                 //sg.Clean;
                LoadFromFile(CurrDetFileName);
              end;
