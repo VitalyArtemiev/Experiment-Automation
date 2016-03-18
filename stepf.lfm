@@ -1,5 +1,5 @@
 object StepForm: TStepForm
-  Left = 1256
+  Left = 499
   Height = 248
   Top = 337
   Width = 304

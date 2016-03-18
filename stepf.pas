@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses MainF, ReadingsF, SerConF, GenConst;
+uses DeviceF, MainF, ReadingsF, SerConF, GenConst;
 
 {$R *.lfm}
 
@@ -142,8 +142,8 @@ begin
   str(Frequency:19:6, s);
   FrequencyReading.Caption:= s;
 
-  MainForm.AddCommand(FREQ, false, Frequency, NOUNIT);
-  MainForm.AddCommand(AMPL, false, Amplitude, AmplitudeUnit);
+  MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+  MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
   MainForm.PassCommands;
 
   Finished:= false;
@@ -236,17 +236,17 @@ begin
       case StepMode of
       0:
         begin
-          MainForm.AddCommand(FREQ, false, Frequency, NOUNIT);
-          MainForm.AddCommand(AMPL, false, Amplitude, AmplitudeUnit);
+          MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+          MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
         end;
       1:
         begin
-          MainForm.AddCommand(FREQ, false, Frequency, NOUNIT);
+          MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
           StopA:= Amplitude;
         end;
       2:
         begin
-          MainForm.AddCommand(AMPL, false, Amplitude, AmplitudeUnit);
+          MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
           StopF:= Frequency;
         end;
       end;

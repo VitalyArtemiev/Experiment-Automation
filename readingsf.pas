@@ -327,7 +327,7 @@ begin
         begin
           try
           EnterCriticalSection(CommCS);
-            AddCommand(SPTS, true);               //paus+
+            AddCommand(dStoredPoints, true);               //paus+
             PassCommands;
             s:= RecvString;
           finally
@@ -351,15 +351,15 @@ begin
             ParamArr[2]:= PointsToRead;
             try
               EnterCriticalSection(CommCS);
-                AddCommand(TRCL, true, ParamArr);
+                AddCommand(dReadPointsNative, true, ParamArr);
                 PassCommands;
-                SerPort.RecvBufferEx(@BuffByte1, PointsToRead * 4, ConnectParams.Timeout);
+                SerPort.RecvBufferEx(@BuffByte1, PointsToRead * 4, CurrentDevice^.Timeout);
 
                 ParamArr[0]:= 2;
 
-                AddCommand(TRCL, true, ParamArr);
+                AddCommand(dReadPointsNative, true, ParamArr);
                 PassCommands;
-                SerPort.RecvBufferEx(@BuffByte2, PointsToRead * 4, ConnectParams.Timeout);
+                SerPort.RecvBufferEx(@BuffByte2, PointsToRead * 4, CurrentDevice^.Timeout);
             finally
                 Serport.RaiseExcept:= true;
               LeaveCriticalSection(CommCS);
@@ -444,10 +444,8 @@ begin
   QY:= 2;
   QRv:= 3;
 
-  SerPort:= TBlockSerial.Create;
-  SerPort.ConvertLineEnd:= true;
-  SerPort.RaiseExcept:= true;
-  SerPort.DeadLockTimeOut:= 10000;
+  //InitSerPort;
+  DeviceKind:= dDetector;
   DeviceIndex:= iDefaultDevice;
   DrawnBuffers:= 0;
   t:= 0;
@@ -478,7 +476,8 @@ begin
   ReadingsThread.Terminate;
   //ReadingsThread.WaitFor;
   ReadingsThread.Destroy;
-  SerPort.Destroy;
+  SerPort.Free;
+  TelNetClient.Free;
   ThreadList.Destroy;
   DoneCriticalSection(CommCS);
   DoneCriticalSection(RNCS);
@@ -489,7 +488,7 @@ end;
 
 procedure TReadingsForm.FormShow(Sender: TObject);
 begin
-  GetSupportedDevices(DeviceForm.sgDetCommands);
+  GetSupportedDevices(DeviceKind);
 end;
 
 procedure TReadingsForm.PairSplitter1Resize(Sender: TObject);
@@ -739,7 +738,7 @@ begin
     cbChart2Show.ItemIndex:= QCh2Disp - 1;
 
     EnterCriticalSection(CommCS);
-      AddCommand(STRT);
+      AddCommand(dStartStorage);
       PassCommands;
     LeaveCriticalSection(CommCS);
   end;
@@ -760,7 +759,7 @@ begin
   if RM = 0 then
   begin
     EnterCriticalSection(CommCS);
-      AddCommand(PAUS);
+      AddCommand(dPauseStorage);
       PassCommands;
     LeaveCriticalSection(CommCS);
   end;
@@ -781,7 +780,7 @@ begin
   if RM = 0 then
   begin
     EnterCriticalSection(CommCS);
-      AddCommand(STRT);
+      AddCommand(dStartStorage);
       PassCommands;
     LeaveCriticalSection(CommCS);
   end;
@@ -800,7 +799,7 @@ begin
   if (RM = 0) or (Force and (LogState = lInActive)) then
   begin
     EnterCriticalSection(CommCS);
-      AddCommand(REST);
+      AddCommand(dResetStorage);
       PassCommands;
     LeaveCriticalSection(CommCS);
   end;
@@ -945,7 +944,7 @@ begin
 
   try
   EnterCriticalSection(CommCS);
-    AddCommand(SNAP, true, ParamArr);
+    AddCommand(dReadSimultaneous, true, ParamArr);
     PassCommands;
     s:= RecvString;
   finally
@@ -967,8 +966,8 @@ begin
 
   for i:= 0 to num - 2 do
   begin
-    val(copy(s, 1, pos(SupportedDevices[DeviceIndex].ParSeparator, s) - 1), Result^[i]);
-    delete(s, 1, pos(SupportedDevices[DeviceIndex].ParSeparator, s));
+    val(copy(s, 1, pos(CurrentDevice^.ParSeparator, s) - 1), Result^[i]);
+    delete(s, 1, pos(CurrentDevice^.ParSeparator, s));
   end;
   val(s, Result^[i + 1]);
 end;
@@ -1171,20 +1170,31 @@ procedure TReadingsForm.btnConnectClick(Sender: TObject);
 var
   i, c : word;
 begin
+  if ConnectionKind = cSerial then
+  begin
    if (MainForm.Serport.InstanceActive) and
     (MainForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex) then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
     end;
+  end
+  else
+  if ConnectionKind = cTelnet then
+  begin
+    if ReadingsForm.ConnectionKind = cTelNet then showmessage('check ip');
+       { TODO 2 -cImprovement : check ip }
+  end;
+
   OptionForm.TabControl.TabIndex:= 1;
   EnterCriticalSection(CommCS);
     inherited btnConnectClick(Sender);
-    AddCommand(REST);
+    AddCommand(dResetStorage);
     PassCommands;
   LeaveCriticalSection(CommCS);
 
   if DeviceIndex = iDefaultDevice then exit;
+  OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
 
   cgTransfer.Items.Clear;
   cbCh1.Items.Clear;
@@ -1327,7 +1337,7 @@ begin
     ReadingsMode:= cbReadingsMode.ItemIndex;
   end;
 
-  ConnectParams.Timeout:= seRecvTimeOut.Value;
+  CurrentDevice^.Timeout:= seRecvTimeOut.Value;
 
   UpdateTimer.Interval:= eUpdateInterval.Value;
   if DeviceIndex = iSR844 then setlength(ParamArr, 2);
@@ -1337,17 +1347,17 @@ begin
   if DeviceIndex = iSR830 then ParamArr[2]:= cbRatio1.ItemIndex;
 
   EnterCriticalSection(CommCS);
-    AddCommand(DDEF, false, ParamArr);
+    AddCommand(dDisplaySelect, false, ParamArr);
 
     ParamArr[0]:= 2;
     ParamArr[1]:= cbCh2.ItemIndex;
     if DeviceIndex = iSR830 then ParamArr[2]:= cbRatio2.ItemIndex;
-    AddCommand(DDEF, false, ParamArr);
+    AddCommand(dDisplaySelect, false, ParamArr);
 
-    AddCommand(SRAT, false, cbSampleRate.ItemIndex);
-    AddCommand(SENS, false, cbSensitivity.ItemIndex);
-    AddCommand(OFLT, false, cbTimeConstant.ItemIndex);
-    AddCommand(FMOD, false, 0);   //external ref freq
+    AddCommand(dSampleRate, false, cbSampleRate.ItemIndex);
+    AddCommand(dSensitivity, false, cbSensitivity.ItemIndex);
+    AddCommand(dTimeConstant, false, cbTimeConstant.ItemIndex);
+    AddCommand(dReferenceSource, false, 0);   //external ref freq
     PassCommands;
   LeaveCriticalSection(CommCS);
 end;
@@ -1358,11 +1368,11 @@ var
   i, e: integer;
 begin
   EnterCriticalSection(CommCS);
-    AddCommand(DDEF, true, 1);
-    AddCommand(DDEF, true, 2);
-    AddCommand(SRAT, true);
-    AddCommand(SENS, true);
-    AddCommand(OFLT, true);
+    AddCommand(dDisplaySelect, true, 1);
+    AddCommand(dDisplaySelect, true, 2);
+    AddCommand(dSampleRate, true);
+    AddCommand(dSensitivity, true);
+    AddCommand(dTimeConstant, true);
     PassCommands;
 
     s1:= RecvString;
@@ -1383,7 +1393,7 @@ begin
 
   if DeviceIndex = iSR830 then
   begin
-    s3:= SupportedDevices[DeviceIndex].ParSeparator;
+    s3:= CurrentDevice^.ParSeparator;
 
     val(copy(s1, 1, pos(s3, s1) - 1), i, e);
     if e <> 0 then exit;

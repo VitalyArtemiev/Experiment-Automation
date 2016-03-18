@@ -164,8 +164,8 @@ const
   iDefaultDevice = 0;
   iDS345 = 1;
   iDS335 = 2;
-  iSR844 = 3;
-  iSR830 = 4;
+  iSR844 = 1;
+  iSR830 = 2;
 
   {SupportedDevices: array [0..4] of tDevice =
     (
@@ -345,8 +345,8 @@ begin
   { TODO 1 -cFeature : new proc to load connectparams }
   //MainForm.ConnectParams:= Params.GeneratorCP;
   //ReadingsForm.ConnectParams:= Params.DetectorCP;
-  MainForm.ConnectParams.Port:= Params.GeneratorPort;
-  ReadingsForm.ConnectParams.Port:= Params.DetectorPort;
+  MainForm.CurrentDevice^.Port:= Params.GeneratorPort;
+  ReadingsForm.CurrentDevice^.Port:= Params.DetectorPort;
   MainForm.PresumedDevice:= Params.LastGenerator;
   ReadingsForm.PresumedDevice:= Params.LastDetector;
 
@@ -358,10 +358,10 @@ function TMainForm.SaveParams(FileName: ansistring): word;
 var
   f: file;
 begin
-  Params.GeneratorPort:= MainForm.ConnectParams.Port;
-  Params.LastGenerator:= MainForm.ConnectParams.Device;
-  Params.DetectorPort:= ReadingsForm.ConnectParams.Port;
-  Params.LastDetector:= ReadingsForm.ConnectParams.Device;
+  Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
+  Params.LastGenerator:= MainForm.CurrentDevice^.Model;
+  Params.DetectorPort:= ReadingsForm.CurrentDevice^.Port;
+  Params.LastDetector:= ReadingsForm.CurrentDevice^.Model;
   system.assign(f, FileName);
   {$I-}
   rewrite(f, sizeof(RParams));
@@ -566,33 +566,33 @@ begin
   InitCriticalSection(LogCS);
   WriteProgramLog('Создание главного окна');
 
-  SerPort:= TBlockSerial.Create;
-  SerPort.RaiseExcept:= true;
-  SerPort.ConvertLineEnd:= true;
-  SerPort.DeadLockTimeOut:= 10000;
+  //InitSerPort;
+  DeviceKind:= dGenerator;
   DeviceIndex:= iDefaultDevice;
   PortList:= //'COM1,COM2,COM3,COM4';
              GetSerialPortNames;
   PortCount:= 0;
 
-    if Portlist = '' then StatusBar1.Caption:= 'Нет доступных портов'
-    else
-      begin
-        p:= pos(',', PortList);
-        if p = 0 then cbPortSelect.AddItem(PortList, nil)
-        else
+  if Portlist = '' then StatusBar1.Caption:= 'Нет доступных портов'
+  else
+    begin
+      p:= pos(',', PortList);
+      if p = 0 then cbPortSelect.AddItem(PortList, nil)
+      else
+        begin
+          while p <> 0 do
           begin
-            while p <> 0 do
-            begin
-              cbPortSelect.AddItem(copy(PortList, 1, p-1), nil);
-              delete(PortList, 1, p);
-              inc(PortCount);
-              p:= pos(',', PortList);
-            end;
-            cbPortSelect.AddItem(PortList, nil);
+            cbPortSelect.AddItem(copy(PortList, 1, p-1), nil);
+            delete(PortList, 1, p);
             inc(PortCount);
+            p:= pos(',', PortList);
           end;
-      end;
+          cbPortSelect.AddItem(PortList, nil);
+          inc(PortCount);
+        end;
+    end;
+  cbPortSelect.AddItem('Ethernet', nil);
+  inc(PortCount);
 
   LoadConfig(DefaultConfig);
 end;
@@ -602,12 +602,13 @@ begin
   if Config.SaveParamsOnExit then
     SaveParams(Config.DefaultParams);
   SaveConfig(DefaultConfig);
-  SerPort.CloseSocket;
+  if Assigned(SerPort) then SerPort.CloseSocket;
 end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
-  SerPort.Destroy;
+  SerPort.Free;
+  TelNetClient.Free;
   DoneCriticalSection(LogCS);
   //ExperimentLog.Destroy;
   ProgramLog.Free;
@@ -863,9 +864,9 @@ begin
     ACOn:= cbACEnable.Checked;
     AmpUnit:= cbAmplUnit.ItemIndex;
 
-    if DeviceIndex <> iDS345 then AddCommand(TERM, false, Impedance);
-    AddCommand(FUNC, false, CurrFunc);
-    AddCommand(OFFS, false, Offset, NOUNIT);
+    if DeviceIndex <> iDS345 then AddCommand(gResistance, false, Impedance);
+    AddCommand(gFunction, false, CurrFunc);
+    AddCommand(gOffset, false, Offset, NOUNIT);
 
     if FrequencyTab.TabIndex = 2 then
     begin
@@ -874,7 +875,7 @@ begin
       begin
         EnableControls(false);
 
-        AddCommand(SWEN, false, 0);
+        AddCommand(gSweepEnable, false, 0);
 
         AutoSweep:= false;
         StepStartF:= eStepStartF.Value;
@@ -896,7 +897,7 @@ begin
     end
     else
     begin
-      AddCommand(AMPL, false, eAmplitude.Value, AmplitudeUnit);
+      AddCommand(gAmplitude, false, eAmplitude.Value, AmplitudeUnit);
       if FrequencyTab.TabIndex = 1 then
       begin
         ReadingsForm.LogFreq:= true;
@@ -909,13 +910,13 @@ begin
             ReadingTimer.Enabled:= true;
         end;
 
-        AddCommand(TSRC, false, integer(cbSweepRate.Checked));
-        AddCommand(MTYP, false, cbSweepType.ItemIndex);
-        AddCommand(SDIR, false, cbSweepDirection.ItemIndex);
-        AddCommand(TRAT, false, eSweepRate.Value, NOUNIT);
-        AddCommand(STFR, false, eSweepStartF.Value, NOUNIT);
-        AddCommand(SPFR, false, eSweepStopF.Value, NOUNIT);
-        AddCommand(SWEN, false, 1);
+        AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
+        AddCommand(gSweepType, false, cbSweepType.ItemIndex);
+        AddCommand(gSweepDirection, false, cbSweepDirection.ItemIndex);
+        AddCommand(gSweepRate, false, eSweepRate.Value, NOUNIT);
+        AddCommand(gSweepStartFrequency, false, eSweepStartF.Value, NOUNIT);
+        AddCommand(gSweepStopFrequency, false, eSweepStopF.Value, NOUNIT);
+        AddCommand(gSweepEnable, false, 1);
 
         AutoSweep:= cbSweepRate.Checked;
         SweepStartF:= eSweepStartF.Value;
@@ -941,8 +942,8 @@ begin
         end;
         Frequency:= eFrequency.Value;
 
-        AddCommand(FREQ, false, Frequency, NOUNIT);
-        AddCommand(SWEN, false, 0);
+        AddCommand(gFrequency, false, Frequency, NOUNIT);
+        AddCommand(gFrequency, false, 0);
         if Config.AutoExportParams and not Config.AutoReadingConst then
         begin
           ExportParams(false);
@@ -982,18 +983,18 @@ var
   i, e: integer;
 begin
   EnterCriticalSection(CommCS);
-    AddCommand(TERM, true);
-    AddCommand(FUNC, true);
-    AddCommand(AMPL, true);
-    AddCommand(OFFS, true);
-    AddCommand(FREQ, true);
+    AddCommand(gResistance, true);
+    AddCommand(gFunction, true);
+    AddCommand(gAmplitude, true);
+    AddCommand(gOffset, true);
+    AddCommand(gFrequency, true);
 
-    AddCommand(TSRC, true);
-    AddCommand(MTYP, true);
-    AddCommand(SDIR, true);
-    AddCommand(TRAT, true);
-    AddCommand(STFR, true);
-    AddCommand(SPFR, true);
+    AddCommand(gSweepSource, true);
+    AddCommand(gSweepType, true);
+    AddCommand(gSweepDirection, true);
+    AddCommand(gSweepRate, true);
+    AddCommand(gSweepStartFrequency, true);
+    AddCommand(gSweepStopFrequency, true);
     //AddCommand(SWEN, true);         ?индикатор
 
     PassCommands;
@@ -1002,7 +1003,7 @@ begin
   LeaveCriticalSection(CommCS);
   statusbar1.SimpleText:= s;
 
-  cs:= SupportedDevices[DeviceIndex].CommSeparator;
+  cs:= CurrentDevice^.CommSeparator;
 
   val(copy(s, 1, pos(cs, s) - 1), i, e);
   if e <> 0 then exit;
@@ -1046,15 +1047,15 @@ end;
 
 procedure TMainForm.btStopClick(Sender: TObject);
 begin
-  AddCommand(SWEN, false, 0);
-  AddCommand(FREQ, false, 0, NOUNIT);
-  AddCommand(AMPL, false, 0, VP);
+  AddCommand(gSweepEnable, false, 0);
+  AddCommand(gFrequency, false, 0, NOUNIT);
+  AddCommand(gAmplitude, false, 0, VP);
   PassCommands;
 end;
 
 procedure TMainForm.btTriggerClick(Sender: TObject);
 begin
-  AddCommand(TRG);
+  AddCommand(cTrigger);
   PassCommands;
 end;
 
@@ -1074,7 +1075,7 @@ begin
   if not FileExists(Config.DefaultParams) then Config.DefaultParams:= DefaultParams;
   if Config.LoadParamsOnStart then LoadParams(Config.DefaultParams);
 
-  GetSupportedDevices(DeviceForm.sgGenCommands);
+  GetSupportedDevices(DeviceKind);
 
   cbImpedanceChange(Self);
   cbFuncSelectChange(Self);
@@ -1084,16 +1085,28 @@ end;
 
 procedure TMainForm.btnConnectClick(Sender: TObject);
 begin
+  if ConnectionKind = cSerial then
+  begin
   if (ReadingsForm.Serport.InstanceActive) and
     (ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex) then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
     end;
+
+  end
+  else
+  if ConnectionKind = cTelnet then
+  begin
+    if ReadingsForm.ConnectionKind = cTelNet then showmessage('check ip');
+       { TODO 2 -cImprovement : check ip }
+  end;
+
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 
   if DeviceIndex = iDefaultDevice then Exit;
+  OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
   cbFuncSelect.Items.Clear;
   case DeviceIndex of
     iDS345:

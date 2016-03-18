@@ -6,35 +6,9 @@ interface
 
 uses SerConF;
 
-type
-  TSR844Command = (
-    PRST = longint(TRG) + 1, LOCL, OVRM,
-    FMOD, HARM, FREQ, FRAQ, FRIQ, PHAS, APHS, REFZ, WRSV, AWRS, INPZ,
-    SENS, AGAN, CRSV, ACRS, OFLT, OFSL, SETL,
-    DDEF, DRAT, FPOP, DOFF, AOFF, DEXP,
-    AUXI, AUXO,
-    OUTX, KCLK, ALRM, SSET, RSET, KNOB, KEYP,
-    SSTR, SFIN, SSTP, SMOD, RSTO, RRDY, RCLR, RMOD,
-    SRAT, SEND, TSTR, STRT, PAUS, REST,
-    OUTP, OUTR, SNAP, SPTS, TRCA, TRCB, TRCL, FAST, STRD,
-    ERRS, ERRE, LIAS, LIAE
-                     );
 
-  TSR830Command = (
-    {RST, IDN, LOCL = 3, OVRM,
-    FMOD, HARM, FREQ, PHAS = 10, APHS,
-    SENS = 16, AGAN, OFLT = 20, OFSL,
-    DDEF = 23, FPOP = 25, AOFF = 27,
-    OAUX = 29, AUXV,
-    OUTX, KCLK, ALRM, SSET, RSET,
-    RMOD = 45,
-    SRAT, SEND, TRIG, TSTR, STRT, PAUS, REST,
-    OUTP, OUTR, SNAP, SPTS, TRCA, TRCB, TRCL, FAST, STRD,
-    CLS, STB, SRE, ESR, ESE, PSC, ERRS, ERRE, LIAS, LIAE, }
-    RSLP = longint(LIAE) + 1, SLVL, ISRC, IGND, ICPL, ILIN, SYNC, OEXP, ARSV
-                                              );
 const
-  SR844Command: array[longint(RST)..longint(LIAE)] of ansistring = (
+{  SR844Command: array[longint(RST)..longint(LIAE)] of ansistring = (
     '*RST', '*IDN', '', '', '', '', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , 'TRIG',
     'PRST', 'LOCL', 'OVRM',
     'FMOD', 'HARM', 'FREQ', 'FRAQ', 'FRIQ', 'PHAS', 'APHS', 'REFZ', 'WRSV', 'AWRS', 'INPZ',
@@ -61,7 +35,7 @@ const
     'OUTP', 'OUTR', 'SNAP', 'SPTS', 'TRCA', 'TRCB', 'TRCL', 'FAST', 'STRD',
     'ERRS', 'ERRE', 'LIAS', 'LIAE',
     'RSLP', 'SLVL', 'ISRC', 'IGND', 'ICPL', 'ILIN', 'SYNC', 'OEXP', 'ARSV'
-                                              );
+                                              );      }
 
   SR844TransferParams: array [0..9] of ansistring = (
     'X',

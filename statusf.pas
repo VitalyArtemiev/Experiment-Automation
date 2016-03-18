@@ -56,7 +56,7 @@ var
 
 implementation
 
-Uses MainF, GenConst, DetConst, SerConF;
+Uses DeviceF, MainF, GenConst, DetConst, SerConF;
 
 {$R *.lfm}
 
@@ -87,18 +87,18 @@ begin
   with TSerConnectForm(Form) do
   begin
     EnterCriticalSection(CommCS);
-      AddCommand(SRE, false, eSerPollSB);
-      AddCommand(ESE, false, eStdEventSB);
+      AddCommand(cSerialPollEnable, false, eSerPollSB);
+      AddCommand(cStdEventEnable, false, eStdEventSB);
 
       if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
       begin
-        AddCommand(LIAE, false, eLiaSB);
-        AddCommand(ERRE, false, eErrSB);
+        AddCommand(dLIAEnable, false, eLiaSB);
+        AddCommand(dErrorEnable, false, eErrSB);
       end
       else
       if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
       begin
-        AddCommand(DENA, false, eDDSB);
+        AddCommand(gDDSEnable, false, eDDSB);
       end;
 
       PassCommands;
@@ -108,7 +108,7 @@ end;
 
 procedure TStatusForm.FormShow(Sender: TObject);
 begin
-  Label5.Caption:= TSerConnectForm(Form).CurrentDevice;
+  Label5.Caption:= TSerConnectForm(Form).CurrentDevice^.Model;
   if Label5.Caption = '' then Label5.Caption:= 'Устройство не опознано';
 
   lSPSB.Caption:=  '?';
@@ -117,7 +117,8 @@ begin
   lESB.Caption:=   '?';
   lDDSB.Caption:=  '?';
   with TSerConnectForm(Form) do
-    if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
+  begin
+    if DeviceKind = dDetector then
     begin
       Label10.Show;
       eLIAS.Show;
@@ -126,13 +127,12 @@ begin
       eESB.Show;
       lESB.Show;
 
-      label9.hide;
-      //Label8.Left:= -100;
+      label9.Hide;
       eDDS.Hide;
       lDDSB.Hide;
     end
     else
-    if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
+    if DeviceKind = dGenerator then
     begin
       Label10.Hide;
       eLIAS.Hide;
@@ -144,8 +144,8 @@ begin
       label9.Show;
       eDDS.Show;
       lDDSB.Show;
-    end
-    else
+    end;
+
     if DeviceIndex = iDefaultDevice then
     begin
       Label10.Hide;
@@ -159,6 +159,7 @@ begin
       eDDS.Hide;
       lDDSB.Hide;
     end;
+  end;
 end;
 
 procedure TStatusForm.GetStatus;
@@ -186,59 +187,59 @@ begin
     eDDSB:=  0;
 
     EnterCriticalSection(CommCS);
-      AddCommand(SRE, true);
+      AddCommand(cSerialPollEnable, true);
       PassCommands;
       s:= Recvstring;
       val(s, eSerPollSB);
 
-      AddCommand(ESE, true);
+      AddCommand(cStdEventEnable, true);
       PassCommands;
       s:= Recvstring;
       val(s, eStdEventSB);
 
 
-      AddCommand(STB, true);
+      AddCommand(cSerialPoll, true);
       PassCommands;
       s:= Recvstring;
       val(s, SerPollSB);
 
-      AddCommand(ESR, true);
+      AddCommand(cStdEvent, true);
       PassCommands;
       s:= Recvstring;
       val(s, StdEventSB);
 
-      if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
+      if DeviceKind = dDetector then
       begin
-        AddCommand(LIAE, true);
+        AddCommand(dLIAEnable, true);
         PassCommands;
         s:= Recvstring;
         val(s, eLiaSB);
 
-        AddCommand(ERRE, true);
+        AddCommand(dErrorEnable, true);
         PassCommands;
         s:= Recvstring;
         val(s, eErrSB);
 
 
-        AddCommand(LIAS, true);
+        AddCommand(dLIA, true);
         PassCommands;
         s:= Recvstring;
         val(s, LiaSB);
 
-        AddCommand(ERRS, true);
+        AddCommand(dError, true);
         PassCommands;
         s:= Recvstring;
         val(s, ErrSB);
       end
       else
-      if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
+      if DeviceKind = dGenerator then
       begin
-        AddCommand(DENA, true);
+        AddCommand(gDDSEnable, true);
         PassCommands;
         s:= Recvstring;
         val(s, eDDSB);
 
-        AddCommand(STAT, true);
+        AddCommand(gDDS, true);
         PassCommands;
         s:= Recvstring;
         val(s, DDSB);

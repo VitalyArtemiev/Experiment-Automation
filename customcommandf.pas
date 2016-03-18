@@ -120,7 +120,7 @@ end;
 
 procedure TCustomCommandForm.FormShow(Sender: TObject);
 begin
-  Label2.Caption:= TSerConnectForm(Form).CurrentDevice;
+  Label2.Caption:= TSerConnectForm(Form).CurrentDevice^.Model;
   if Label2.Caption = '' then Label2.Caption:= 'Устройство не опознано';
   GetCommands;
 end;

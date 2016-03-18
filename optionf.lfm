@@ -1,7 +1,7 @@
 object OptionForm: TOptionForm
-  Left = 952
+  Left = 453
   Height = 350
-  Top = 241
+  Top = 207
   Width = 350
   BorderStyle = bsToolWindow
   Caption = 'Настройки'
@@ -272,6 +272,7 @@ object OptionForm: TOptionForm
             Top = 117
             Width = 120
             ItemHeight = 15
+            ItemIndex = 0
             Items.Strings = (
               'Отсутствует'
               'Программное'
@@ -279,7 +280,7 @@ object OptionForm: TOptionForm
               'Программное + аппаратное'
             )
             TabOrder = 0
-            Text = 'cbHandshake'
+            Text = 'Отсутствует'
           end
           object cbParity: TComboBox
             AnchorSideLeft.Control = eDevice
@@ -289,6 +290,7 @@ object OptionForm: TOptionForm
             Top = 82
             Width = 120
             ItemHeight = 15
+            ItemIndex = 0
             Items.Strings = (
               'Отсутствует'
               'Нечетная'
@@ -297,7 +299,7 @@ object OptionForm: TOptionForm
               'Всегда 0 (неиспользуемый бит)'
             )
             TabOrder = 1
-            Text = 'cbParity'
+            Text = 'Отсутствует'
           end
           object eBaudRate: TSpinEdit
             AnchorSideLeft.Control = eDevice
@@ -326,6 +328,50 @@ object OptionForm: TOptionForm
             OnChange = eDeviceChange
             TabOrder = 3
             Text = 'eDevice'
+          end
+          object Label3: TLabel
+            AnchorSideLeft.Control = Label5
+            AnchorSideTop.Control = Label5
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 152
+            Width = 46
+            BorderSpacing.Top = 20
+            Caption = 'IP-адрес'
+            ParentColor = False
+          end
+          object eIPAdress: TEdit
+            AnchorSideLeft.Control = cbHandshake
+            AnchorSideTop.Control = Label3
+            Left = 206
+            Height = 23
+            Top = 152
+            Width = 120
+            TabOrder = 4
+            Text = '192.168.1.1'
+          end
+          object Label11: TLabel
+            AnchorSideLeft.Control = Label5
+            AnchorSideTop.Control = Label3
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 187
+            Width = 28
+            BorderSpacing.Top = 20
+            Caption = 'Порт'
+            ParentColor = False
+          end
+          object ePort: TEdit
+            AnchorSideLeft.Control = eIPAdress
+            AnchorSideTop.Control = Label11
+            Left = 206
+            Height = 23
+            Top = 187
+            Width = 120
+            TabOrder = 5
+            Text = '80'
           end
         end
         object DetTab: TTabSheet
@@ -388,6 +434,7 @@ object OptionForm: TOptionForm
             Top = 117
             Width = 120
             ItemHeight = 15
+            ItemIndex = 0
             Items.Strings = (
               'Отсутствует'
               'Программное'
@@ -395,7 +442,7 @@ object OptionForm: TOptionForm
               'Программное + аппаратное'
             )
             TabOrder = 0
-            Text = 'cbHandshake1'
+            Text = 'Отсутствует'
           end
           object cbParity1: TComboBox
             AnchorSideLeft.Control = eDevice1
@@ -405,6 +452,7 @@ object OptionForm: TOptionForm
             Top = 82
             Width = 120
             ItemHeight = 15
+            ItemIndex = 0
             Items.Strings = (
               'Отсутствует'
               'Нечетная'
@@ -413,7 +461,7 @@ object OptionForm: TOptionForm
               'Всегда 0 (неиспользуемый бит)'
             )
             TabOrder = 1
-            Text = 'cbParity1'
+            Text = 'Отсутствует'
           end
           object eBaudRate1: TSpinEdit
             AnchorSideLeft.Control = eDevice1
@@ -442,6 +490,50 @@ object OptionForm: TOptionForm
             OnChange = eDevice1Change
             TabOrder = 3
             Text = 'eDevice1'
+          end
+          object Label12: TLabel
+            AnchorSideLeft.Control = Label9
+            AnchorSideTop.Control = Label9
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 152
+            Width = 46
+            BorderSpacing.Top = 20
+            Caption = 'IP-адрес'
+            ParentColor = False
+          end
+          object eIPAdress1: TEdit
+            AnchorSideLeft.Control = cbHandshake1
+            AnchorSideTop.Control = Label12
+            Left = 206
+            Height = 23
+            Top = 152
+            Width = 120
+            TabOrder = 4
+            Text = '192.168.1.1'
+          end
+          object Label13: TLabel
+            AnchorSideLeft.Control = Label9
+            AnchorSideTop.Control = Label12
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 187
+            Width = 28
+            BorderSpacing.Top = 20
+            Caption = 'Порт'
+            ParentColor = False
+          end
+          object ePort1: TEdit
+            AnchorSideLeft.Control = eIPAdress1
+            AnchorSideTop.Control = Label13
+            Left = 206
+            Height = 23
+            Top = 187
+            Width = 120
+            TabOrder = 5
+            Text = '80'
           end
         end
       end

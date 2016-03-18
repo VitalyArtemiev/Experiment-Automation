@@ -1,12 +1,15 @@
 object DeviceForm: TDeviceForm
-  Left = 259
-  Height = 566
-  Top = 131
+  Left = 483
+  Height = 550
+  Top = 283
   Width = 650
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
-  ClientHeight = 566
+  ClientHeight = 550
   ClientWidth = 650
+  Constraints.MinHeight = 460
+  Constraints.MinWidth = 650
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
   LCLVersion = '1.4.4.0'
@@ -17,21 +20,21 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 558
+    Height = 542
     Top = 4
     Width = 376
-    ActivePage = tsGenerators
+    ActivePage = tsDetectors
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 8
     BorderSpacing.Bottom = 4
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
       Caption = 'Генераторы'
-      ClientHeight = 530
+      ClientHeight = 514
       ClientWidth = 368
       object sgGenCommands: TStringGrid
         AnchorSideLeft.Control = tsGenerators
@@ -41,7 +44,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsGenerators
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 526
+        Height = 510
         Top = 2
         Width = 366
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -59,17 +62,18 @@ object DeviceForm: TDeviceForm
             Title.Caption = 'Title'
           end>
         FixedRows = 0
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goSmoothScroll, goSelectionActive, goRowHighlight]
+        MouseWheelOption = mwGrid
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goSmoothScroll, goSelectionActive]
         RowCount = 128
         TabOrder = 0
         OnSelection = sgGenCommandsSelection
         ColWidths = (
-          118
+          136
           69
           64
         )
         Cells = (
-          115
+          116
           0
           0
           'Модель'
@@ -81,79 +85,82 @@ object DeviceForm: TDeviceForm
           'Интерфейс'
           0
           3
-          'Разделитель параметров'
-          0
-          4
-          'Разделитель команд'
-          0
-          5
-          'Терминатор'
-          0
-          6
           'Baud rate'
           0
-          7
+          4
           'Биты данных'
           0
-          8
-          'Стор-биты'
+          5
+          'Стоп-биты'
           0
-          9
+          6
           'Парность'
           0
-          10
+          7
           'Handshake'
           0
-          11
+          8
+          'IP-адрес'
+          0
+          9
+          'Порт'
+          0
+          10
           'Строка инициализации'
           0
-          12
+          11
           'Таймаут'
           0
-          13
+          12
           'Мин. задержка при передаче'
           0
+          13
+          'Разделитель параметров'
+          0
+          14
+          'Разделитель команд'
+          0
           15
-          'Команды:'
+          'Терминатор'
           0
           16
-          'Сброс'
+          'Команды:'
           0
           17
-          'Идентификация'
+          'Сброс'
           0
           18
-          'Загрузить профиль'
+          'Перезагрузка'
           0
           19
-          'Сохранить профиль'
+          'Идентификация'
           0
           20
-          'Проверка'
+          'Загрузить профиль'
           0
           21
-          'Калибровка'
+          'Сохранить профиль'
           0
           22
-          'Очистить статус'
+          'Проверка'
           0
           23
-          'Байт опроса STB'
+          'Калибровка'
           0
           24
-          'Байт слежения за STB'
+          'Очистить статус'
           0
           25
-          'Байт стд. событий ESR'
+          'Байт опроса STB'
           0
           26
-          'Байт слежения за ESR'
+          'Байт слежения за STB'
           0
           27
-          'Байт DDS'
+          'Байт стд. событий ESR'
           0
           28
-          'Байт слежения за DDS'
+          'Байт слежения за ESR'
           0
           29
           'Сброс статуса при включении PSC'
@@ -162,7 +169,10 @@ object DeviceForm: TDeviceForm
           'Триггер'
           0
           31
-          'Перезагрузка'
+          'Байт DDS'
+          0
+          32
+          'Байт слежения за DDS'
           0
           33
           'Сопротивление'
@@ -210,79 +220,79 @@ object DeviceForm: TDeviceForm
           'RS232'
           1
           3
-          ','
-          1
-          4
-          ';'
-          1
-          5
-          'CR'
-          1
-          6
           '9600'
           1
-          7
+          4
           '8'
           1
-          8
+          5
           '2'
           1
-          9
+          6
           'Отсутствует'
           1
-          10
+          7
           'Аппаратное'
           1
-          12
+          11
           '300'
           1
-          13
+          12
           '140'
           1
-          16
-          '*RST'
+          13
+          ','
+          1
+          14
+          ';'
+          1
+          15
+          'CR'
           1
           17
-          '*IDN'
-          1
-          18
-          '*RCL'
+          '*RST'
           1
           19
-          '*SAV'
+          '*IDN'
           1
           20
-          '*TST'
+          '*RCL'
           1
           21
-          '*CAL'
+          '*SAV'
           1
           22
-          '*CLS'
+          '*TST'
           1
           23
-          '*STB'
+          '*CAL'
           1
           24
-          '*SRE'
+          '*CLS'
           1
           25
-          '*ESR'
+          '*STB'
           1
           26
-          '*ESE'
+          '*SRE'
           1
           27
-          'STAT'
+          '*ESR'
           1
           28
-          'DENA'
+          '*ESE'
           1
           29
           '*PSC'
           1
           30
           '*TRG'
+          1
+          31
+          'STAT'
+          1
+          32
+          'DENA'
           1
           34
           'FUNC'
@@ -295,9 +305,6 @@ object DeviceForm: TDeviceForm
           1
           37
           'FREQ'
-          1
-          38
-          'FREQ'
           2
           0
           'DS335'
@@ -309,76 +316,76 @@ object DeviceForm: TDeviceForm
           'RS232'
           2
           3
-          ','
-          2
-          4
-          ';'
-          2
-          5
-          'CR'
-          2
-          6
           '9600'
           2
-          7
+          4
           '8'
           2
-          8
+          5
           '2'
           2
-          9
+          6
           'Отсутствует'
           2
-          10
+          7
           'Аппаратное'
           2
-          12
+          11
           '300'
           2
-          13
+          12
           '140'
           2
-          16
-          '*RST'
+          13
+          ','
+          2
+          14
+          ';'
+          2
+          15
+          'CR'
           2
           17
-          '*IDN'
-          2
-          18
-          '*RCL'
+          '*RST'
           2
           19
-          '*SAV'
+          '*IDN'
           2
           20
-          '*TST'
+          '*RCL'
+          2
+          21
+          '*SAV'
           2
           22
-          '*CLS'
-          2
-          23
-          '*STB'
+          '*TST'
           2
           24
-          '*SRE'
+          '*CLS'
           2
           25
-          '*ESR'
+          '*STB'
           2
           26
-          '*ESE'
+          '*SRE'
           2
           27
-          'STAT'
+          '*ESR'
           2
           28
-          'DENA'
+          '*ESE'
           2
           29
           '*PSC'
           2
           30
           '*TRG'
+          2
+          31
+          'STAT'
+          2
+          32
+          'DENA'
           2
           33
           'TERM'
@@ -420,7 +427,7 @@ object DeviceForm: TDeviceForm
     end
     object tsDetectors: TTabSheet
       Caption = 'Детекторы'
-      ClientHeight = 530
+      ClientHeight = 514
       ClientWidth = 368
       object sgDetCommands: TStringGrid
         AnchorSideLeft.Control = tsDetectors
@@ -430,7 +437,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsDetectors
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 526
+        Height = 510
         Top = 2
         Width = 366
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -442,10 +449,11 @@ object DeviceForm: TDeviceForm
         Columns = <        
           item
             Title.Caption = 'Title'
-            Width = 69
+            Width = 97
           end        
           item
             Title.Caption = 'Title'
+            Width = 55
           end        
           item
             Title.Caption = 'Title'
@@ -456,14 +464,15 @@ object DeviceForm: TDeviceForm
         RowCount = 128
         TabOrder = 0
         OnSelection = sgGenCommandsSelection
+        OnSelectCell = sgDetCommandsSelectCell
         ColWidths = (
-          118
-          69
-          64
+          137
+          97
+          55
           64
         )
         Cells = (
-          129
+          192
           0
           0
           'Модель'
@@ -475,82 +484,82 @@ object DeviceForm: TDeviceForm
           'Интерфейс'
           0
           3
-          'Разделитель параметров'
-          0
-          4
-          'Разделитель команд'
-          0
-          5
-          'Терминатор'
-          0
-          6
           'Baud rate'
           0
-          7
+          4
           'Биты данных'
           0
-          8
+          5
           'Стоп-биты'
           0
-          9
+          6
           'Парность'
           0
-          10
+          7
           'Handshake'
           0
-          11
+          8
           'IP-адрес'
           0
-          12
+          9
+          'Порт'
+          0
+          10
           'Строка инициализации'
           0
-          13
+          11
           'Таймаут'
           0
-          14
+          12
           'Мин. задержка при передаче'
           0
+          13
+          'Разделитель параметров'
+          0
+          14
+          'Разделитель команд'
+          0
           15
-          'Команды:'
+          'Терминатор'
           0
           16
-          'Сброс'
+          'Команды:'
           0
           17
-          'Идентификация'
+          'Сброс'
           0
           18
-          'Загрузить профиль'
+          'Перезагрузка'
           0
           19
-          'Сохранить профиль'
+          'Идентификация'
           0
           20
-          'Проверка'
+          'Загрузить профиль'
           0
           21
-          'Калибровка'
+          'Сохранить профиль'
           0
           22
-          'Очистить статус'
+          'Проверка'
           0
           23
-          'Байт опроса STB'
+          'Калибровка'
           0
           24
-          'Байт слежения за STB'
+          'Очистить статус'
           0
           25
-          'Байт стд. событий ESR'
+          'Байт опроса STB'
           0
           26
-          'Байт слежения за ESR'
+          'Байт слежения за STB'
           0
           27
-          'Байт DDS'
+          'Байт стд. событий ESR'
           0
           28
-          'Байт слежения за DDS'
+          'Байт слежения за ESR'
           0
           29
           'Сброс статуса при включении PSC'
@@ -559,298 +568,487 @@ object DeviceForm: TDeviceForm
           'Триггер'
           0
           31
-          'Перезагрузка'
+          'Байт неполадок ERRS'
+          0
+          32
+          'Байт слежения за ERRS'
           0
           33
-          'Сопротивление'
+          'Байт состояния детектора LIAS'
           0
           34
-          'Функция'
+          'Байт слежения за LIAS'
           0
           35
-          'Амплитуда'
+          'Входная амплитуда'
           0
           36
-          'Смещение'
+          'Чувствительность'
           0
           37
-          'Постоянная частота'
+          'Константа времени'
           0
           38
-          'Источник сканирования'
+          'Close reserve'
           0
           39
-          'Сканирование вкл/выкл'
+          'Wide reserve'
           0
           40
-          'Частота сканирования'
+          'Автоамплитуда'
           0
           41
-          'Начальная частота'
+          'Авточувствительнусть'
           0
           42
-          'Конечная частота'
+          'auto Close reserve'
           0
           43
-          'Тип сканирования'
+          'auto wide reserve'
           0
           44
-          'Направление сканирования'
+          'Автофаза'
+          0
+          45
+          'Автосмещение'
+          0
+          46
+          'Источник синх. сигнала'
+          0
+          47
+          'Частота вн. буфера'
+          0
+          48
+          'Начало снятия (вн. буфер)'
+          0
+          49
+          'Пауза снятия (вн. буфер)'
+          0
+          50
+          'Сбросить вн. буфер'
+          0
+          51
+          'Кол-во точек в буфере'
+          0
+          52
+          'Считать точки из буфера'
+          0
+          53
+          'Режим записи буфера'
+          0
+          54
+          'Одновременная запись параметров'
+          0
+          55
+          'Выбор параметров дисплея'
           1
           0
-          'SR844'
+          'RS865'
           1
           1
           'Stanford_Research_Systems'
           1
-          2
-          'RS232'
-          1
-          3
-          ','
-          1
-          4
-          ';'
-          1
-          5
-          'CR'
-          1
-          6
-          '19200'
-          1
-          7
-          '8'
-          1
-          8
-          '1'
-          1
-          9
-          'Отсутствует'
-          1
-          10
-          'Аппаратное'
-          1
-          12
-          'OUTX0'
-          1
-          13
-          '800'
-          1
-          16
-          '*RST'
-          1
-          17
-          '*IDN'
-          1
-          18
-          '*RCL'
-          1
-          19
-          '*SAV'
-          1
-          20
-          '*TST'
-          1
-          21
-          '*CAL'
-          1
-          22
-          '*CLS'
-          1
-          23
-          '*STB'
-          1
-          24
-          '*SRE'
-          1
-          25
-          '*ESR'
-          1
-          26
-          '*ESE'
-          1
-          27
-          'STAT'
-          1
-          28
-          'DENA'
-          1
-          29
-          '*PSC'
-          1
-          30
-          '*TRG'
-          1
-          34
-          'FUNC'
-          1
-          35
-          'AMPL'
-          1
-          36
-          'OFFS'
-          1
-          37
-          'FREQ'
-          1
-          38
-          'FREQ'
-          2
-          0
-          'SR830'
-          2
-          1
-          'Stanford_Research_Systems'
-          2
-          2
-          'RS232'
-          2
-          3
-          ','
-          2
-          4
-          ';'
-          2
-          5
-          'CR'
-          2
-          6
-          '19200'
-          2
-          7
-          '8'
-          2
-          8
-          '1'
-          2
-          9
-          'Отсутствует'
-          2
-          10
-          'Аппаратное'
-          2
-          12
-          'OUTX0'
-          2
-          13
-          '800'
-          2
-          16
-          '*RST'
-          2
-          17
-          '*IDN'
-          2
-          18
-          '*RCL'
-          2
-          19
-          '*SAV'
-          2
-          20
-          '*TST'
-          2
-          22
-          '*CLS'
-          2
-          23
-          '*STB'
-          2
-          24
-          '*SRE'
-          2
-          25
-          '*ESR'
-          2
-          26
-          '*ESE'
-          2
-          27
-          'STAT'
-          2
-          28
-          'DENA'
-          2
-          29
-          '*PSC'
-          2
-          30
-          '*TRG'
-          2
-          33
-          'TERM'
-          2
-          34
-          'FUNC'
-          2
-          35
-          'AMPL'
-          2
-          36
-          'OFFS'
-          2
-          37
-          'FREQ'
-          2
-          38
-          'TSRC'
-          2
-          39
-          'SWEN'
-          2
-          40
-          'SRAT'
-          2
-          41
-          'STFR'
-          2
-          42
-          'SPFR'
-          2
-          43
-          'STYP'
-          2
-          44
-          'SDIR'
-          3
-          0
-          'SR865'
-          3
-          1
-          'Stanford_Research_Systems'
-          3
           2
           'Ethernet'
-          3
-          3
+          1
+          8
+          '192.168.1.1'
+          1
+          9
+          '80'
+          1
+          11
+          '300'
+          1
+          13
           ','
-          3
-          4
+          1
+          14
           ';'
-          3
-          5
+          1
+          15
           'CR'
+          1
+          17
+          '*RST'
+          1
+          19
+          '*IDN'
+          1
+          20
+          '*RCL'
+          1
+          21
+          '*SAV'
+          1
+          22
+          '*TST'
+          1
+          23
+          '*CAL'
+          1
+          24
+          '*CLS'
+          1
+          25
+          '*STB'
+          1
+          26
+          '*SRE'
+          1
+          27
+          '*ESR'
+          1
+          28
+          '*ESE'
+          1
+          29
+          '*PSC'
+          1
+          30
+          'TRIG'
+          1
+          31
+          'ERRS'
+          1
+          32
+          'ERRE'
+          1
+          33
+          'LIAS'
+          1
+          34
+          'LIAE'
+          1
+          35
+          'IRNG'
+          1
+          36
+          'SCAL'
+          1
+          37
+          'OFLT'
+          1
+          40
+          'ARNG'
+          1
+          41
+          'ASCL'
+          1
+          44
+          'APHS'
+          1
+          46
+          'RSRC'
+          1
+          47
+          'CAPTURERATE'
+          1
+          48
+          'CAPTURESTART'
+          1
+          50
+          'CAPTURESTOP'
+          1
+          51
+          'CAPTUREPROG'
+          1
+          52
+          'CAPTUREGET'
+          1
+          54
+          'SNAP'
+          1
+          55
+          'CAPTURECFG'
+          2
+          0
+          'RS844'
+          2
+          1
+          'Stanford_Research_Systems'
+          2
+          2
+          'RS232'
+          2
           3
+          '19200'
+          2
+          4
+          '8'
+          2
+          5
+          '1'
+          2
           6
+          'Отсутствует'
+          2
+          7
+          'Аппаратное'
+          2
+          10
+          'OUTX0'
+          2
+          11
+          '800'
+          2
+          13
+          ','
+          2
+          14
+          ';'
+          2
+          15
+          'CR'
+          2
+          17
+          '*RST'
+          2
+          18
+          'PRST'
+          2
+          19
+          '*IDN'
+          2
+          20
+          '*RCL'
+          2
+          21
+          '*SAV'
+          2
+          22
+          '*TST'
+          2
+          23
+          '*CAL'
+          2
+          24
+          '*CLS'
+          2
+          25
+          '*STB'
+          2
+          26
+          '*SRE'
+          2
+          27
+          '*ESR'
+          2
+          28
+          '*ESE'
+          2
+          29
+          '*PSC'
+          2
+          30
+          'TRIG'
+          2
+          31
+          'ERRS'
+          2
+          32
+          'ERRE'
+          2
+          33
+          'LIAS'
+          2
+          34
+          'LIAE'
+          2
+          36
+          'SENS'
+          2
+          37
+          'OFLT'
+          2
+          38
+          'CRSV'
+          2
+          39
+          'WRSV'
+          2
+          41
+          'AGAN'
+          2
+          42
+          'ACRS'
+          2
+          43
+          'AWRS'
+          2
+          44
+          'APHS'
+          2
+          45
+          'AOFF'
+          2
+          46
+          'FMOD'
+          2
+          47
+          'SRAT'
+          2
+          48
+          'STRT'
+          2
+          49
+          'PAUS'
+          2
+          50
+          'REST'
+          2
+          51
+          'SPTS'
+          2
+          52
+          'TRCL'
+          2
+          53
+          'SEND'
+          2
+          54
+          'SNAP'
+          2
+          55
+          'DDEF'
+          3
+          0
+          'RS830'
+          3
+          1
+          'Stanford_Research_Systems'
+          3
+          2
+          'RS232'
+          3
+          3
           '19200'
           3
-          7
+          4
           '8'
           3
-          8
+          5
           '1'
           3
-          9
+          6
           'Отсутствует'
           3
-          10
+          7
           'Аппаратное'
           3
+          10
+          'OUTX0'
+          3
           11
-          '192.168.1.1'
+          '800'
           3
           13
-          '500'
+          ','
+          3
+          14
+          ';'
+          3
+          15
+          'CR'
+          3
+          17
+          '*RST'
+          3
+          19
+          '*IDN'
+          3
+          20
+          '*RCL'
+          3
+          21
+          '*SAV'
+          3
+          22
+          '*TST'
+          3
+          23
+          '*STB'
+          3
+          24
+          '*CLS'
+          3
+          25
+          '*STB'
+          3
+          26
+          '*SRE'
+          3
+          27
+          '*ESR'
+          3
+          28
+          '*ESE'
+          3
+          29
+          '*PSC'
+          3
+          30
+          'TRIG'
+          3
+          31
+          'ERRS'
+          3
+          32
+          'ERRE'
+          3
+          33
+          'LIAS'
+          3
+          34
+          'LIAE'
+          3
+          36
+          'SENS'
+          3
+          37
+          'OFLT'
+          3
+          38
+          'RMOD'
+          3
+          41
+          'AGAN'
+          3
+          42
+          'ARSV'
+          3
+          44
+          'APHS'
+          3
+          45
+          'AOFF'
+          3
+          47
+          'SRAT'
+          3
+          48
+          'STRT'
+          3
+          49
+          'PAUS'
+          3
+          50
+          'REST'
+          3
+          51
+          'SPTS'
+          3
+          52
+          'TRCL'
+          3
+          53
+          'SEND'
+          3
+          54
+          'SNAP'
+          3
+          55
+          'DDEF'
         )
       end
     end
@@ -873,7 +1071,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btDone
     Left = 388
     Height = 25
-    Top = 491
+    Top = 475
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 16
@@ -887,7 +1085,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 388
     Height = 15
-    Top = 235
+    Top = 270
     Width = 68
     BorderSpacing.Top = 20
     Caption = 'Терминатор'
@@ -900,7 +1098,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label6
     Left = 517
     Height = 23
-    Top = 235
+    Top = 270
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -919,7 +1117,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 517
     Height = 25
-    Top = 274
+    Top = 309
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -944,17 +1142,16 @@ object DeviceForm: TDeviceForm
     TabOrder = 4
   end
   object cbStopBits: TComboBox
-    AnchorSideTop.Control = btDeleteDevice
+    AnchorSideTop.Control = cbInterface
     AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Owner
+    AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
     Left = 517
     Height = 23
-    Top = 130
+    Top = 165
     Width = 125
     Anchors = [akTop, akRight]
-    BorderSpacing.Top = 16
-    BorderSpacing.Right = 8
+    BorderSpacing.Top = 12
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -970,7 +1167,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label4
     Left = 517
     Height = 23
-    Top = 165
+    Top = 200
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -989,7 +1186,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label5
     Left = 517
     Height = 23
-    Top = 200
+    Top = 235
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1004,12 +1201,14 @@ object DeviceForm: TDeviceForm
   end
   object Label3: TLabel
     AnchorSideLeft.Control = Label1
-    AnchorSideTop.Control = cbStopBits
+    AnchorSideTop.Control = Label2
+    AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbStopBits
     Left = 388
     Height = 15
-    Top = 130
+    Top = 165
     Width = 60
+    BorderSpacing.Top = 20
     Caption = 'Стоп-биты'
     Color = clWhite
     ParentColor = False
@@ -1021,7 +1220,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 388
     Height = 15
-    Top = 165
+    Top = 200
     Width = 53
     BorderSpacing.Top = 20
     Caption = 'Парность'
@@ -1035,7 +1234,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 388
     Height = 15
-    Top = 200
+    Top = 235
     Width = 59
     BorderSpacing.Top = 20
     Caption = 'Handshake'
@@ -1063,7 +1262,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btSaveToFile
     Left = 388
     Height = 25
-    Top = 458
+    Top = 442
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 8
@@ -1077,7 +1276,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btLoadFromFile
     Left = 517
     Height = 25
-    Top = 458
+    Top = 442
     Width = 125
     BorderSpacing.Left = 4
     Caption = 'Уст. по умолчанию'
@@ -1085,12 +1284,13 @@ object DeviceForm: TDeviceForm
     TabOrder = 10
   end
   object btDone: TButton
+    AnchorSideLeft.Control = btSaveToFile
     AnchorSideTop.Control = pcDevice
     AnchorSideBottom.Control = pcDevice
     AnchorSideBottom.Side = asrBottom
     Left = 388
     Height = 25
-    Top = 532
+    Top = 516
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 5
@@ -1099,12 +1299,45 @@ object DeviceForm: TDeviceForm
     OnClick = btDoneClick
     TabOrder = 11
   end
+  object Label2: TLabel
+    AnchorSideLeft.Control = Label1
+    AnchorSideTop.Control = cbInterface
+    Left = 388
+    Height = 15
+    Top = 130
+    Width = 62
+    Caption = 'Интерфейс'
+    Color = clWhite
+    ParentColor = False
+    Transparent = False
+  end
+  object cbInterface: TComboBox
+    AnchorSideTop.Control = btDeleteDevice
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = btDeleteDevice
+    AnchorSideRight.Side = asrBottom
+    Left = 517
+    Height = 23
+    Top = 130
+    Width = 125
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 16
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'RS232'
+      'Ethernet'
+      'USB'
+    )
+    TabOrder = 12
+    Text = 'RS232'
+  end
   object OpenDialog: TOpenDialog
-    left = 408
-    top = 408
+    left = 392
+    top = 328
   end
   object SaveDialog: TSaveDialog
-    left = 472
-    top = 408
+    left = 456
+    top = 328
   end
 end

@@ -6,10 +6,14 @@ interface
 
 uses
   Classes, SysUtils, Forms, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons,
-  Dialogs, Grids, synaser, StatusF, CustomCommandF;
+  Dialogs, Grids, synaser, tlntsend, StatusF, CustomCommandF;
 
 type
   ConnectAction = (ANo, AQuery, AReset);
+
+  eConnectionKind = (cNone, cSerial, cTelNet);
+
+  eDeviceKind = (dGenerator, dDetector);
 
   tSSA = array of ansistring;
   pSSA = ^tSSA;
@@ -19,13 +23,6 @@ type
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
     AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
-  end;
-
-  rConnectParams = record
-    Device, Port, InitString: shortstring;
-    Parity, StopBits: byte;
-    SoftFlow, HardFlow: boolean;
-    BaudRate, DataBits, Timeout: longword;
   end;
 
   rParams = record
@@ -39,19 +36,24 @@ type
     GeneratorPort, DetectorPort, LastGenerator, LastDetector: shortstring;
   end;
 
+  pDevice = ^tDevice;
+
   tDevice = record   //device to each tserconform so that get rid of commcs
     Manufacturer, Model: string;
     Commands: tSSA;
-    ParSeparator, CommSeparator, Terminator: string;
+    ParSeparator, CommSeparator, Terminator, InitString: string;
+    //Connection: eConnectionKind;
+    case Connection: eConnectionKind of
+     // cNone:   ();
+      cSerial: (Parity, StopBits: byte;
+                SoftFlow, HardFlow: boolean;
+                BaudRate, DataBits, Timeout: longword);
+      cTelNet: (Host, Port: string[15]);
   end;
 
   tUnits = (
     NOUNIT, VP,   VR
             );
-
-  tCommonCommand = (
-    RST, IDN, RCL, SAV, TST, CAL, CLS, STB, SRE, ESR, ESE, PSC, TRG
-                    );
 
   { TSerConnectForm }
 
@@ -80,22 +82,29 @@ type
     procedure btResetClick(Sender: TObject);
     procedure btStatusClick(Sender: TObject);
   private
+    TestResult: string;
     fTimeOuts: longword;
+
+    function GetCurDev: pDevice;
     procedure SetTOE(AValue: longword);
 
   public
+    ConnectionKind: eConnectionKind;
     CommCS: TRTLCriticalSection;
     SerPort: TBlockSerial;
-    ConnectParams: RConnectParams;
-    CommandString, PresumedDevice, CurrentDevice: shortstring;
+    TelNetClient: tTelNetSend;
+    CommandString, PresumedDevice: shortstring;
     DeviceIndex: longint;
+    DeviceKind: eDeviceKind;
     SupportedDevices: array of tDevice;
 
     property TimeOutErrors: longword read fTimeOuts write SetTOE;
+    property CurrentDevice: pDevice read GetCurDev;
 
-    procedure GetSupportedDevices(sg: tStringGrid);
+    procedure GetSupportedDevices(Kind: eDeviceKind);
     procedure InitDevice;
-    function Connect: longint; virtual;
+    function ConnectSerial: longint; virtual;
+    function ConnectTelNet: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
     procedure AddCommand(c: variant{tCommand}; Query: boolean = false);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
@@ -111,14 +120,9 @@ type
   function valf(s: string): integer;
 
 const
-  SGHeaderLength = 16; //кол-во строк в tStringGrid, не относящ. к командам
   sUnits: array[0..2] of shortstring =   (
                   '', 'VP', 'VR'
                   );
-
-  CommonCommand: array [RST..TRG] of ansistring = (
-                    '*RST', '*IDN', '*RCL', '*SAV', '*TST', '*CAL', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , '*TRG'
-                    );
 
 var
   ProgramLog: TFileStream;
@@ -156,74 +160,120 @@ begin
   end;
 end;
 
-procedure TSerConnectForm.btnConnectClick(Sender: TObject);
+procedure tSerConnectForm.btnConnectClick(Sender: TObject);
 begin
-  btnDisconnectClick(Self);
-  Connect;
+  btnDisconnectClick(Sender);
+  if cbPortSelect.ItemIndex >= 0 then
+  begin
+    if cbPortSelect.Text = 'Ethernet' then
+      ConnectTelNet
+    else
+      ConnectSerial;
+  end;
 end;
 
-procedure TSerConnectForm.btnDisconnectClick(Sender: TObject);
+procedure tSerConnectForm.btnDisconnectClick(Sender: TObject);
 begin
-  if SerPort.InstanceActive then
+  if assigned(SerPort) then
   begin
-    SerPort.Purge;
-    SerPort.CloseSocket;
+    if SerPort.InstanceActive then
+    begin
+      SerPort.Purge;
+      SerPort.CloseSocket;
+
+      StatusBar1.Caption:= 'Нет подключения'; { TODO 2 -cImprovement : Sort out statusbars }
+      EnableControls(false);
+      ConnectionKind:= cNone;
+      DeviceIndex:= iDefaultdevice;
+    end;
+    freeandnil(SerPort);
+  end;
+
+  if assigned(TelNetClient) then
+  begin
     StatusBar1.Caption:= 'Нет подключения';
     EnableControls(false);
+    ConnectionKind:= cNone;
     DeviceIndex:= iDefaultdevice;
+
+    freeandnil(TelNetClient);
   end;
 end;
 
-procedure TSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
+procedure tSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
 begin
-  if SerPort.InstanceActive then
-  begin
-    AddCommand(IDN, true);
-    PassCommands;
+  case ConnectionKind of
+   // cNone:
+    cSerial:
+      begin
+        if SerPort.InstanceActive then
+        begin
+          AddCommand(cIdentify, true);
+          PassCommands;
 
-    //DataVolume:= SerPort.WaitingData;
-    //str(DataVolume, s);
-    //DebugBox.Items.Strings[11]:= s;
-    //setlength(s, DataVolume);
-    SerPort.RaiseExcept:= false;  //sleep
-    //if SerPort.CanRead(seRecvTimeout.Value) then
-    CurrentDevice:= RecvString;
-    if CurrentDevice <> '' then ShowMessage('Подключено к ' + CurrentDevice);
-    SerPort.RaiseExcept:= true;
+          //DataVolume:= SerPort.WaitingData;
+          //str(DataVolume, s);
+          //DebugBox.Items.Strings[11]:= s;
+          //setlength(s, DataVolume);
+          SerPort.RaiseExcept:= false;  //sleep
+          //if SerPort.CanRead(seRecvTimeout.Value) then
+          TestResult:= RecvString;
+          if TestResult <> '' then ShowMessage('Подключено к ' + TestResult);
+          SerPort.RaiseExcept:= true;
+        end;
+      end;
+    cTelNet:
+      begin
+        AddCommand(cIdentify, true);
+        PassCommands;
+        TestResult:= RecvString;
+        if TestResult <> '' then ShowMessage('Подключено к ' + TestResult);
+      end;
   end;
 end;
 
-procedure TSerConnectForm.btStatusClick(Sender: TObject);
+procedure tSerConnectForm.btStatusClick(Sender: TObject);
 begin
   if StatusForm.Visible then StatusForm.Hide;
   StatusForm.Form:= pointer(Self);
   StatusForm.Show;
 end;
 
-procedure TSerConnectForm.btResetClick(Sender: TObject);
+procedure tSerConnectForm.btResetClick(Sender: TObject);
 begin
-  AddCommand(RST);
+  AddCommand(cReset);
   PassCommands;
 end;
 
-procedure TSerConnectForm.btCustomCommandClick(Sender: TObject);
+procedure tSerConnectForm.btCustomCommandClick(Sender: TObject);
 begin
   if CustomCommandForm.Visible then CustomCommandForm.Hide;
   CustomCommandForm.Form:= pointer(Self);
   CustomCommandForm.Show;
 end;
 
-procedure TSerConnectForm.SetTOE(AValue: longword);
+procedure tSerConnectForm.SetTOE(AValue: longword);
 begin
   StatusBar1.SimpleText:= 'Таймаутов:' + strf(AValue);
   WriteProgramLog('Timeout receiving string');
   fTimeOuts:= AValue;
 end;
 
-procedure TSerConnectForm.GetSupportedDevices(sg: tStringGrid);
+function tSerConnectForm.GetCurDev: pDevice;
+begin
+  Result:= @SupportedDevices[DeviceIndex];
+end;
+
+procedure tSerConnectForm.GetSupportedDevices(Kind: eDeviceKind);
 var
   i, j: integer;
+  sg: tStringGrid;
 begin
+  case Kind of
+    dGenerator: sg:= DeviceForm.sgGenCommands;
+    dDetector:  sg:= DeviceForm.sgDetCommands;
+  end;
+
   with sg do
   begin
     setlength(SupportedDevices, ColCount); //0th is defdevice
@@ -236,6 +286,11 @@ begin
         Model:=         Cells[i, longint(hModel)];
         CommSeparator:= Cells[i, longint(hCommSeparator)];
         ParSeparator:=  Cells[i, longint(hParSeparator)];
+
+        case Cells[i, longint(hInterface)] of
+          'Ethernet': Connection:= cTelNet;
+          else Connection:= cSerial;
+        end;
 
         case Cells[i, longint(hTerminator)] of
           'CR':   Terminator:= CR;
@@ -251,12 +306,12 @@ begin
   end;
 end;
 
-procedure TSerConnectForm.InitDevice;
+procedure tSerConnectForm.InitDevice;
 var
   s, t: string;
   i: integer;
 begin
-  s:= ConnectParams.InitString;
+  s:= CurrentDevice^.InitString;
   if s = '' then exit;
 
   t:= SupportedDevices[iDefaultDevice].Terminator;
@@ -266,63 +321,75 @@ begin
 
   s+= t;
 
-  WriteProgramLog('Строка на устройство ' + CurrentDevice);
+  WriteProgramLog('Строка на устройство ' + TestResult);
   WriteProgramLog(s);
   WriteProgramLog('');
   SerPort.SendString(s);        //cts????
 end;
 
-function TSerConnectForm.Connect: longint;
+function tSerConnectForm.ConnectSerial: longint;  { TODO 1 -cBug : Redo }
 var
   P: char;
   i: integer;
+  s: string;
 begin
-  if cbPortSelect.ItemIndex >= 0 then
+  WriteProgramLog('Подключение...');
+
+  DeviceIndex:= iDefaultDevice;
+  ConnectionKind:= cSerial;
+  SerPort:= TBlockSerial.Create;
+  SerPort.RaiseExcept:= true;
+  SerPort.ConvertLineEnd:= true;
+  SerPort.DeadLockTimeOut:= 10000;
+
+  SerPort.TestDsr:= true;
+  SerPort.RaiseExcept:= false;             //cycle here!!!!
+  SerPort.Connect(cbPortSelect.Text);
+  if SerPort.LastError = 0 then
   begin
-    WriteProgramLog('Подключение...');
-    SerPort.TestDsr:= true;
-    SerPort.RaiseExcept:= false;
-    SerPort.Connect(cbPortSelect.Text);      //After successfull connection the DTR signal is set
-    //DebugBox.Items.Strings[4]:= SerPort.Device;
-    {if serport.cts then DebugBox.Items.Strings[5]:= 'cts 1';
-    if serport.testdsr then DebugBox.Items.Strings[6]:= 'dsr 1';
-    if SerPort.CanRead(TestTimeOut) then DebugBox.Items.Strings[7]:= 'canread';
-    if SerPort.CanWrite(TestTimeOut) then DebugBox.Items.Strings[8]:= 'canwrite';   }
-
-    if SerPort.LastError = 0 then   //TestDSR?
-    with ConnectParams do
-    begin
-      case Parity of
-        0: P:= 'N';   //none, odd, even, mark, space
-        1: P:= 'O';
-        2: P:= 'E';
-        3: P:= 'M';
-        4: P:= 'S';
-      end;
-      SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
-      if SerPort.LastError <> 0 then
-      begin
-        ShowMessage('Ошибка' + SerPort.LastErrorDesc);
-        SerPort.CloseSocket;
-        SerPort.RaiseExcept:= true;
-        exit(-1)
-      end;
-
-        InitDevice;
-        btnTestClick(Self);
-        if CurrentDevice <> '' then
+    for i:= 1 to high(SupportedDevices) do
+      with SupportedDevices[i] do
+      if Connection = cSerial then
         begin
-        for i:= 1 to high(SupportedDevices) do
-          with SupportedDevices[i] do
+          WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
+          case Parity of
+            0: P:= 'N';   //none, odd, even, mark, space
+            1: P:= 'O';
+            2: P:= 'E';
+            3: P:= 'M';
+            4: P:= 'S';
+          end;
+          SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
+
+          InitDevice;
+          btnTestClick(Self);
+          WriteProgramLog('Ответ устройства: ' + TestResult);
+
+          if TestResult <> '' then
           begin
-            if (pos(Manufacturer, CurrentDevice) > 0) and (pos(Model, CurrentDevice) > 0) then
+            if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
             begin
               DeviceIndex:= i;
+              WriteProgramLog('Успешно');
               break;
             end;
           end;
-        if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
-        end
+        end;
+    if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
+  end;
+
+  if SerPort.LastError <> 0 then
+  begin
+    s:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
+    WriteProgramLog(s);
+    ShowMessage(s);
+    SerPort.CloseSocket;
+    SerPort.RaiseExcept:= true;
+    ConnectionKind:= cNone;
+    freeandnil(SerPort);
+    exit(-1)
+  end;
+        {end
         else
         begin
           ShowMessage('Устройство не оветило на запрос модели или неверны параметры подключения.'#13#10'Исправьте параметры или введите модель подключаемого прибора.');
@@ -340,24 +407,25 @@ begin
         if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
         end;
 
-        if (PresumedDevice <> '') and (CurrentDevice <> '') and
-          (PresumedDevice <> CurrentDevice) then
-          ShowMessage('Внимание! Текущая конфигурация создавалась для другого прибора.');
+      if (PresumedDevice <> '') and (TestResult <> '') and
+        (PresumedDevice <> TestResult) then
+        ShowMessage('Внимание! Текущая конфигурация создавалась для другого прибора.');
 
-      StatusBar1.Caption:= 'Готовность';
-    end
-    else
-    begin
-      CurrentDevice:= '';
-      StatusBar1.Caption:= 'Порт не отвечает';
-      SerPort.CloseSocket;
-      //showmessage('');
-    end
-  end;
+    StatusBar1.Caption:= 'Готовность';
+      end;}
+        //After successfull connection the DTR signal is set
+  //DebugBox.Items.Strings[4]:= SerPort.Device;
+  {if serport.cts then DebugBox.Items.Strings[5]:= 'cts 1';
+  if serport.testdsr then DebugBox.Items.Strings[6]:= 'dsr 1';
+  if SerPort.CanRead(TestTimeOut) then DebugBox.Items.Strings[7]:= 'canread';
+  if SerPort.CanWrite(TestTimeOut) then DebugBox.Items.Strings[8]:= 'canwrite';   }
+
+     //TestDSR?
+
   if SerPort.InstanceActive then
   begin
     StatusBar1.Caption:= 'Есть подключение';
-    Connect:= 0;
+    Result:= 0;
     TimeOutErrors:= 0;
     StatusBar1.SimpleText:= '';
     EnableControls(true);
@@ -367,115 +435,193 @@ begin
       AReset: btResetClick(Self);
     end;
 
-    ConnectParams.Port:= cbPortSelect.Text;
-    ConnectParams.TimeOut:= seRecvTimeOut.Value;
-    ConnectParams.Device:= CurrentDevice;
+    CurrentDevice^.Port:= cbPortSelect.Text;
+    CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
   end
-  else StatusBar1.Caption:= 'Нет подключения';
+  else
+    begin
+      StatusBar1.Caption:= 'Нет подключения';
+      SerPort.CloseSocket;
+      ConnectionKind:= cNone;
+      freeandnil(SerPort);
+      Result:= -2;
+    end;
   SerPort.RaiseExcept:= true;
 end;
 
-procedure TSerConnectForm.AddCommand(c: variant{tCommand}; Query: boolean = false);
+function tSerConnectForm.ConnectTelNet: longint;
+var
+  i: integer;
 begin
+  DeviceIndex:= iDefaultDevice;
+  ConnectionKind:= cTelNet;
+  TelNetClient:= tTelNetSend.Create;
+  for i:= 1 to high(SupportedDevices) do
+    with SupportedDevices[i] do
+      if Connection = cTelNet then
+      begin
+        WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
+        TelNetClient.TargetHost:= Host;   { TODO 1 -cImprovement : Variable record }
+        TelNetClient.TargetPort:= Port;
+        TelNetClient.Timeout:= TimeOut;
 
-  if (c > high(SupportedDevices[DeviceIndex].Commands)) or
-    (SupportedDevices[DeviceIndex].Commands[c] = '') then    //commcs just bc suppdev???
+        TelNetClient.Login;
+
+        InitDevice;
+        btnTestClick(Self);
+        WriteProgramLog('Ответ устройства: ' + TestResult);
+
+        if TestResult <> '' then
+          if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
+          begin
+            DeviceIndex:= i;
+            break;
+          end;
+      end;
+  if DeviceIndex <> iDefaultDevice then
+  begin
+    Result:= 0;
+    case Config.OnConnect of
+      AQuery: btQueryClick(Self);
+      AReset: btResetClick(Self);
+    end;
+    CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
+  end
+  else
+  begin
+    ShowMessage('Устройство не опознано');
+    ConnectionKind:= cNone;
+    freeandnil(TelNetClient);
+    Result:= -1;
+  end;
+end;
+
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
+begin
+  if (c > high(CurrentDevice^.Commands)) or
+    (CurrentDevice^.Commands[c] = '') then    //commcs just bc suppdev???
   begin
     WriteProgramLog('Error: command unsopported by this device');
     exit
   end;
 
-  if CommandString <> '' then CommandString+= SupportedDevices[DeviceIndex].CommSeparator;
+  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
 
-  CommandString+= SupportedDevices[DeviceIndex].Commands[c];
+  CommandString+= CurrentDevice^.Commands[c];
 
   if Query then CommandString+= '?';
 end;
 
-procedure TSerConnectForm.AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; i: longint);
 begin
-  if (c > high(SupportedDevices[DeviceIndex].Commands)) or
-    (SupportedDevices[DeviceIndex].Commands[c] = '') then
+  if (c > high(CurrentDevice^.Commands)) or
+    (CurrentDevice^.Commands[c] = '') then
   begin
     WriteProgramLog('Error: command unsopported by this device');
     exit
   end;
 
-  if CommandString <> '' then CommandString+= SupportedDevices[DeviceIndex].CommSeparator;
+  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
 
-  CommandString+= SupportedDevices[DeviceIndex].Commands[c];
+  CommandString+= CurrentDevice^.Commands[c];
 
   if Query then CommandString+= '?';
 
   CommandString+= strf(i);
 end;
 
-procedure TSerConnectForm.AddCommand(c: variant{tCommand}; Query: boolean; var a: array of longint);
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
+  var a: array of longint);
 var
   i: longint;
 begin
-  if (c > high(SupportedDevices[DeviceIndex].Commands)) or
-    (SupportedDevices[DeviceIndex].Commands[c] = '') then
+  if (c > high(CurrentDevice^.Commands)) or
+    (CurrentDevice^.Commands[c] = '') then
   begin
     WriteProgramLog('Error: command unsopported by this device');
     exit
   end;
 
-  if CommandString <> '' then CommandString+= SupportedDevices[DeviceIndex].CommSeparator;
+  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
 
-  CommandString+= SupportedDevices[DeviceIndex].Commands[c];
+  CommandString+= CurrentDevice^.Commands[c];
 
   if Query then CommandString+= '?';
 
   for i:= 0 to high(a) do
   begin
-    if i <> 0 then CommandString+= SupportedDevices[DeviceIndex].ParSeparator;
+    if i <> 0 then CommandString+= CurrentDevice^.ParSeparator;
     CommandString+= strf(a[i]);
   end;
 end;
 
-procedure TSerConnectForm.AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: tUnits);
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: real;
+  Units: tUnits);
 begin
-  if (c > high(SupportedDevices[DeviceIndex].Commands)) or
-    (SupportedDevices[DeviceIndex].Commands[c] = '') then
+  if (c > high(CurrentDevice^.Commands)) or
+    (CurrentDevice^.Commands[c] = '') then
   begin
     WriteProgramLog('Error: command unsopported by this device');
     exit
   end;
 
-  if CommandString <> '' then CommandString+= SupportedDevices[DeviceIndex].CommSeparator;
+  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
 
-  CommandString+= SupportedDevices[DeviceIndex].Commands[c];
+  CommandString+= CurrentDevice^.Commands[c];
 
   if Query then CommandString+= '?';
 
   CommandString+= strf(x) + sUnits[integer(Units)]; //does this work ???
 end;
 
-procedure TSerConnectForm.PassCommands;
+procedure tSerConnectForm.PassCommands;
 begin
-  CommandString+= SupportedDevices[DeviceIndex].Terminator;
-  if (serport.instanceactive) and (serport.CTS) then
-  begin
-    WriteProgramLog('Строка на устройство ' + CurrentDevice);
-    WriteProgramLog(CommandString);
-    WriteProgramLog('');
-    SerPort.SendString(CommandString);        //cts????
+  CommandString+= CurrentDevice^.Terminator;
+  case ConnectionKind of
+    //cNone: ;
+    cSerial:
+      begin
+        if (serport.instanceactive) and (serport.CTS) then
+        begin
+          WriteProgramLog('Строка на устройство ' + TestResult);
+          WriteProgramLog(CommandString);
+          WriteProgramLog('');
+          SerPort.SendString(CommandString);        //cts????
+        end;
+      end;
+    cTelNet:
+      begin
+        WriteProgramLog('Строка на устройство ' + TestResult);
+        WriteProgramLog(CommandString);
+        WriteProgramLog('');
+        TelNetClient.Send(CommandString);
+      end;
   end;
   CommandString:= '';
 end;
 
-function TSerConnectForm.RecvString: string;
+function tSerConnectForm.RecvString: string;
 begin
-  if (serport.instanceactive) and (serport.CTS) then
-  begin
-    SerPort.RaiseExcept:= false;
-    Result:= SerPort.RecvString(ConnectParams.Timeout);
-    SerPort.RaiseExcept:= true;
+  case ConnectionKind of
+    //cNone: ;
+    cSerial:
+      begin
+        if (serport.instanceactive) and (serport.CTS) then
+        begin
+          SerPort.RaiseExcept:= false;
+          Result:= SerPort.RecvString(CurrentDevice^.Timeout);
+          SerPort.RaiseExcept:= true;
 
-    writeprogramlog('Получена строка ' + Result);
+          writeprogramlog('Получена строка ' + Result);
 
-    if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+          if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+        end;
+      end;
+    cTelNet:
+      begin;
+        Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+        writeprogramlog('Получена строка ' + Result);
+      end;
   end;
 end;
 

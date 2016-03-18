@@ -10,14 +10,103 @@ uses
 
 type
   eHeaderRow = (
-    hModel, hManufacturer, hInterface, hParSeparator,
-    hCommSeparator, hTerminator, hBaudRate, hDataBits, hStopBits, hParity,
-    hHandShake, hInitString, hTimeOut, hMinDelay
+    hModel, hManufacturer, hInterface, hBaudRate, hDataBits, hStopBits, hParity,
+    hHandShake, hIPAdress, hPort, hInitString, hTimeOut, hMinDelay,
+    hParSeparator, hCommSeparator, hTerminator
                 );
 
-  { TDeviceForm }
+  eCommonCommand = (
+    cReset, cIdentify, cRecall, cSave, cTest, cCalibrate, cClearStatus,
+    cSerialPoll, cSerialPollEnable, cStdEvent, cStdEventEnable, cPowerClear,
+    cTrigger
+                    );
 
-  TDeviceForm = class(TForm)
+  eGenCommand = (
+    gDDS = integer(cTrigger) + 1, gDDSEnable, gResistance, gFunction,
+    gAmplitude, gOffset, gFrequency, gSweepSource, gSweepEnable,
+    gSweepRate, gSweepStartFrequency, gSweepStopFrequency, gSweepType,
+    gSweepDirection
+                 );
+
+  eDetCommand = (
+    dError = integer(cTrigger) + 1, dErrorEnable, dLIA, dLIAEnable,
+    dRange, dSensitivity, dTimeConstant, dCloseReserve, dWideReserve,
+    dAutoRange, dAutoSensitivity, dAutoCloseReserve, dAutoWideReserve,
+    dAutoPhase, dAutoOffset, dReferenceSource,  dSampleRate, dStartStorage,
+    dPauseStorage, dResetStorage, dStoredPoints, dReadPointsNative,
+    dStorageMode, dReadSimultaneous, dDisplaySelect
+                 );
+
+  {rCommand = record
+    case integer of
+      0..integer(cTrigger): (Value: eCommonCommand);
+      integer(gDDS)..integer(gSweepDirection): (Value: eGenCommand);
+      integer(dError)..integer(dDisplaySelect): (Value: eDetCommand);
+    end;
+  end;}
+
+  {type
+  TSR844Command = (
+    PRST = longint(TRG) + 1, LOCL, OVRM,
+    FMOD, HARM, FREQ, FRAQ, FRIQ, PHAS, APHS, REFZ, WRSV, AWRS, INPZ,
+    SENS, AGAN, CRSV, ACRS, OFLT, OFSL, SETL,
+    DDEF, DRAT, FPOP, DOFF, AOFF, DEXP,
+    AUXI, AUXO,
+    OUTX, KCLK, ALRM, SSET, RSET, KNOB, KEYP,
+    SSTR, SFIN, SSTP, SMOD, RSTO, RRDY, RCLR, RMOD,
+    SRAT, SEND, TSTR, STRT, PAUS, REST,
+    OUTP, OUTR, SNAP, SPTS, TRCA, TRCB, TRCL, FAST, STRD,
+    ERRS, ERRE, LIAS, LIAE
+                     );
+
+  TSR830Command = (
+    {RST, IDN, LOCL = 3, OVRM,
+    FMOD, HARM, FREQ, PHAS = 10, APHS,
+    SENS = 16, AGAN, OFLT = 20, OFSL,
+    DDEF = 23, FPOP = 25, AOFF = 27,
+    OAUX = 29, AUXV,
+    OUTX, KCLK, ALRM, SSET, RSET,
+    RMOD = 45,
+    SRAT, SEND, TRIG, TSTR, STRT, PAUS, REST,
+    OUTP, OUTR, SNAP, SPTS, TRCA, TRCB, TRCL, FAST, STRD,
+    CLS, STB, SRE, ESR, ESE, PSC, ERRS, ERRE, LIAS, LIAE, }
+    RSLP = longint(LIAE) + 1, SLVL, ISRC, IGND, ICPL, ILIN, SYNC, OEXP, ARSV
+                                              );                               }
+
+   {tDS345Command = (
+    AECL = longint(TRG) + 1, AMPL, ATTL, FREQ, FSMP, FUNC, INVT, OFFS, PCLR, PHSE,
+    BCNT, DPTH, FDEV, MDWF, MENA, MKSP, MRKF, MTYP, PDEV, RATE, SPAN, SPCF, SPFR, SPMK, STFR, TRAT, TSRC,
+    AMRT, AMOD, LDWF,
+    DENA, STAT
+              );
+
+  tDS335Command = (
+    KEYS = longint(STAT) + 1,  SYNC, TERM,
+    FSEN, SDIR, SWEN
+                    );
+const
+
+  DS345Command: array [longint(RST)..longint(STAT)] of ansistring = (
+    '*RST', '*IDN', '*RCL', '*SAV', '*TST', '*CAL', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , '*TRG',
+    'AECL', 'AMPL', 'ATTL', 'FREQ', 'FSMP', 'FUNC', 'INVT', 'OFFS', 'PCLR', 'PHSE',
+    'BCNT', 'DPTH', 'FDEV', 'MDWF', 'MENA', 'MKSP', 'MRKF', 'MTYP', 'PDEV', 'RATE', 'SPAN', 'SPCF', 'SPFR', 'SPMK', 'STFR', 'TRAT', 'TSRC',
+    'AMRT', 'AMOD', 'LDWF',
+    'DENA', 'STAT'
+    );
+
+  DS335Command: array [longint(RST)..longint(SWEN)] of ansistring = (
+    '*RST', '*IDN', '*RCL', '*SAV', '*TST', '', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , '*TRG',
+    'AECL', 'AMPL', 'ATTL', 'FREQ', '', 'FUNC', 'INVT', 'OFFS', '', '',
+    '', '', '', '', '', '', '', 'STYP', '', '', '', '', 'SPFR', '', 'STFR', 'SRAT', 'TSRC',
+    '', '', '',
+    'DENA', 'STAT',
+    'KEYS',  'SYNC', 'TERM',
+    'FSEN', 'SDIR', 'SWEN'
+     );   }
+
+  { tDeviceForm }
+
+  tDeviceForm = class(TForm)
     btAddDevice: TButton;
     btDeleteDevice: TButton;
     btApply: TButton;
@@ -29,7 +118,9 @@ type
     cbParity: TComboBox;
     cbStopBits: TComboBox;
     cbTerminator: TComboBox;
+    cbInterface: TComboBox;
     Label1: TLabel;
+    Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
     Label5: TLabel;
@@ -48,10 +139,15 @@ type
     procedure btLoadFromFileClick(Sender: TObject);
     procedure btSaveToFileClick(Sender: TObject);
     procedure btSetDefaultFileClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure pcDeviceChange(Sender: TObject);
+    procedure sgDetCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
+      var CanSelect: Boolean);
     procedure sgGenCommandsSelection(Sender: TObject; aCol, aRow: Integer);
+
+    function CheckConformance: integer;
   private
     { private declarations }
     CurrColumn: integer;  //stringgrid.row
@@ -62,6 +158,7 @@ type
   end;
 
 const
+  SGHeaderLength = 17; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
 
@@ -73,17 +170,11 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, MainF, OptionF;
-
-const
-  StopBitsRow = 8;
-  ParityRow = 9;
-  HandShakeRow = 10;
-  TerminatorRow = 5;
+  LCLType, SynaIP, MainF, OptionF, serconf;
 
 { TDeviceForm }
 
-procedure TDeviceForm.btAddDeviceClick(Sender: TObject);
+procedure tDeviceForm.btAddDeviceClick(Sender: TObject);
 var
   Model: string;
 begin
@@ -96,19 +187,20 @@ begin
   end;
 end;
 
-procedure TDeviceForm.btApplyClick(Sender: TObject);
+procedure tDeviceForm.btApplyClick(Sender: TObject);
 begin
   if CurrColumn < 0 then exit;
   with sg do
   begin
-    Cells[CurrColumn, StopBitsRow]:= cbStopBits.Text;
-    Cells[CurrColumn, ParityRow]:= cbParity.Text;
-    Cells[CurrColumn, HandShakeRow]:= cbHandShake.Text;
-    Cells[CurrColumn, TerminatorRow]:= cbTerminator.Text;
+    Cells[CurrColumn, integer(hInterface) ]:= cbInterface.Text;
+    Cells[CurrColumn, integer(hStopBits)  ]:= cbStopBits.Text;
+    Cells[CurrColumn, integer(hParity)    ]:= cbParity.Text;
+    Cells[CurrColumn, integer(hHandShake) ]:= cbHandShake.Text;
+    Cells[CurrColumn, integer(hTerminator)]:= cbTerminator.Text;
   end;
 end;
 
-procedure TDeviceForm.btDeleteDeviceClick(Sender: TObject);
+procedure tDeviceForm.btDeleteDeviceClick(Sender: TObject);
 begin
   if CurrColumn < 0 then exit;
   if Application.MessageBox(
@@ -120,13 +212,13 @@ begin
     sg.DeleteCol(CurrColumn);
 end;
 
-procedure TDeviceForm.btDoneClick(Sender: TObject);
+procedure tDeviceForm.btDoneClick(Sender: TObject);
+
 begin
-  OptionForm.GetOptions;
-  Close;
+  Close; //onclosequery checks
 end;
 
-procedure TDeviceForm.btLoadFromFileClick(Sender: TObject);
+procedure tDeviceForm.btLoadFromFileClick(Sender: TObject);
 begin
   with OpenDialog do
   begin
@@ -164,7 +256,7 @@ begin
   end;
 end;
 
-procedure TDeviceForm.btSaveToFileClick(Sender: TObject);
+procedure tDeviceForm.btSaveToFileClick(Sender: TObject);
 begin
   with SaveDialog do
   begin
@@ -191,7 +283,7 @@ begin
   end;
 end;
 
-procedure TDeviceForm.btSetDefaultFileClick(Sender: TObject);
+procedure tDeviceForm.btSetDefaultFileClick(Sender: TObject);
 begin
   case pcDevice.TabIndex of
     0: if CurrGenFileName <> '' then
@@ -201,7 +293,23 @@ begin
   end;
 end;
 
-procedure TDeviceForm.FormCreate(Sender: TObject);
+procedure tDeviceForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+var
+  o: integer;
+begin
+  o:= CheckConformance;
+
+  if o = 0 then
+  begin
+    OptionForm.GetOptions;
+
+    CanClose:= true;
+  end
+  else
+    CanClose:= false;
+end;
+
+procedure tDeviceForm.FormCreate(Sender: TObject);
 begin
   if FileExists(Config.DefaultGens) then
     sgGenCommands.LoadFromFile(Config.DefaultGens)
@@ -216,7 +324,7 @@ begin
     ShowMessage('Не найден файл ' + Config.DefaultDets);
 end;
 
-procedure TDeviceForm.FormShow(Sender: TObject);
+procedure tDeviceForm.FormShow(Sender: TObject);
 begin
   CurrGenFileName:= '';
   CurrDetFileName:= '';
@@ -224,20 +332,334 @@ begin
   pcDeviceChange(Self);
 end;
 
-procedure TDeviceForm.pcDeviceChange(Sender: TObject);
+procedure tDeviceForm.pcDeviceChange(Sender: TObject);
 begin
   CurrColumn:= -1;
   case pcDevice.TabIndex of
-      0: sg:= sgGenCommands;
-      1: sg:= sgDetCommands;
+    0: sg:= sgGenCommands;
+    1: sg:= sgDetCommands;
   end;
 end;
 
-procedure TDeviceForm.sgGenCommandsSelection(Sender: TObject; aCol,
+procedure tDeviceForm.sgDetCommandsSelectCell(Sender: TObject; aCol,
+  aRow: Integer; var CanSelect: Boolean);
+begin
+  with sgDetCommands.Columns.Items[aCol - 1] do
+    case aRow of
+      integer(hInterface):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbInterface.Items;
+        end;
+      integer(hStopBits):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbStopBits.Items;
+        end;
+      integer(hParity):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbParity.Items;
+        end;
+      integer(hHandshake):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbHandshake.Items;
+        end;
+      integer(hTerminator):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbTerminator.Items;
+        end;
+      else
+        begin
+           ButtonStyle:= cbsAuto;
+           PickList:= nil;
+        end;
+    end;
+end;
+
+procedure tDeviceForm.sgGenCommandsSelection(Sender: TObject; aCol,
   aRow: Integer);
 begin
   CurrColumn:= aCol;
 end;
 
-end.
+function tDeviceForm.CheckConformance: integer;
+var
+  s: string;
+  i, o: integer;
+{Exitcodes:
+  0 - Success
+  in gen
+  -1 - Interface
+  -2 - Baud rate
+  -3 - Databits
+  -4 - Stop bits
+  -5 - Parity
+  -6 - Handshake
+  -7 - ip
+  -8 - port
+  -9 - terminator
+  -10 - timeout
+  in det
+  -11 - Interface
+  -12 - Baud rate
+  -13 - Databits
+  -14 - Stop bits
+  -15 - Parity
+  -16 - Handshake
+  -17 - ip
+  -18 - port
+  -19 - terminator
+  -20 - timeout
+  -30 temp usb wip
+  }
+begin
+  Result:= 0;
+  with sgGenCommands do
+    for i:= 1 to ColCount - 1 do
+    begin
+      s:= Cells[i, integer(hInterface)];
+      o:= DeviceForm.cbInterface.Items.IndexOf(s);
+      case o of
+        0:
+          begin
+            o:= valf(Cells[i, integer(hBaudRate)]);
+            if o < 50 then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hBaudRate);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Бод-частота"');
+              exit(-2);
+            end;
 
+            o:= valf(Cells[i, integer(hDataBits)]);
+            if o < 1 then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hDataBits);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Биты данных"');
+              exit(-3);
+            end;
+
+            s:= Cells[i, integer(hStopBits)];
+            o:= DeviceForm.cbStopBits.Items.IndexOf(s);
+            if o < 0 then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hStopBits);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Стоп-биты"');
+              exit(-4);
+            end;
+
+            s:= Cells[i, integer(hParity)];
+            o:= DeviceForm.cbParity.Items.IndexOf(s);
+            if o < 0 then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hParity);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Парность"');
+              exit(-5);
+            end;
+
+            s:= Cells[i, integer(hHandshake)];
+            o:= DeviceForm.cbHandshake.Items.IndexOf(s);
+            if o < 0 then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hHandShake);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Handshake"');
+              exit(-6);
+            end;
+          end;
+        1:
+          begin
+            s:= Cells[i, integer(hIPAdress)];
+            if not IsIP(s) then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hIPAdress);
+              Col:= i;
+              ShowMessage('Ошибка в поле "IP-адрес"');
+              exit(-7);
+            end;
+
+            o:= valf(Cells[i, integer(hPort)]);
+            if o <= 0 then
+            begin
+              pcDevice.TabIndex:= 0;
+              Row:= integer(hPort);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Порт"');
+              exit(-8);
+            end;
+            { TODO 3 -cImprovement : check if 0 is valid port }
+          end;
+        2:
+          begin
+            pcDevice.TabIndex:= 0;
+            ShowMessage('USB не поддерживается');
+            exit(-30);
+          end;
+        else
+          begin
+            pcDevice.TabIndex:= 0;
+            Row:= integer(hInterface);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Интерфейс"');
+            exit(-1);
+          end;
+      end;
+
+      s:= Cells[i, integer(hTerminator)];
+      o:= DeviceForm.cbTerminator.Items.IndexOf(s);
+      if o < 0 then
+      begin
+        pcDevice.TabIndex:= 0;
+        Row:= integer(hTerminator);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Терминатор"');
+        exit(-9);
+      end;
+
+      o:= valf(Cells[i, integer(hTimeOut)]);
+      if o <= 0 then
+      begin
+        pcDevice.TabIndex:= 0;
+        Row:= integer(hTimeOut);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Таймаут"');
+        exit(-10);
+      end;
+    end;
+
+  with sgDetCommands do
+    for i:= 1 to ColCount - 1 do
+    begin
+      s:= Cells[i, integer(hInterface)];
+      o:= DeviceForm.cbInterface.Items.IndexOf(s);
+      case o of
+        0:
+          begin
+            o:= valf(Cells[i, integer(hBaudRate)]);
+            if o < 50 then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hBaudRate);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Бод-частота"');
+              exit(-12);
+            end;
+
+            o:= valf(Cells[i, integer(hDataBits)]);
+            if o < 1 then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hDataBits);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Биты данных"');
+              exit(-13);
+            end;
+
+            s:= Cells[i, integer(hStopBits)];
+            o:= DeviceForm.cbStopBits.Items.IndexOf(s);
+            if o < 0 then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hStopBits);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Стоп-биты"');
+              exit(-14);
+            end;
+
+            s:= Cells[i, integer(hParity)];
+            o:= DeviceForm.cbParity.Items.IndexOf(s);
+            if o < 0 then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hParity);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Парность"');
+              exit(-15);
+            end;
+
+            s:= Cells[i, integer(hHandshake)];
+            o:= DeviceForm.cbHandshake.Items.IndexOf(s);
+            if o < 0 then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hHandShake);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Handshake"');
+              exit(-16);
+            end;
+          end;
+        1:
+          begin
+            s:= Cells[i, integer(hIPAdress)];
+            if not IsIP(s) then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hIPAdress);
+              Col:= i;
+              ShowMessage('Ошибка в поле "IP-адрес"');
+              exit(-17);
+            end;
+
+            o:= valf(Cells[i, integer(hPort)]);
+            if o <= 0 then
+            begin
+              pcDevice.TabIndex:= 1;
+              Row:= integer(hPort);
+              Col:= i;
+              ShowMessage('Ошибка в поле "Порт"');
+              exit(-18);
+            end;
+            { TODO 3 -cImprovement : check if 0 is valid port }
+          end;
+        2:
+          begin
+            pcDevice.TabIndex:= 1;
+            ShowMessage('USB не поддерживается');
+            exit(-30);
+          end;
+        else
+          begin
+            pcDevice.TabIndex:= 1;
+            Row:= integer(hInterface);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Интерфейс"');
+            exit(-11);
+          end;
+      end;
+
+      s:= Cells[i, integer(hTerminator)];
+      o:= DeviceForm.cbTerminator.Items.IndexOf(s);
+      if o < 0 then
+      begin
+        pcDevice.TabIndex:= 1;
+        Row:= integer(hTerminator);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Терминатор"');
+        exit(-19);
+      end;
+
+      o:= valf(Cells[i, integer(hTimeOut)]);
+      if o <= 0 then
+      begin
+        pcDevice.TabIndex:= 1;
+        Row:= integer(hTimeOut);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Таймаут"');
+        exit(-20);
+      end;
+    end;
+end;
+
+end.
