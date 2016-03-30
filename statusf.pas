@@ -90,13 +90,12 @@ begin
       AddCommand(cSerialPollEnable, false, eSerPollSB);
       AddCommand(cStdEventEnable, false, eStdEventSB);
 
-      if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
+      if DeviceKind = dDetector  then
       begin
         AddCommand(dLIAEnable, false, eLiaSB);
         AddCommand(dErrorEnable, false, eErrSB);
       end
       else
-      if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
       begin
         AddCommand(gDDSEnable, false, eDDSB);
       end;

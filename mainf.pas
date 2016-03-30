@@ -157,25 +157,12 @@ type
     function ExportParams(Manual: boolean; Header: boolean = false): word;
   end;
 
-  FunctionType = (Sine, Square, Triangle, Ramp, Noise);
+  //FunctionType = (Sine, Square, Triangle, Ramp, Noise);
 
 const
 
   iDefaultDevice = 0;
-  iDS345 = 1;
-  iDS335 = 2;
-  iSR844 = 1;
-  iSR830 = 2;
 
-  {SupportedDevices: array [0..4] of tDevice =
-    (
-     (Manufacturer: '';                          Model: '';      Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
-     (Manufacturer: 'StanfordResearchSystems';   Model: 'DS345'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
-     (Manufacturer: 'StanfordResearchSystems';   Model: 'DS335'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
-     (Manufacturer: 'Stanford_Research_Systems'; Model: 'SR844'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR),
-     (Manufacturer: 'Stanford_Research_Systems'; Model: 'SR830'; Commands: nil; ParSeparator: ','; CommSeparator: ';'; Terminator: CR)
-     );   }
-    { TODO 3 -cFeature : Custom device support }
   PointsInSR844Buffer = 16383;
 
   TestTimeOut = 2000;
@@ -186,7 +173,7 @@ const
   HT = #09;
 
 var
-  CurrFunction: FunctionType;
+ // CurrFunction: FunctionType;
   AmplitudeUnit: tUnits;
   MainForm: TMainForm;
   ExperimentLog: TFileStream;
@@ -198,12 +185,12 @@ var
   Config: RConfig;
   Params: RParams;
 
-  ParamArr: array of longint;
+  //ParamArr: array of longint;
 
 implementation
 
 uses
-  Math, Variants, GenConst, MemoF, StepF, OptionF, ReadingsF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, ReadingsF, AboutF;
 
 {$R *.lfm}
 
@@ -792,8 +779,8 @@ end;
 procedure TMainForm.cbFuncSelectChange(Sender: TObject);
 var
   max: double;
-begin
-  CurrFunction:= FunctionType(cbFuncSelect.ItemIndex);
+begin                                                         { TODO 2 -cImprovement : max func freq }
+  {CurrFunction:= FunctionType(cbFuncSelect.ItemIndex);
   case CurrFunction of
     Sine, Square: max:=  3100000;                                       // переделать в мас конст
     Triangle, Ramp: max:= 10000;
@@ -803,7 +790,7 @@ begin
   eSweepStartF.MaxValue:= max;
   eSweepStopF.MaxValue:= max;
   eStepStartF.MaxValue:= max;
-  eStepStopF.MaxValue:= max;
+  eStepStopF.MaxValue:= max;  }
 end;
 
 procedure TMainForm.cbImpedanceChange(Sender: TObject);
@@ -859,12 +846,12 @@ begin
   with Params do
   begin
     Impedance:= cbImpedance.ItemIndex;
-    CurrFunc:= longint(CurrFunction);
+    CurrFunc:= cbFuncSelect.ItemIndex;
     Offset:= eOffset.Value;
     ACOn:= cbACEnable.Checked;
     AmpUnit:= cbAmplUnit.ItemIndex;
 
-    if DeviceIndex <> iDS345 then AddCommand(gResistance, false, Impedance);
+    if cbImpedance.ItemIndex >= 0 then AddCommand(gResistance, false, Impedance);
     AddCommand(gFunction, false, CurrFunc);
     AddCommand(gOffset, false, Offset, NOUNIT);
 
@@ -972,8 +959,6 @@ procedure TMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
   readingsform.enablecontrols(true);
-  DeviceIndex:= iDS345;
-  readingsform.DeviceIndex:= iSR830;             //--------------
   readingsform.btnConnectClick(self);
 end;
 
@@ -1106,21 +1091,41 @@ begin
   inherited btnConnectClick(Sender);
 
   if DeviceIndex = iDefaultDevice then Exit;
+
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
+  cbImpedance.Items.Clear;
   cbFuncSelect.Items.Clear;
-  case DeviceIndex of
-    iDS345:
-    begin
-      Label9.Hide;
-      cbImpedance.Hide;
-      cbFuncSelect.Items.AddStrings(DS345WaveForm);
-    end;
-    iDS335:
-    begin
-      Label9.Show;
-      cbImpedance.Show;
-      cbFuncSelect.Items.AddStrings(DS335WaveForm);
-    end;
+  cbSweepType.Items.Clear;
+  cbSweepDirection.Items.Clear;
+
+  cbImpedance.Items.AddText(DeviceForm.sgGenCommands.Cells[DeviceIndex, integer(hResistanceOptions)]);
+  cbFuncSelect.Items.AddText(DeviceForm.sgGenCommands.Cells[DeviceIndex, integer(hFunctionOptions)]);
+  cbSweepType.Items.AddText(DeviceForm.sgGenCommands.Cells[DeviceIndex, integer(hSweepTypeOptions)]);  ;
+  cbSweepDirection.Items.AddText(DeviceForm.sgGenCommands.Cells[DeviceIndex, integer(hSweepDirectionOptions)]);
+
+  if cbImpedance.ItemIndex < 0 then
+  begin
+    Label9.Hide;
+    cbImpedance.Hide;
+  end
+  else
+  begin
+    Label9.Show;
+    cbImpedance.Show;
+  end;
+
+  with Params do
+  begin
+    cbImpedance.ItemIndex:= Impedance;
+    cbImpedanceChange(Self);
+    cbFuncSelect.ItemIndex:= CurrFunc;
+    cbFuncSelectChange(Self);
+
+    cbAmplUnit.ItemIndex:= AmpUnit;
+    cbAmplUnitChange(Self);
+
+    cbSweepType.ItemIndex:= SweepType;
+    cbSweepDirection.ItemIndex:= SweepDir;
   end;
 end;
 

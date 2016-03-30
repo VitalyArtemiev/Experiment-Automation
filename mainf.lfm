@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 279
+  Left = 1070
   Height = 600
-  Top = 114
+  Top = 87
   Width = 524
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -17,7 +17,7 @@ object MainForm: TMainForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   ShowInTaskBar = stAlways
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.6.0.4'
   object cbPortSelect: TComboBox
     AnchorSideLeft.Control = Label3
     AnchorSideLeft.Side = asrBottom

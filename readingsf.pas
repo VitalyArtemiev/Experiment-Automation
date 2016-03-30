@@ -86,6 +86,7 @@ type
     ChartToolset1: TChartToolset;
     pnGraphControl: TPanel;
     pnConnection: TPanel;
+    sbParamScroll: TScrollBox;
 
     Source1: TUserDefinedChartSource;
     Source2: TUserDefinedChartSource;
@@ -131,18 +132,19 @@ type
     DrawnBuffers: longword;
     t, SampleRate: double;
     ReadingMode, RM: word;
-    ParToRead: array [0..5] of word;
-    ReadPars: array [1..11] of boolean;
+    MaxSimultPars, TotalPars,
+    FirstIndex, ReferenceIndex, CH1Index, CH2Index: shortint;
+    ParToRead: array {[0..5]} of shortint;
+    ReadPars: array {[1..11]} of boolean;
     ProcessedPoints: longword;
     StartTime, PauseTime, PauseLength: TDateTime;
 
-    QNone, QX, QY, QRv, QRdBm, QPhi, QAUXIN1, QAUXIN2, QRefFreq, QCH1Disp, QCH2Disp,
-      QAUXIN3, QAUXIN4: word;
+    {QNone, QX, QY, QRv, QRdBm, QPhi, QAUXIN1, QAUXIN2, QRefFreq, QCH1Disp, QCH2Disp,
+      QAUXIN3, QAUXIN4: word; }
 
-    srcTime: TAxisSource;
-    srcFreq: TAxisSource;
-    srcAmpl: TAxisSource;
-    srcX: TAxisSource;
+    CoordinateSources: array of TAxisSource;
+    srcTime, srcFreq, srcAmpl, srcCH1, srcCH2: TAxisSource;
+    {srcX: TAxisSource;
     srcY: TAxisSource;
     srcRV: TAxisSource;
     srcRdBm: TAxisSource;
@@ -153,7 +155,7 @@ type
     srcAUXIN4: TAxisSource;
     srcRef: TAxisSource;
     srcDisp1: TAxisSource;
-    srcDisp2: TAxisSource;
+    srcDisp2: TAxisSource;}
 
     function GetOPS: boolean;
     procedure SetLogState(AValue: tLogState);
@@ -188,10 +190,7 @@ type
     procedure StopLog(Force: boolean = false);
     function CreateLog: string;
    // procedure UpdateLog;
-    function RecvSnap(p1, p2: word; p3: word = 0;
-                                    p4: word = 0;
-                                    p5: word = 0;
-                                    p6: word = 0): PBuffer;
+    function RecvSnap(p: array of shortint): PBuffer;
     procedure ProcessBuffers;
   end;
 
@@ -217,41 +216,21 @@ begin
       begin
          if UseGenFreq then
            AItem.X:= srcFreq.Values[Aindex]
-         else AItem.X:= srcRef.Values[Aindex];
+         else AItem.X:= CoordinateSources[ReferenceIndex].Values[Aindex];
       end;
     2: if LogAmpl then AItem.X:= srcAmpl.Values[Aindex];
   end;
 
-  i:= cbChart1Show.ItemIndex + 1;
+  i:= cbChart1Show.ItemIndex;
 
-  case i of
-    1: Src:= srcX;
-    2: Src:= srcY;
-    3: Src:= srcRV;
-    11:Src:= srcDisp2;
-    else
-    begin
-      if i = QRdbM    then Src:= srcRdBm
-      else
-      if i = QPhi     then Src:= srcPhi
-      else
-      if i = QAUXIN1  then Src:= srcAUXIN1
-      else
-      if i = QAUXIN2  then Src:= srcAUXIN2
-      else
-      if i = QAUXIN3  then Src:= srcAUXIN3
-      else
-      if i = QAUXIN4  then Src:= srcAUXIN4
-      else
-      if i = QRefFreq then Src:= srcRef
-      else
-      if i = QCH1Disp then Src:= srcDisp1
-      else
-      if i = QCH2Disp then Src:= srcDisp2
-    end;
+  Src:= CoordinateSources[i];
+  try
+  if Src <> nil then
+    AItem.Y:= Src.Values[Aindex]
+  else Source1.PointsNumber := 0  ;
+  except
+     on e:exception do writeprogramlog(e.message +' '+ strf(aindex)+' ' + strf(Source2.PointsNumber) +' '+ strf(src.count))
   end;
-
-  if Src <> nil then AItem.Y:= Src.Values[Aindex] else Source1.PointsNumber := 0  ;
 end;
 
 procedure TReadingsForm.Source2GetChartDataItem(
@@ -266,14 +245,15 @@ begin
        begin
          if UseGenFreq then
            AItem.X:= srcFreq.Values[Aindex]
-         else AItem.X:= srcRef.Values[Aindex];
+         else AItem.X:= CoordinateSources[ReferenceIndex].Values[Aindex];
        end;
     2: if LogAmpl then AItem.X:= srcAmpl.Values[Aindex];
   end;
 
-  i:= cbChart2Show.ItemIndex + 1;
+  i:= cbChart2Show.ItemIndex;
 
-  case i of
+  Src:= CoordinateSources[i];
+  {case i of
     1: Src:= srcX;
     2: Src:= srcY;
     3: Src:= srcRV;
@@ -298,10 +278,12 @@ begin
       else
       if i = QCH2Disp then Src:= srcDisp2
     end;
-  end;
+  end;       }
                                       //range err prolly wrong pointsnumber
   try
-  if Src <> nil then AItem.Y:= Src.Values[Aindex] else Source2.PointsNumber := 0;
+  if Src <> nil then
+    AItem.Y:= Src.Values[Aindex]
+  else Source2.PointsNumber := 0;
   except
      on e:exception do writeprogramlog(e.message +' '+ strf(aindex)+' ' + strf(Source2.PointsNumber) +' '+ strf(src.count))
   end;
@@ -345,19 +327,19 @@ begin
           begin
             Serport.RaiseExcept:= false;
 
-            setlength(ParamArr, 3);  //static?
+            {setlength(ParamArr, 3);  //static?
             ParamArr[0]:= 1;
             ParamArr[1]:= PointsRead;
-            ParamArr[2]:= PointsToRead;
+            ParamArr[2]:= PointsToRead; }
             try
               EnterCriticalSection(CommCS);
-                AddCommand(dReadPointsNative, true, ParamArr);
+                AddCommand(dReadPointsNative, true, tIntegerArray.Create(1, PointsRead, PointsToRead));
                 PassCommands;
                 SerPort.RecvBufferEx(@BuffByte1, PointsToRead * 4, CurrentDevice^.Timeout);
 
-                ParamArr[0]:= 2;
+                //ParamArr[0]:= 2;
 
-                AddCommand(dReadPointsNative, true, ParamArr);
+                AddCommand(dReadPointsNative, true, tIntegerArray.Create(2, PointsRead, PointsToRead));
                 PassCommands;
                 SerPort.RecvBufferEx(@BuffByte2, PointsToRead * 4, CurrentDevice^.Timeout);
             finally
@@ -396,8 +378,7 @@ begin
         1:
         begin
           try
-          p1:= RecvSnap(ParToRead[0],ParToRead[1],ParToRead[2],
-                        ParToRead[3],ParToRead[4],ParToRead[5]);
+          p1:= RecvSnap(ParToRead);
 
           except on E:Exception do
             writeprogramlog(E.Message);
@@ -439,10 +420,10 @@ begin
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
   btCustomCommand.Caption:= 'Польз.' + LineEnding + 'команда';
 
-  QNone:= 0;
+  {QNone:= 0;
   QX:= 1;
   QY:= 2;
-  QRv:= 3;
+  QRv:= 3; }
 
   //InitSerPort;
   DeviceKind:= dDetector;
@@ -454,8 +435,6 @@ begin
   LogTime:= true;
   LogAmpl:= false;
 
-  {SupportedDevices[iSR844].Commands:= SR844Command;
-  SupportedDevices[iSR830].Commands:= SR830Command; }
   for i:= 0 to PortCount - 1 do
     cbPortSelect.AddItem(MainForm.cbPortSelect.Items[i], nil);
 
@@ -643,11 +622,11 @@ begin
 
     if RM = 1 then
     begin
-      if LogFreq and (not cgTransfer.Checked[QRefFreq - 1]) and (not UseGenFreq) then
-        cgTransfer.Checked[QRefFreq - 1]:= true;
+      if LogFreq and (not cgTransfer.Checked[ReferenceIndex]) and (not UseGenFreq) then
+        cgTransfer.Checked[ReferenceIndex]:= true;
       cgTransferItemClick(Self, 0);
 
-      if not cgTransfer.Enabled then
+      if not cgTransfer.Enabled then  { TODO 1 -cBug : wtf is this shit??? }
       begin
         ShowMessage('Необходимо логирование опорной чатоты');
         WriteProgramLog('Data collection could not start: not logging ref');
@@ -655,21 +634,19 @@ begin
         exit;
       end;
 
-      if cgTransfer.Checked[QRefFreq - 1] and (not LogFreq)
+      if cgTransfer.Checked[ReferenceIndex] and (not LogFreq)
         then LogFreq:= true;
 
       LogTime:= true;
 
       j:= 0;
-      ReadPars[11]:= false;
-      Params.TransferPars[11]:= false;
       with cgTransfer do
       begin
-        for i:= 1 to Items.Count do
+        for i:= 0 to high(ReadPars) do
         begin
           ReadPars[i]:= false;
           Params.TransferPars[i]:= false;
-          if Checked[i - 1] then
+          if Checked[i] then
           begin
             ReadPars[i]:= true;
             Params.TransferPars[i]:= true;
@@ -679,45 +656,33 @@ begin
         end;
       end;
 
-      for i:= j to 5 do ParToRead[i]:= QNone;
+      for i:= j to high(ParToRead) do
+        ParToRead[i]:= -1;
 
-      for j:= 0 to 5 do
+      setlength(CoordinateSources, cgTransfer.Items.Count);
+      writeprogramlog('l' + strf(length(CoordinateSources)));
+      writeprogramlog('c' + strf(cgTransfer.Items.Count));
+
+      for j:= 0 to high(ParToRead) do
       begin
-        if ParToRead[j] = QNone then break
-        else
-        if ParToRead[j] = QX       then srcX:=      TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QY       then srcY:=      TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QRv      then srcRV:=     TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QRdBm    then srcRdBm:=   TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QPhi     then srcPhi:=    TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QAUXIN1  then srcAUXIN1:= TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QAUXIN2  then srcAUXIN2:= TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QRefFreq then srcRef:=    TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QCH1Disp then srcDisp1:=  TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QCH2Disp then srcDisp2:=  TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QAUXIN3  then srcAUXIN3:= TAxisSource.Create(128)
-        else
-        if ParToRead[j] = QAUXIN4  then srcAUXIN4:= TAxisSource.Create(128);
+        if ParToRead[j] < 0 then break;
+        CoordinateSources[ParToRead[j]]:= TAxisSource.Create(128);
       end;
+      if CH1Index >= 0 then
+        srcCH1:= CoordinateSources[CH1Index];
+      if CH2Index >= 0 then
+        srcCH2:= CoordinateSources[CH2Index];
     end
     else
     begin
       LogTime:= true;  //???
       if LogFreq then cbUseGenFreq.Checked:= true;
       cbUseGenFreqChange(Self);
-
-      srcDisp1:=  TAxisSource.Create(128);
-      srcDisp2:=  TAxisSource.Create(128);
+      setlength(CoordinateSources, 2);
+      CoordinateSources[0]:=  TAxisSource.Create(128);
+      CoordinateSources[1]:=  TAxisSource.Create(128);
+      srcCH1:= CoordinateSources[0];
+      srcCH2:= CoordinateSources[1];
     end;
 
     if LogTime then srcTime:= TAxisSource.Create(128);
@@ -734,9 +699,9 @@ begin
 
   if RM = 0 then
   begin
-    cbChart1Show.ItemIndex:= QCh1Disp - 1;
-    cbChart2Show.ItemIndex:= QCh2Disp - 1;
-
+   // cbChart1Show.ItemIndex:= QCh1Disp - 1;
+   //cbChart2Show.ItemIndex:= QCh2Disp - 1;
+   { TODO 2 -cImprovement : fix chshow  }
     EnterCriticalSection(CommCS);
       AddCommand(dStartStorage);
       PassCommands;
@@ -880,14 +845,15 @@ begin
         if LogTime then s1+= 'Время' + HT;
         for i:= 0 to high(ParToRead) do
         begin
-          if ParToRead[i] = QNone then break;
-          if ParToRead[i] = QCh1Disp then
+          if ParToRead[i] = -1 then break;
+          if ParToRead[i] = CH1Index then
             s1+= 'Дисп.1 (' + cbCh1.Text + ')' + HT
           else
-          if ParToRead[i] = QCh2Disp then
+          if ParToRead[i] = CH2Index then
             s1+= 'Дисп.2 (' + cbCh2.Text + ')' + HT
           else
-          s1+= cbChart1Show.Items[ParToRead[i] - 1];
+
+            s1+= cbChart1Show.Items[ParToRead[i]];
           s1+= HT;
         end;
       end;
@@ -905,42 +871,27 @@ begin
   Result:= FileName;
 end;
 
-function TReadingsForm.RecvSnap(p1, p2: word; p3: word = 0;
-                  p4: word = 0; p5: word = 0; p6: word = 0): PBuffer;
+function TReadingsForm.RecvSnap(p: array of shortint): PBuffer;
 var
   num, i: word;
   ParamArr: array of longint; //CONSTRUCTOR!!!
   s: string;
 begin
-  if (p1 = 0) or (p2 = 0) then
+  if (p[0] < 0) or (p[1] < 0) then
   begin
     Result:= nil;
     exit;
   end;
 
-  if p3 = 0 then num:= 2
-  else
-  if p4 = 0 then num:= 3
-  else
-  if p5 = 0 then num:= 4
-  else
-  if p6 = 0 then num:= 5
-  else
-  num:= 6;
-
-  //WriteProgramLog(strf(num) + ' SNAP elements');
-
+  for i:= 0 to high(p) do
+    if p[i] = -1 then break;
+  num:= i + 1;
   setlength(ParamArr, num);
-  ParamArr[0]:= p1;
-  ParamArr[1]:= p2;
-  if num > 2 then
-  ParamArr[2]:= p3;
-  if num > 3 then
-  ParamArr[3]:= p4;
-  if num > 4 then
-  ParamArr[4]:= p5;
-  if num = 6 then
-  ParamArr[5]:= p6;
+
+  WriteProgramLog(strf(num) + ' SNAP elements');
+
+  for i:= 0 to high(ParamArr) do
+    ParamArr[i]:= p[i] + FirstIndex;
 
   try
   EnterCriticalSection(CommCS);
@@ -952,9 +903,9 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  //sleep(60 + random(30));
-  //s:= strf(random)+',' +strf(random)+',' + strf(random);
-
+  sleep(60 + random(30));
+  s:= strf(random)+',' +strf(random)+',' + strf(random);
+  writeprogramlog(s);
   if s = '' then
   begin
     Result:= nil;
@@ -1015,11 +966,11 @@ begin
           s+= strf(t) + HT;
 
           v:= Buffer(DataList.Items[i * 2]^)[j];
-          srcDisp1.Add(v);
+          srcCH1.Add(v);
           s+= strf(v) + HT;
 
           v:= Buffer(DataList.Items[i * 2 + 1]^)[j];
-          srcDisp2.Add(v);
+          srcCH2.Add(v);
           s+= strf(v) + LineEnding;
 
           if ExperimentLog <> nil then ExperimentLog.Write(s[1], length(s));
@@ -1036,7 +987,7 @@ begin
     begin
       for i:= 0 to (DataList.Count div 2) - 1 do
       begin
-        lk:= 0;
+        lk:= -1;
         s:= '';
 
         if LogFreq and UseGenFreq then
@@ -1067,38 +1018,13 @@ begin
           //WriteProgramLog('');
           //WriteProgramLog('i ' + strf(i) + ' j ' + strf(j));
 
-          for k:= (lk + 1) to cgTransfer.Items.Count do
+          for k:= (lk + 1) to high(ReadPars) do
           begin
-            //WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
+            WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
             if ReadPars[k] then
             begin
-              //writeprogramlog('k' + strf(k));
-              case k of
-                1: srcX.Add(v);
-                2: srcY.Add(v);
-                3: srcRV.Add(v);
-                11:srcDisp2.Add(v);
-                else
-                begin
-                  if k = QRdbM    then srcRdBm.Add(v)
-                  else
-                  if k = QPhi     then srcPhi.Add(v)
-                  else
-                  if k = QAUXIN1  then srcAUXIN1.Add(v)
-                  else
-                  if k = QAUXIN2  then srcAUXIN2.Add(v)
-                  else
-                  if k = QAUXIN3  then srcAUXIN3.Add(v)
-                  else
-                  if k = QAUXIN4  then srcAUXIN4.Add(v)
-                  else
-                  if k = QRefFreq then srcRef.Add(v)
-                  else
-                  if k = QCH1Disp then srcDisp1.Add(v)
-                  else
-                  if k = QCH2Disp then srcDisp2.Add(v)
-                end;
-              end;
+              writeprogramlog('k' + strf(k));
+              CoordinateSources[k].Add(v);
               lk:= k;
               break;
             end;
@@ -1114,12 +1040,14 @@ begin
       end;
       DataList.Clear;
 
-      if LogTime then ProcessedPoints:= srcTime.Count
+      if LogTime then
+        ProcessedPoints:= srcTime.Count
       else
       if LogFreq then
       begin
-       if UseGenFreq then ProcessedPoints:= srcFreq.Count
-       else ProcessedPoints:= srcRef.Count
+       if UseGenFreq then
+         ProcessedPoints:= srcFreq.Count
+       else ProcessedPoints:= CoordinateSources[ReferenceIndex].Count
       end
       else
       ProcessedPoints:= srcAmpl.Count;
@@ -1169,6 +1097,7 @@ end;
 procedure TReadingsForm.btnConnectClick(Sender: TObject);
 var
   i, c : word;
+  s: string;
 begin
   if ConnectionKind = cSerial then
   begin
@@ -1186,7 +1115,7 @@ begin
        { TODO 2 -cImprovement : check ip }
   end;
 
-  OptionForm.TabControl.TabIndex:= 1;
+  OptionForm.TabControl.TabIndex:= 2;
   EnterCriticalSection(CommCS);
     inherited btnConnectClick(Sender);
     AddCommand(dResetStorage);
@@ -1194,67 +1123,50 @@ begin
   LeaveCriticalSection(CommCS);
 
   if DeviceIndex = iDefaultDevice then exit;
+
   OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
 
   cgTransfer.Items.Clear;
   cbCh1.Items.Clear;
   cbCh2.Items.Clear;
+  cbRatio1.Items.Clear;
+  cbRatio2.Items.Clear;
   cbChart1Show.Items.Clear;
   cbChart2Show.Items.Clear;
   cbSensitivity.Items.Clear;
   cbTimeConstant.Items.Clear;
-  case DeviceIndex of
-    iSR844:
-    begin
-      Label14.Hide;
-      Label15.Hide;
-      cbRatio1.Hide;
-      cbRatio2.Hide;
-      cgTransfer.Items.AddStrings(SR844TransferParams);
-      cbCh1.Items.AddStrings(SR844CH1Params);
-      cbCh2.Items.AddStrings(SR844CH2Params);
-      cbChart1Show.Items.AddStrings(SR844TransferParams);
-      cbChart2Show.Items.AddStrings(SR844TransferParams);
-      cbSensitivity.Items.AddStrings(SR844Sensitivities);
-      cbTimeConstant.Items.AddStrings(SR844TimeConstants);
 
-      QRdBm:= 4;
-      QPhi:= 5;
-      QAUXIN1:= 6;
-      QAUXIN2:= 7;
-      QRefFreq:= 8;
-      QCH1Disp:= 9;
-      QCH2Disp:= 10;
+  cgTransfer.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hTransferParams)]);
+  cbChart1Show.Items:= cgTransfer.Items;
+  cbChart2Show.Items:= cgTransfer.Items;
+  cbCh1.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hCH1Options)]);
+  cbCh2.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hCH2Options)]);
+  cbRatio1.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hRatio1Options)]);
+  cbRatio2.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hRatio2Options)]);
+  cbSensitivity.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hSensitivityOptions)]);
+  cbTimeConstant.Items.AddText(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hTimeConstOptions)]);
 
-      QAUXIN3:= 255;
-      QAUXIN4:= 255;
-    end;
-    iSR830:
-    begin
-      Label14.Show;
-      Label15.Show;
-      cbRatio1.Show;
-      cbRatio2.Show;
-      cgTransfer.Items.AddStrings(SR830TransferParams);
-      cbCh1.Items.AddStrings(SR830CH1Params);
-      cbCh2.Items.AddStrings(SR830CH2Params);
-      cbChart1Show.Items.AddStrings(SR830TransferParams);
-      cbChart2Show.Items.AddStrings(SR830TransferParams);
-      cbSensitivity.Items.AddStrings(SR830Sensitivities);
-      cbTimeConstant.Items.AddStrings(SR830TimeConstants);
+  TotalPars:= cgTransfer.Items.Count;
+  setlength(ReadPars, TotalPars);
+  MaxSimultPars:= valf(DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hMaxSimultPars)]);
+  setlength(ParToRead, MaxSimultPars);
 
-      QPhi:= 4;
-      QAUXIN1:= 5;
-      QAUXIN2:= 6;
-      QAUXIN3:= 7;
-      QAUXIN4:= 8;
-      QRefFreq:= 9;
-      QCH1Disp:= 10;
-      QCH2Disp:= 11;
+  s:= DeviceForm.sgDetCommands.Cells[DeviceIndex, integer(hIndices)];
+  i:= pos(',', s);
+  if i = 0 then
+    ReferenceIndex:= valf(s)
+  else
+  begin
+    ReferenceIndex:= valf(copy(s, 1, i - 1));
+    delete(s, 1, i);
 
-      QRdBm:= 255;
-    end;
+    i:= pos(',', s);
+    CH1Index:= valf(copy(s, 1, i - 1));
+    delete(s, 1, i);
+
+    CH2Index:= valf(s);
   end;
+
   with Params do
   begin
     cbSensitivity.ItemIndex:= Sensitivity;
@@ -1266,8 +1178,23 @@ begin
     cbChart1Show.ItemIndex:= Show1;
     cbChart2Show.ItemIndex:= Show2;
 
-    for i:= 1 to cgTransfer.Items.Count do
-        cgTransfer.Checked[i - 1]:= TransferPars[i];
+    for i:= 0 to cgTransfer.Items.Count - 1 do
+      cgTransfer.Checked[i]:= TransferPars[i];
+  end;
+
+  if cbRatio1.ItemIndex < 0 then
+  begin
+    cbRatio1.Hide;
+    Label14.Hide;
+    cbRatio2.Hide;
+    Label15.Hide;
+  end
+  else
+  begin
+    cbRatio1.Show;
+    Label14.Show;
+    cbRatio2.Hide;
+    Label15.Hide;
   end;
 
   c:= 0;
@@ -1276,15 +1203,18 @@ begin
 
   if c < 2 then
   begin
-    cgTransfer.Checked[QRefFreq - 1]:= true;
-    cgTransfer.Checked[QCH1Disp - 1]:= true;
-    cgTransfer.Checked[QCH2Disp - 1]:= true;
+    cgTransfer.Checked[ReferenceIndex]:= true;
+    if CH1Index >= 0 then
+      cgTransfer.Checked[CH1Index]:= true;
+    if (CH2Index >= 0) and (c + 2 < MaxSimultPars) then
+      cgTransfer.Checked[CH2Index]:= true;
   end;
 end;
 
 procedure TReadingsForm.btClearClick(Sender: TObject);
 var
   DataList: TList;
+  i: integer;
 begin
   DataList:= ThreadList.LockList;
     Datalist.Clear;
@@ -1297,18 +1227,8 @@ begin
   freeandnil(srcTime);
   freeandnil(srcFreq);
   freeandnil(srcAmpl);
-  freeandnil(srcX);
-  freeandnil(srcY);
-  freeandnil(srcRV);
-  freeandnil(srcRdBm);
-  freeandnil(srcPhi);
-  freeandnil(srcAUXIN1);
-  freeandnil(srcAUXIN2);
-  freeandnil(srcAUXIN3);
-  freeandnil(srcAUXIN4);
-  freeandnil(srcRef);
-  freeandnil(srcDisp1);
-  freeandnil(srcDisp2);
+  for i:= 0 to high(CoordinateSources) do
+    freeandnil(CoordinateSources[i]);
 end;
 
 procedure TReadingsForm.btApplyClick(Sender: TObject);
@@ -1340,19 +1260,18 @@ begin
   CurrentDevice^.Timeout:= seRecvTimeOut.Value;
 
   UpdateTimer.Interval:= eUpdateInterval.Value;
-  if DeviceIndex = iSR844 then setlength(ParamArr, 2);
-  if DeviceIndex = iSR830 then setlength(ParamArr, 3);
-  ParamArr[0]:= 1;
-  ParamArr[1]:= cbCh1.ItemIndex;
-  if DeviceIndex = iSR830 then ParamArr[2]:= cbRatio1.ItemIndex;
 
   EnterCriticalSection(CommCS);
-    AddCommand(dDisplaySelect, false, ParamArr);
-
-    ParamArr[0]:= 2;
-    ParamArr[1]:= cbCh2.ItemIndex;
-    if DeviceIndex = iSR830 then ParamArr[2]:= cbRatio2.ItemIndex;
-    AddCommand(dDisplaySelect, false, ParamArr);
+  if cbRatio1.ItemIndex >= 0 then
+  begin
+    AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, cbCH1.ItemIndex, cbRatio1.ItemIndex));
+    AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, cbCH2.ItemIndex, cbRatio2.ItemIndex));
+  end
+  else
+  begin
+    AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, cbCH1.ItemIndex));
+    AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, cbCH2.ItemIndex));
+  end;
 
     AddCommand(dSampleRate, false, cbSampleRate.ItemIndex);
     AddCommand(dSensitivity, false, cbSensitivity.ItemIndex);
@@ -1391,7 +1310,7 @@ begin
     if e = 0 then cbTimeConstant.ItemIndex:= i;
   LeaveCriticalSection(CommCS);
 
-  if DeviceIndex = iSR830 then
+ { if DeviceIndex = iSR830 then
   begin
     s3:= CurrentDevice^.ParSeparator;
 
@@ -1402,7 +1321,6 @@ begin
 
     val(s1, i);
     cbRatio1.ItemIndex:= i;
-
 
     val(copy(s2, 1, pos(s3, s2) - 1), i, e);
     if e <> 0 then exit;
@@ -1420,7 +1338,7 @@ begin
 
     val(s2, i, e);
     if e = 0 then cbCh2.ItemIndex:= i;
-  end;
+  end; }
 end;
 
 procedure TReadingsForm.btStopLogClick(Sender: TObject);
@@ -1447,6 +1365,7 @@ begin
    cgTransfer.Enabled:= true;
    Label13.Hide;
    cbSampleRate.Hide;
+   sbParamScroll.Show;
    cgTransfer.Show;
   end
   else
@@ -1456,6 +1375,7 @@ begin
     Label13.Show;
     cbSampleRate.Show;
     cgTransfer.Hide;
+    sbParamScroll.Hide;
   end;
 end;
 
@@ -1480,7 +1400,7 @@ procedure TReadingsForm.cgTransferItemClick(Sender: TObject; Index: integer);
 var
   i, ParNum: word;
 begin
-  if (Index + 1 = QRefFreq) and not cgTransfer.Checked[Index] then
+  if (Index = ReferenceIndex) and not cgTransfer.Checked[Index] then
   if not UseGenFreq then LogFreq:= false;
 
   ParNum:= 0;
@@ -1488,7 +1408,7 @@ begin
   begin
     for i:= 0 to Items.Count - 1 do
     if Checked[i] then inc(ParNum);
-    if ParNum = 6 then
+    if ParNum = MaxSimultPars then
     begin
      for i:= 0 to Items.Count - 1 do
      if not Checked[i] then CheckEnabled[i]:= false;

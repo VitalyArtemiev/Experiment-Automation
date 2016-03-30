@@ -12,10 +12,9 @@ type
   { TMemoForm }
 
   TMemoForm = class(TForm)
-    btSaveComment: TButton;
-    Memo: TMemo;
+    btSave: TButton;
     mComment: TMemo;
-    procedure btSaveCommentClick(Sender: TObject);
+    procedure btSaveClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
   private
@@ -34,7 +33,7 @@ implementation
 
 { TMemoForm }
 
-procedure TMemoForm.btSaveCommentClick(Sender: TObject);
+procedure TMemoForm.btSaveClick(Sender: TObject);
 begin
   Save:= true;
   MemoForm.Close;

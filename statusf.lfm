@@ -1,5 +1,5 @@
 object StatusForm: TStatusForm
-  Left = 364
+  Left = 152
   Height = 254
   Top = 382
   Width = 332
@@ -8,7 +8,7 @@ object StatusForm: TStatusForm
   ClientHeight = 254
   ClientWidth = 332
   OnShow = FormShow
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.6.0.4'
   object btPoll: TButton
     AnchorSideTop.Control = Label5
     AnchorSideTop.Side = asrBottom

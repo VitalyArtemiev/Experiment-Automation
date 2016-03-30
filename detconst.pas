@@ -4,10 +4,8 @@ unit DetConst;
 
 interface
 
-uses SerConF;
 
-
-const
+//const
 {  SR844Command: array[longint(RST)..longint(LIAE)] of ansistring = (
     '*RST', '*IDN', '', '', '', '', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , 'TRIG',
     'PRST', 'LOCL', 'OVRM',
@@ -37,7 +35,7 @@ const
     'RSLP', 'SLVL', 'ISRC', 'IGND', 'ICPL', 'ILIN', 'SYNC', 'OEXP', 'ARSV'
                                               );      }
 
-  SR844TransferParams: array [0..9] of ansistring = (
+ { SR844TransferParams: array [0..9] of ansistring = (
     'X',
     'Y',
     'R (V)',
@@ -186,8 +184,10 @@ const
     'Y Noise',
     'AUX IN 3',
     'AUX IN 4'
-              );
+              );   }
   implementation
+
+  var a: integer;
 
 end.
 

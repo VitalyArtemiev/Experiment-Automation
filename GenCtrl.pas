@@ -47,7 +47,6 @@ begin
   Application.CreateForm(TCustomCommandForm, CustomCommandForm);
   Application.CreateForm(TStatusForm, StatusForm);
   Application.CreateForm(TAboutForm, AboutForm);
-
   Application.Run;
 end.
 

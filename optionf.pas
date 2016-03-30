@@ -67,6 +67,7 @@ type
     { private declarations }
   public
     procedure GetOptions;
+    procedure ReloadDeviceList;
     function SaveOptions: integer;
     { public declarations }
   end;
@@ -251,18 +252,9 @@ begin
     NewDefaultParams:= DefaultParams;
   end;
 
-  with DeviceForm do
-  begin
-    eDevice.Clear;
-    for i:= 1 to sgGenCommands.ColCount - 1 do
-      eDevice.AddItem(sgGenCommands.Cells[i, 0], nil);
+  ReloadDeviceList;
 
-    eDevice1.Clear;
-    for i:= 1 to sgDetCommands.ColCount - 1 do
-      eDevice1.AddItem(sgDetCommands.Cells[i, 0], nil);
-  end;
-
-  with MainForm, MainForm.SupportedDevices[MainForm.DeviceIndex], eDevice do
+  with MainForm, MainForm.CurrentDevice^, eDevice do
   begin
     if CurrentDevice^.Model <> '' then
       ItemIndex:= Items.IndexOf(CurrentDevice^.Model)          //!!!???
@@ -280,7 +272,9 @@ begin
     else cbHandShake.ItemIndex:= 2;
     //eInitCommand.Text:= InitString;
   end;
-  with ReadingsForm, ReadingsForm.SupportedDevices[ReadingsForm.DeviceIndex], eDevice1 do
+
+
+  with ReadingsForm, ReadingsForm.CurrentDevice^, eDevice1 do
   begin
     if CurrentDevice^.Model <> '' then
       ItemIndex:= Items.IndexOf(CurrentDevice^.Model)          //!!!???
@@ -300,6 +294,31 @@ begin
 
   eDeviceChange(Self);
   eDevice1Change(Self);
+end;
+
+procedure TOptionForm.ReloadDeviceList;
+var
+  i: integer;
+begin
+  with DeviceForm do
+  begin
+    eDevice.Clear;
+    for i:= 1 to sgGenCommands.ColCount - 1 do
+      eDevice.AddItem(sgGenCommands.Cells[i, 0], nil);
+
+    eDevice1.Clear;
+    for i:= 1 to sgDetCommands.ColCount - 1 do
+      eDevice1.AddItem(sgDetCommands.Cells[i, 0], nil);
+  end;
+
+  if MainForm.ConnectionKind <> cNone then
+    eDevice.ItemIndex:= eDevice.Items.IndexOf(MainForm.CurrentDevice^.Model);
+
+  if ReadingsForm.ConnectionKind <> cNone then
+    eDevice1.ItemIndex:= eDevice1.Items.IndexOf(ReadingsForm.CurrentDevice^.Model);
+
+  eDevice1Change(Self);
+  eDeviceChange(Self);
 end;
 
 function TOptionForm.SaveOptions: integer;

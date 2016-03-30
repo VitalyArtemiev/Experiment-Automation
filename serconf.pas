@@ -9,6 +9,8 @@ uses
   Dialogs, Grids, synaser, tlntsend, StatusF, CustomCommandF;
 
 type
+  tIntegerArray = array of Integer;
+
   ConnectAction = (ANo, AQuery, AReset);
 
   eConnectionKind = (cNone, cSerial, cTelNet);
@@ -28,11 +30,11 @@ type
   rParams = record
     Amplitude, Offset, Frequency, SweepStartF, SweepStopF, SweepRate, StepStartF,
       StepStopF, StepF, StepStartA, StepStopA, StepA, AxisLimit: double;
-    Impedance, AmpUnit, SweepType, SweepDir, SampleRate, TimeConstant, Sensitivity,
-      XAxis, ReadingsMode, Display1, Display2, Ratio1, Ratio2, Show1, Show2: byte;
+    Impedance, CurrFunc, AmpUnit, SweepType, SweepDir, SampleRate, TimeConstant, Sensitivity,
+      XAxis, ReadingsMode, Display1, Display2, Ratio1, Ratio2, Show1, Show2: shortint;
     ACOn, AutoSweep, GenFreq, OnePoint: boolean;
-    TransferPars: array [1..11] of boolean;
-    CurrFunc, UpdateInterval, ReadingTime, TimeStep, Delay: longint;
+    TransferPars: array [0..19] of boolean;
+    UpdateInterval, ReadingTime, TimeStep, Delay: longint;
     GeneratorPort, DetectorPort, LastGenerator, LastDetector: shortstring;
   end;
 
@@ -106,9 +108,10 @@ type
     function ConnectSerial: longint; virtual;
     function ConnectTelNet: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
+    function GetCommandName(c: variant): string;
     procedure AddCommand(c: variant{tCommand}; Query: boolean = false);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
-    procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: array of longint);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tIntegerArray);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: tUnits);
     procedure PassCommands;
     function RecvString: string;
@@ -131,7 +134,7 @@ var
 implementation
 
 uses
-  GenConst, MainF, DeviceF, OptionF;
+  DeviceF, GenConst, MainF, OptionF;
 
 function strf(x: double): string;
 begin
@@ -301,9 +304,15 @@ begin
         setlength(Commands, RowCount - SGHeaderLength);
         for j:= 0 to RowCount - SGHeaderLength  - 1 do
           Commands[j]:= Cells[i, j + SGHeaderLength];
+
+        {for j:= 0 to high(Commands) do
+          writeProgramLog(strf(j) + Commands[j]);   }
       end;
+
+
     end;
   end;
+
 end;
 
 procedure tSerConnectForm.InitDevice;
@@ -327,7 +336,7 @@ begin
   SerPort.SendString(s);        //cts????
 end;
 
-function tSerConnectForm.ConnectSerial: longint;  { TODO 1 -cBug : Redo }
+function tSerConnectForm.ConnectSerial: longint;
 var
   P: char;
   i: integer;
@@ -343,7 +352,7 @@ begin
   SerPort.DeadLockTimeOut:= 10000;
 
   SerPort.TestDsr:= true;
-  SerPort.RaiseExcept:= false;             //cycle here!!!!
+  SerPort.RaiseExcept:= false;
   SerPort.Connect(cbPortSelect.Text);
   if SerPort.LastError = 0 then
   begin
@@ -496,12 +505,25 @@ begin
   end;
 end;
 
+function tSerConnectForm.GetCommandName(c: variant): string;
+begin
+  case c of
+    0..integer(cTrigger):
+      str(eCommonCommand(c),Result);
+    else
+      case DeviceKind of
+        dGenerator: str(eGenCommand(c),Result);
+        dDetector: str(eDetCommand(c),Result);
+      end;
+  end;
+end;
+
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
 begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then    //commcs just bc suppdev???
   begin
-    WriteProgramLog('Error: command unsopported by this device');
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
     exit
   end;
 
@@ -517,7 +539,7 @@ begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then
   begin
-    WriteProgramLog('Error: command unsopported by this device');
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
     exit
   end;
 
@@ -531,14 +553,14 @@ begin
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
-  var a: array of longint);
+  var a: tIntegerArray);
 var
   i: longint;
 begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then
   begin
-    WriteProgramLog('Error: command unsopported by this device');
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
     exit
   end;
 
@@ -561,7 +583,8 @@ begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then
   begin
-    WriteProgramLog('Error: command unsopported by this device');
+
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
     exit
   end;
 
@@ -620,6 +643,7 @@ begin
     cTelNet:
       begin;
         Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+
         writeprogramlog('Получена строка ' + Result);
       end;
   end;

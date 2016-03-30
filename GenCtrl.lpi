@@ -18,9 +18,7 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
-      <MajorVersionNr Value="1"/>
-      <MinorVersionNr Value="8"/>
-      <BuildNr Value="2"/>
+      <MajorVersionNr Value="2"/>
       <Language Value="0419"/>
       <StringTable LegalCopyright="Виталий Артемьев, кафедра Фотоники МФТИ" OriginalFilename="Generator Control" ProductVersion=""/>
     </VersionInfo>
@@ -78,6 +76,7 @@
           </SearchPaths>
           <CodeGeneration>
             <SmartLinkUnit Value="True"/>
+            <TargetCPU Value="i386"/>
             <Optimizations>
               <OptimizationLevel Value="3"/>
             </Optimizations>
@@ -118,7 +117,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="15">
+    <Units Count="16">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -218,6 +217,12 @@
         <Filename Value="synapse\source\lib\dnssend.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit14>
+      <Unit15>
+        <Filename Value="deviceparf.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

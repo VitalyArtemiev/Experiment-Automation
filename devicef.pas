@@ -6,17 +6,22 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  Buttons, StdCtrls, ComCtrls;
+  Buttons, StdCtrls, ComCtrls, ExtCtrls;
 
 type
   eHeaderRow = (
     hModel, hManufacturer, hInterface, hBaudRate, hDataBits, hStopBits, hParity,
     hHandShake, hIPAdress, hPort, hInitString, hTimeOut, hMinDelay,
-    hParSeparator, hCommSeparator, hTerminator
+    hParSeparator, hCommSeparator, hTerminator,
+    hTimeConstOptions, hSensitivityOptions, hTransferParams, hFirstIndex,
+    hIndices, hMaxSimultPars, hCH1Options, hCH2Options, hRatio1Options,
+    hRatio2Options,
+    hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
+    hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions
                 );
 
   eCommonCommand = (
-    cReset, cIdentify, cRecall, cSave, cTest, cCalibrate, cClearStatus,
+    cReset, cReboot, cIdentify, cRecall, cSave, cTest, cCalibrate, cClearStatus,
     cSerialPoll, cSerialPollEnable, cStdEvent, cStdEventEnable, cPowerClear,
     cTrigger
                     );
@@ -25,7 +30,7 @@ type
     gDDS = integer(cTrigger) + 1, gDDSEnable, gResistance, gFunction,
     gAmplitude, gOffset, gFrequency, gSweepSource, gSweepEnable,
     gSweepRate, gSweepStartFrequency, gSweepStopFrequency, gSweepType,
-    gSweepDirection
+    gSweepDirection, gModulationWaveform
                  );
 
   eDetCommand = (
@@ -60,7 +65,7 @@ type
                      );
 
   TSR830Command = (
-    {RST, IDN, LOCL = 3, OVRM,
+    RST, IDN, LOCL = 3, OVRM,
     FMOD, HARM, FREQ, PHAS = 10, APHS,
     SENS = 16, AGAN, OFLT = 20, OFSL,
     DDEF = 23, FPOP = 25, AOFF = 27,
@@ -69,7 +74,7 @@ type
     RMOD = 45,
     SRAT, SEND, TRIG, TSTR, STRT, PAUS, REST,
     OUTP, OUTR, SNAP, SPTS, TRCA, TRCB, TRCL, FAST, STRD,
-    CLS, STB, SRE, ESR, ESE, PSC, ERRS, ERRE, LIAS, LIAE, }
+    CLS, STB, SRE, ESR, ESE, PSC, ERRS, ERRE, LIAS, LIAE,
     RSLP = longint(LIAE) + 1, SLVL, ISRC, IGND, ICPL, ILIN, SYNC, OEXP, ARSV
                                               );                               }
 
@@ -143,10 +148,14 @@ const
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure pcDeviceChange(Sender: TObject);
+    procedure sgDetCommandsClick(Sender: TObject);
+    procedure sgGenCommandsClick(Sender: TObject);
+    procedure sgGenCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
+      var CanSelect: Boolean);
     procedure sgDetCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
     procedure sgGenCommandsSelection(Sender: TObject; aCol, aRow: Integer);
-
+    procedure EditOptionString(c, r: integer);
     function CheckConformance: integer;
   private
     { private declarations }
@@ -158,7 +167,7 @@ const
   end;
 
 const
-  SGHeaderLength = 17; //кол-во строк в tStringGrid, не относящ. к командам
+  SGHeaderLength = 28; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
 
@@ -170,7 +179,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, SynaIP, MainF, OptionF, serconf;
+  LCLType, SynaIP, MainF, ReadingsF, OptionF, serconf, MemoF;
 
 { TDeviceForm }
 
@@ -236,8 +245,7 @@ begin
              if FileExists(CurrGenFileName) then
              with sg do
              begin
-                { TODO 3 -cBug : how to clear }
-                //sg.Clean;
+               sg.Clean;
                LoadFromFile(CurrGenFileName);
              end;
            end;
@@ -247,7 +255,7 @@ begin
              with sg do
              begin
 
-                //sg.Clean;
+               sg.Clean;
                LoadFromFile(CurrDetFileName);
              end;
            end;
@@ -301,7 +309,9 @@ begin
 
   if o = 0 then
   begin
-    OptionForm.GetOptions;
+    MainForm.GetSupportedDevices(dGenerator);
+    ReadingsForm.GetSupportedDevices(dDetector);
+    OptionForm.ReloadDeviceList;
 
     CanClose:= true;
   end
@@ -341,10 +351,52 @@ begin
   end;
 end;
 
-procedure tDeviceForm.sgDetCommandsSelectCell(Sender: TObject; aCol,
+procedure tDeviceForm.sgDetCommandsClick(Sender: TObject);
+begin
+  with sg do
+    case Row of
+     integer(hTimeConstOptions),
+     integer(hSensitivityOptions),
+     integer(hTransferParams),
+     integer(hCH1Options),
+     integer(hCH2Options),
+     integer(hRatio1Options),
+     integer(hRatio2Options):
+        begin
+          //ClearSelections;
+          EditOptionString(Col, Row);
+          //sgDetCommands.led:= false; //CRUTCH to avoid selection troublems
+          //tCrutch.Enabled:= true;
+        end;
+    end;
+end;
+
+procedure tDeviceForm.sgGenCommandsClick(Sender: TObject);
+begin
+  with sg do
+    case Row of
+      integer(hResistanceOptions),
+      integer(hFunctionOptions),
+      integer(hSweepTypeOptions),
+      integer(hsWeepDirectionOptions),
+      integer(hModulationOptions):
+        begin
+          //ClearSelections;
+          EditOptionString(Col, Row);
+          //sgDetCommands.led:= false; //CRUTCH to avoid selection troublems
+          //tCrutch.Enabled:= true;
+        end;
+    end;
+end;
+
+procedure tDeviceForm.sgGenCommandsSelectCell(Sender: TObject; aCol,
   aRow: Integer; var CanSelect: Boolean);
 begin
-  with sgDetCommands.Columns.Items[aCol - 1] do
+  if Assigned(sg) then
+  with sg do
+  begin
+    AutoEdit:= true;
+    with Columns.Items[aCol - 1] do
     case aRow of
       integer(hInterface):
         begin
@@ -371,18 +423,96 @@ begin
           ButtonStyle:= cbsPickList;
           PickList:= cbTerminator.Items;
         end;
+      integer(hResistanceOptions),
+      integer(hFunctionOptions),
+      integer(hSweepTypeOptions),
+      integer(hSweepDirectionOptions),
+      integer(hModulationOptions):
+        AutoEdit:= false;
       else
         begin
            ButtonStyle:= cbsAuto;
            PickList:= nil;
         end;
     end;
+  end;
+end;
+
+procedure tDeviceForm.sgDetCommandsSelectCell(Sender: TObject; aCol,
+  aRow: Integer; var CanSelect: Boolean);
+begin
+  if Assigned(sg) then
+  with sg do
+  begin
+    AutoEdit:= true;
+    with Columns.Items[aCol - 1] do
+    case aRow of
+      integer(hInterface):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbInterface.Items;
+        end;
+      integer(hStopBits):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbStopBits.Items;
+        end;
+      integer(hParity):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbParity.Items;
+        end;
+      integer(hHandshake):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbHandshake.Items;
+        end;
+      integer(hTerminator):
+        begin
+          ButtonStyle:= cbsPickList;
+          PickList:= cbTerminator.Items;
+        end;
+      integer(hTimeConstOptions),
+      integer(hSensitivityOptions),
+      integer(hTransferParams),
+      integer(hCH1Options),
+      integer(hCH2Options),
+      integer(hRatio1Options),
+      integer(hRatio2Options):
+        AutoEdit:= false;
+      else
+        begin
+           ButtonStyle:= cbsAuto;
+           PickList:= nil;
+        end;
+    end;
+  end;
 end;
 
 procedure tDeviceForm.sgGenCommandsSelection(Sender: TObject; aCol,
   aRow: Integer);
 begin
   CurrColumn:= aCol;
+end;
+
+procedure tDeviceForm.EditOptionString(c, r: integer);
+begin
+  with sg, MemoForm  do
+  begin
+
+    //Col:= c;
+
+    //Row:= r;
+
+    mComment.Text := Cells[Col, Row];
+
+    ShowModal;
+    if mComment.Text <> '' then
+    begin
+     // mComment.Lines.;
+      Cells[Col, Row]:= mComment.Text;
+    end;
+  end;
 end;
 
 function tDeviceForm.CheckConformance: integer;

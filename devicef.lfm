@@ -1,18 +1,18 @@
 object DeviceForm: TDeviceForm
-  Left = 483
-  Height = 550
-  Top = 283
+  Left = 869
+  Height = 700
+  Top = 120
   Width = 650
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
-  ClientHeight = 550
+  ClientHeight = 700
   ClientWidth = 650
   Constraints.MinHeight = 460
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.6.0.4'
   object pcDevice: TPageControl
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
@@ -20,21 +20,21 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 542
+    Height = 692
     Top = 4
     Width = 376
-    ActivePage = tsDetectors
+    ActivePage = tsGenerators
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 8
     BorderSpacing.Bottom = 4
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
       Caption = 'Генераторы'
-      ClientHeight = 514
+      ClientHeight = 664
       ClientWidth = 368
       object sgGenCommands: TStringGrid
         AnchorSideLeft.Control = tsGenerators
@@ -44,7 +44,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsGenerators
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 510
+        Height = 660
         Top = 2
         Width = 366
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -63,17 +63,19 @@ object DeviceForm: TDeviceForm
           end>
         FixedRows = 0
         MouseWheelOption = mwGrid
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goSmoothScroll, goSelectionActive]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goEditing, goSmoothScroll, goSelectionActive]
         RowCount = 128
         TabOrder = 0
+        OnClick = sgGenCommandsClick
         OnSelection = sgGenCommandsSelection
+        OnSelectCell = sgGenCommandsSelectCell
         ColWidths = (
           136
           69
           64
         )
         Cells = (
-          116
+          138
           0
           0
           'Модель'
@@ -124,91 +126,109 @@ object DeviceForm: TDeviceForm
           'Терминатор'
           0
           16
-          'Команды:'
+          'Опции сопротивления'
           0
           17
-          'Сброс'
+          'Функции'
           0
           18
-          'Перезагрузка'
+          'Типы сканирования'
           0
           19
-          'Идентификация'
+          'Направления сканирования'
           0
           20
-          'Загрузить профиль'
-          0
-          21
-          'Сохранить профиль'
-          0
-          22
-          'Проверка'
-          0
-          23
-          'Калибровка'
-          0
-          24
-          'Очистить статус'
-          0
-          25
-          'Байт опроса STB'
-          0
-          26
-          'Байт слежения за STB'
+          'Функции модуляции'
           0
           27
-          'Байт стд. событий ESR'
+          'Команды:'
           0
           28
-          'Байт слежения за ESR'
+          'Сброс'
           0
           29
-          'Сброс статуса при включении PSC'
+          'Перезагрузка'
           0
           30
-          'Триггер'
+          'Идентификация'
           0
           31
-          'Байт DDS'
+          'Загрузить профиль'
           0
           32
-          'Байт слежения за DDS'
+          'Сохранить профиль'
           0
           33
-          'Сопротивление'
+          'Проверка'
           0
           34
-          'Функция'
+          'Калибровка'
           0
           35
-          'Амплитуда'
+          'Очистить статус'
           0
           36
-          'Смещение'
+          'Байт опроса STB'
           0
           37
-          'Постоянная частота'
+          'Байт слежения за STB'
           0
           38
-          'Источник сканирования'
+          'Байт стд. событий ESR'
           0
           39
-          'Сканирование вкл/выкл'
+          'Байт слежения за ESR'
           0
           40
-          'Частота сканирования'
+          'Сброс статуса при включении PSC'
           0
           41
-          'Начальная частота'
+          'Триггер'
           0
           42
-          'Конечная частота'
+          'Байт DDS'
           0
           43
-          'Тип сканирования'
+          'Байт слежения за DDS'
           0
           44
+          'Сопротивление'
+          0
+          45
+          'Функция'
+          0
+          46
+          'Амплитуда'
+          0
+          47
+          'Смещение'
+          0
+          48
+          'Постоянная частота'
+          0
+          49
+          'Источник сканирования'
+          0
+          50
+          'Сканирование вкл/выкл'
+          0
+          51
+          'Частота сканирования'
+          0
+          52
+          'Начальная частота'
+          0
+          53
+          'Конечная частота'
+          0
+          54
+          'Тип сканирования'
+          0
+          55
           'Направление сканирования'
+          0
+          56
+          'Функция модуляции'
           1
           0
           'DS345'
@@ -250,61 +270,97 @@ object DeviceForm: TDeviceForm
           'CR'
           1
           17
-          '*RST'
+          'Синусоида'#13#10'Квадратная'#13#10'Треугольная'#13#10'Пилообразная'#13#10'Шум'#13#10'Пользовательская'
+          1
+          18
+          'Линейное'#13#10'Логарифмическое'#13#10'Внутр. AM'#13#10'FM'#13#10'фm'#13#10'Очередь'
           1
           19
-          '*IDN'
+          'Одиночный'#13#10'Вн. частота'#13#10'+ наклон внеш.'#13#10'- наклон внеш.'#13#10'Линейный'
           1
           20
-          '*RCL'
-          1
-          21
-          '*SAV'
-          1
-          22
-          '*TST'
-          1
-          23
-          '*CAL'
-          1
-          24
-          '*CLS'
-          1
-          25
-          '*STB'
-          1
-          26
-          '*SRE'
-          1
-          27
-          '*ESR'
+          'Одиночная развертка'#13#10'Пилообразная'#13#10'Треугольная'#13#10'Синусоида'#13#10'Квадратная'#13#10'ARB'#13#10'Нет'
           1
           28
-          '*ESE'
-          1
-          29
-          '*PSC'
+          '*RST'
           1
           30
-          '*TRG'
+          '*IDN'
           1
           31
-          'STAT'
+          '*RCL'
           1
           32
-          'DENA'
+          '*SAV'
+          1
+          33
+          '*TST'
           1
           34
-          'FUNC'
+          '*CAL'
           1
           35
-          'AMPL'
+          '*CLS'
           1
           36
-          'OFFS'
+          '*STB'
           1
           37
+          '*SRE'
+          1
+          38
+          '*ESR'
+          1
+          39
+          '*ESE'
+          1
+          40
+          '*PSC'
+          1
+          41
+          '*TRG'
+          1
+          42
+          'STAT'
+          1
+          43
+          'DENA'
+          1
+          45
+          'FUNC'
+          1
+          46
+          'AMPL'
+          1
+          47
+          'OFFS'
+          1
+          48
           'FREQ'
+          1
+          49
+          'TSRC'
+          1
+          50
+          'MENA'
+          1
+          51
+          'TRAT'
+          1
+          52
+          'STFR'
+          1
+          53
+          'SPFR'
+          1
+          54
+          'MTYP'
+          1
+          55
+          'TSRC'
+          1
+          56
+          'MDWF'
           2
           0
           'DS335'
@@ -345,89 +401,101 @@ object DeviceForm: TDeviceForm
           15
           'CR'
           2
+          16
+          '50 Ом'#13#10'Повышенное'
+          2
           17
-          '*RST'
+          'Синусоида'#13#10'Квадратная'#13#10'Треугольная'#13#10'Пилообразная'#13#10'Шум'
+          2
+          18
+          'Линейное'#13#10'Логарифмическое'
           2
           19
-          '*IDN'
-          2
-          20
-          '*RCL'
-          2
-          21
-          '*SAV'
-          2
-          22
-          '*TST'
-          2
-          24
-          '*CLS'
-          2
-          25
-          '*STB'
-          2
-          26
-          '*SRE'
-          2
-          27
-          '*ESR'
+          'Вверх'#13#10'Вверх-вниз'#13#10'FSK'
           2
           28
-          '*ESE'
-          2
-          29
-          '*PSC'
+          '*RST'
           2
           30
-          '*TRG'
+          '*IDN'
           2
           31
-          'STAT'
+          '*RCL'
           2
           32
-          'DENA'
+          '*SAV'
           2
           33
-          'TERM'
-          2
-          34
-          'FUNC'
+          '*TST'
           2
           35
-          'AMPL'
+          '*CLS'
           2
           36
-          'OFFS'
+          '*STB'
           2
           37
-          'FREQ'
+          '*SRE'
           2
           38
-          'TSRC'
+          '*ESR'
           2
           39
-          'SWEN'
+          '*ESE'
           2
           40
-          'SRAT'
+          '*PSC'
           2
           41
-          'STFR'
+          '*TRG'
           2
           42
-          'SPFR'
+          'STAT'
           2
           43
-          'STYP'
+          'DENA'
           2
           44
+          'TERM'
+          2
+          45
+          'FUNC'
+          2
+          46
+          'AMPL'
+          2
+          47
+          'OFFS'
+          2
+          48
+          'FREQ'
+          2
+          49
+          'TSRC'
+          2
+          50
+          'SWEN'
+          2
+          51
+          'SRAT'
+          2
+          52
+          'STFR'
+          2
+          53
+          'SPFR'
+          2
+          54
+          'STYP'
+          2
+          55
           'SDIR'
         )
       end
     end
     object tsDetectors: TTabSheet
       Caption = 'Детекторы'
-      ClientHeight = 514
+      ClientHeight = 664
       ClientWidth = 368
       object sgDetCommands: TStringGrid
         AnchorSideLeft.Control = tsDetectors
@@ -437,7 +505,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsDetectors
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 510
+        Height = 660
         Top = 2
         Width = 366
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -449,30 +517,32 @@ object DeviceForm: TDeviceForm
         Columns = <        
           item
             Title.Caption = 'Title'
-            Width = 97
+            Width = 69
           end        
           item
             Title.Caption = 'Title'
-            Width = 55
+            Width = 69
           end        
           item
             Title.Caption = 'Title'
+            Width = 70
           end>
         FixedRows = 0
         MouseWheelOption = mwGrid
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goEditing, goSmoothScroll, goSelectionActive]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goEditing, goSmoothScroll, goSelectionActive, goFixedColSizing]
         RowCount = 128
         TabOrder = 0
+        OnClick = sgDetCommandsClick
         OnSelection = sgGenCommandsSelection
         OnSelectCell = sgDetCommandsSelectCell
         ColWidths = (
           137
-          97
-          55
-          64
+          69
+          69
+          70
         )
         Cells = (
-          192
+          229
           0
           0
           'Модель'
@@ -523,123 +593,153 @@ object DeviceForm: TDeviceForm
           'Терминатор'
           0
           16
-          'Команды:'
+          'Опции константы времени'
           0
           17
-          'Сброс'
+          'Опции чувствительности'
           0
           18
-          'Перезагрузка'
+          'Снимаемые параметры'
           0
           19
-          'Идентификация'
+          'Индекс 1-го параметра'
           0
           20
-          'Загрузить профиль'
+          '№ строки частоты, CH1, CH2'
           0
           21
-          'Сохранить профиль'
+          'Макс. число одновр. запр. параметров'
           0
           22
-          'Проверка'
+          'Опции CH1'
           0
           23
-          'Калибровка'
+          'Опции CH2'
           0
           24
-          'Очистить статус'
+          'Опции отношения CH1'
           0
           25
-          'Байт опроса STB'
-          0
-          26
-          'Байт слежения за STB'
+          'Опции отношения CH2'
           0
           27
-          'Байт стд. событий ESR'
+          'Команды:'
           0
           28
-          'Байт слежения за ESR'
+          'Сброс'
           0
           29
-          'Сброс статуса при включении PSC'
+          'Перезагрузка'
           0
           30
-          'Триггер'
+          'Идентификация'
           0
           31
-          'Байт неполадок ERRS'
+          'Загрузить профиль'
           0
           32
-          'Байт слежения за ERRS'
+          'Сохранить профиль'
           0
           33
-          'Байт состояния детектора LIAS'
+          'Проверка'
           0
           34
-          'Байт слежения за LIAS'
+          'Калибровка'
           0
           35
-          'Входная амплитуда'
+          'Очистить статус'
           0
           36
-          'Чувствительность'
+          'Байт опроса STB'
           0
           37
-          'Константа времени'
+          'Байт слежения за STB'
           0
           38
-          'Close reserve'
+          'Байт стд. событий ESR'
           0
           39
-          'Wide reserve'
+          'Байт слежения за ESR'
           0
           40
-          'Автоамплитуда'
+          'Сброс статуса при включении PSC'
           0
           41
-          'Авточувствительнусть'
+          'Триггер'
           0
           42
-          'auto Close reserve'
+          'Байт неполадок ERRS'
           0
           43
-          'auto wide reserve'
+          'Байт слежения за ERRS'
           0
           44
-          'Автофаза'
+          'Байт состояния детектора LIAS'
           0
           45
-          'Автосмещение'
+          'Байт слежения за LIAS'
           0
           46
-          'Источник синх. сигнала'
+          'Входная амплитуда'
           0
           47
-          'Частота вн. буфера'
+          'Чувствительность'
           0
           48
-          'Начало снятия (вн. буфер)'
+          'Константа времени'
           0
           49
-          'Пауза снятия (вн. буфер)'
+          'Close reserve'
           0
           50
-          'Сбросить вн. буфер'
+          'Wide reserve'
           0
           51
-          'Кол-во точек в буфере'
+          'Автоамплитуда'
           0
           52
-          'Считать точки из буфера'
+          'Авточувствительнусть'
           0
           53
-          'Режим записи буфера'
+          'auto Close reserve'
           0
           54
-          'Одновременная запись параметров'
+          'auto wide reserve'
           0
           55
+          'Автофаза'
+          0
+          56
+          'Автосмещение'
+          0
+          57
+          'Источник синх. сигнала'
+          0
+          58
+          'Частота вн. буфера'
+          0
+          59
+          'Начало снятия (вн. буфер)'
+          0
+          60
+          'Пауза снятия (вн. буфер)'
+          0
+          61
+          'Сбросить вн. буфер'
+          0
+          62
+          'Кол-во точек в буфере'
+          0
+          63
+          'Считать точки из буфера'
+          0
+          64
+          'Режим записи буфера'
+          0
+          65
+          'Одновременная запись параметров'
+          0
+          66
           'Выбор параметров дисплея'
           1
           0
@@ -669,97 +769,121 @@ object DeviceForm: TDeviceForm
           15
           'CR'
           1
+          16
+          '1 мкс'#13#10'3 мкс'#13#10'10 мкс'#13#10'30 мкс'#13#10'100 мкс'#13#10'300 мкс'#13#10'1 мс'#13#10'3 мс'#13#10'10 мс'#13#10'30 мс'#13#10'100 мс'#13#10'300 мс'#13#10'1 с'#13#10'3 с'#13#10'10 с'#13#10'30 с'#13#10'100 с'#13#10'300 с'#13#10'1 кс'#13#10'3 кс'#13#10'10 кс'#13#10'30 кс'
+          1
           17
-          '*RST'
+          '1 В/мкА'#13#10'500 мВ/нА'#13#10'200 мВ/нА'#13#10'100 мВ/нА'#13#10'50 мВ/нА'#13#10'20 мВ/нА'#13#10'10 мВ/нА'#13#10'5 мВ/нА'#13#10'2 мВ/нА'#13#10'1 мВ/нА'#13#10'500 мкВ/пА'#13#10'200 мкВ/пА'#13#10'100 мкВ/пА'#13#10'50 мкВ/пА'#13#10'20 мкВ/пА'#13#10'10 мкВ/пА'#13#10'5 мкВ/пА'#13#10'2 мкВ/пА'#13#10'1 мкВ/пА'#13#10'500 нВ/фА'#13#10'200 нВ/фА'#13#10'100 нВ/фА'#13#10'50 нВ/фА'#13#10'20 нВ/фА'#13#10'10 нВ/фА'#13#10'5 нВ/фА'#13#10'2 нВ/фА'#13#10'1 нВ/фА'
+          1
+          18
+          'X'#13#10'Y'#13#10'R'#13#10'Φ'#13#10'AUX IN 1'#13#10'AUX IN 2'#13#10'AUX IN 3'#13#10'AUX IN 4'#13#10'AUX OUT 1'#13#10'AUX OUT 2'#13#10'X Noise'#13#10'Y Noise'#13#10'Фаза опорн. сигн.'#13#10'Амплитуда (выход)'#13#10'Смещение (выход)'#13#10'Внутр. опорн. част.'#13#10'Внеш. опорн. част.'#13#10
           1
           19
-          '*IDN'
+          '0'
           1
           20
-          '*RCL'
+          '16'
           1
           21
-          '*SAV'
+          '3'
           1
           22
-          '*TST'
+          'X'#13#10'R'
           1
           23
-          '*CAL'
-          1
-          24
-          '*CLS'
-          1
-          25
-          '*STB'
-          1
-          26
-          '*SRE'
-          1
-          27
-          '*ESR'
+          'Y'#13#10'Φ'
           1
           28
-          '*ESE'
-          1
-          29
-          '*PSC'
+          '*RST'
           1
           30
-          'TRIG'
+          '*IDN'
           1
           31
-          'ERRS'
+          '*RCL'
           1
           32
-          'ERRE'
+          '*SAV'
           1
           33
-          'LIAS'
+          '*TST'
           1
           34
-          'LIAE'
+          '*CAL'
           1
           35
-          'IRNG'
+          '*CLS'
           1
           36
-          'SCAL'
+          '*STB'
           1
           37
-          'OFLT'
+          '*SRE'
+          1
+          38
+          '*ESR'
+          1
+          39
+          '*ESE'
           1
           40
-          'ARNG'
+          '*PSC'
           1
           41
-          'ASCL'
+          'TRIG'
+          1
+          42
+          'ERRS'
+          1
+          43
+          'ERRE'
           1
           44
-          'APHS'
+          'LIAS'
+          1
+          45
+          'LIAE'
           1
           46
-          'RSRC'
+          'IRNG'
           1
           47
-          'CAPTURERATE'
+          'SCAL'
           1
           48
-          'CAPTURESTART'
-          1
-          50
-          'CAPTURESTOP'
+          'OFLT'
           1
           51
-          'CAPTUREPROG'
+          'ARNG'
           1
           52
-          'CAPTUREGET'
-          1
-          54
-          'SNAP'
+          'ASCL'
           1
           55
+          'APHS'
+          1
+          57
+          'RSRC'
+          1
+          58
+          'CAPTURERATE'
+          1
+          59
+          'CAPTURESTART'
+          1
+          61
+          'CAPTURESTOP'
+          1
+          62
+          'CAPTUREPROG'
+          1
+          63
+          'CAPTUREGET'
+          1
+          65
+          'SNAP'
+          1
+          66
           'CAPTURECFG'
           2
           0
@@ -801,115 +925,145 @@ object DeviceForm: TDeviceForm
           15
           'CR'
           2
+          16
+          '100 мкс'#13#10'300 мкс'#13#10'1 мс'#13#10'3 мс'#13#10'10 мс'#13#10'30 мс'#13#10'100 мс'#13#10'300 мс'#13#10'1 с'#13#10'3 с'#13#10'10 с'#13#10'30 с'#13#10'100 с'#13#10'300 с'#13#10'1 кс'#13#10'3 кс'#13#10'10 кс'#13#10'30 кс  '
+          2
           17
-          '*RST'
+          '100 нВсркв/-127 дБ'#13#10'300 нВсркв/-117 дБ'#13#10'1 мкВсркв/-107 дБ'#13#10'3 мкВсркв/-97 дБ'#13#10'10 мкВсркв/-87 дБ'#13#10'30 мкВсркв/-77 дБ'#13#10'100 мкВсркв/-67 дБ'#13#10'300 мкВсркв/-57 дБ'#13#10'1 мВсркв/-47 дБ'#13#10'3 мВсркв/-37 дБ'#13#10'10 мВсркв/-27 дБ'#13#10'30 мВсркв/-17 дБ'#13#10'100 мВсркв/-7 дБ'#13#10'300 мВсркв/+3 дБ'#13#10'1 Всркв/+13 дБ'
           2
           18
-          'PRST'
+          'X'#13#10'Y'#13#10'R (V)'#13#10'R (dBm)'#13#10'Φ'#13#10'AUX IN 1'#13#10'AUX IN 2'#13#10'Опорная частота'#13#10'Дисплей 1'#13#10'Дисплей 2'
           2
           19
-          '*IDN'
+          '1'
           2
           20
-          '*RCL'
+          '7, 8, 9'
           2
           21
-          '*SAV'
+          '6'
           2
           22
-          '*TST'
+          'X'#13#10'R (V)'#13#10'R (dBm)'#13#10'X Noise'#13#10'AUX IN 1'
           2
           23
-          '*CAL'
+          'Y'#13#10'Φ'#13#10'Y Noise (V)'#13#10'Y Noise (dBm)'#13#10'AUX IN 2'
           2
           24
-          '*CLS'
+          'Нет'#13#10'AUX IN 1'#13#10'AUX IN 2'
           2
           25
-          '*STB'
-          2
-          26
-          '*SRE'
-          2
-          27
-          '*ESR'
+          'Нет'#13#10'AUX IN 3'#13#10'AUX IN 4'
           2
           28
-          '*ESE'
+          '*RST'
           2
           29
-          '*PSC'
+          'PRST'
           2
           30
-          'TRIG'
+          '*IDN'
           2
           31
-          'ERRS'
+          '*RCL'
           2
           32
-          'ERRE'
+          '*SAV'
           2
           33
-          'LIAS'
+          '*TST'
           2
           34
-          'LIAE'
+          '*CAL'
+          2
+          35
+          '*CLS'
           2
           36
-          'SENS'
+          '*STB'
           2
           37
-          'OFLT'
+          '*SRE'
           2
           38
-          'CRSV'
+          '*ESR'
           2
           39
-          'WRSV'
+          '*ESE'
+          2
+          40
+          '*PSC'
           2
           41
-          'AGAN'
+          'TRIG'
           2
           42
-          'ACRS'
+          'ERRS'
           2
           43
-          'AWRS'
+          'ERRE'
           2
           44
-          'APHS'
+          'LIAS'
           2
           45
-          'AOFF'
-          2
-          46
-          'FMOD'
+          'LIAE'
           2
           47
-          'SRAT'
+          'SENS'
           2
           48
-          'STRT'
+          'OFLT'
           2
           49
-          'PAUS'
+          'CRSV'
           2
           50
-          'REST'
-          2
-          51
-          'SPTS'
+          'WRSV'
           2
           52
-          'TRCL'
+          'AGAN'
           2
           53
-          'SEND'
+          'ACRS'
           2
           54
-          'SNAP'
+          'AWRS'
           2
           55
+          'APHS'
+          2
+          56
+          'AOFF'
+          2
+          57
+          'FMOD'
+          2
+          58
+          'SRAT'
+          2
+          59
+          'STRT'
+          2
+          60
+          'PAUS'
+          2
+          61
+          'REST'
+          2
+          62
+          'SPTS'
+          2
+          63
+          'TRCL'
+          2
+          64
+          'SEND'
+          2
+          65
+          'SNAP'
+          2
+          66
           'DDEF'
           3
           0
@@ -951,103 +1105,130 @@ object DeviceForm: TDeviceForm
           15
           'CR'
           3
+          16
+          '10 мкс'#13#10'30 мкс'#13#10'100 мкс'#13#10'300 мкс'#13#10'1 мс'#13#10'3 мс'#13#10'10 мс'#13#10'30 мс'#13#10'100 мс'#13#10'300 мс'#13#10'1 с'#13#10'3 с'#13#10'10 с'#13#10'30 с'#13#10'100 с'#13#10'300 с'#13#10'1 кс'#13#10'3 кс'#13#10'10 кс'#13#10'30 кс '
+          3
           17
-          '*RST'
+          '2 нВ/фА'#13#10'5 нВ/фА'#13#10'10 нВ/фА'#13#10'20 нВ/фА'#13#10'50 нВ/фА'#13#10'100 нВ/фА'#13#10'200 нВ/фА'#13#10'500 нВ/фА'#13#10'1 мкВ/пА'#13#10'2 мкВ/пА'#13#10'5 мкВ/пА'#13#10'10 мкВ/пА'#13#10'20 мкВ/пА'#13#10'50 мкВ/пА'#13#10'100 мкВ/пА'#13#10'200 мкВ/пА'#13#10'500 мкВ/пА'#13#10'1 мВ/нА'#13#10'2 мВ/нА'#13#10'5 мВ/нА'#13#10'10 мВ/нА'#13#10'20 мВ/нА'#13#10'50 мВ/нА'#13#10'100 мВ/нА'#13#10'200 мВ/нА'#13#10'500 мВ/нА'#13#10'1 В/мкА'
+          3
+          18
+          'X'#13#10'Y'#13#10'R'#13#10'Φ'#13#10'AUX IN 1'#13#10'AUX IN 2'#13#10'AUX IN 3'#13#10'AUX IN 4'#13#10'Опорная частота'#13#10'Дисплей 1'#13#10'Дисплей 2'
           3
           19
-          '*IDN'
+          '1'
           3
           20
-          '*RCL'
+          '8, 9, 10'
           3
           21
-          '*SAV'
+          '6'
           3
           22
-          '*TST'
+          'X'#13#10'R'#13#10'X Noise'#13#10'AUX IN 1'#13#10'AUX IN 2'
           3
           23
-          '*STB'
-          3
-          24
-          '*CLS'
-          3
-          25
-          '*STB'
-          3
-          26
-          '*SRE'
-          3
-          27
-          '*ESR'
+          'Y'#13#10'Φ'#13#10'Y Noise'#13#10'AUX IN 3'#13#10'AUX IN 4'
           3
           28
-          '*ESE'
-          3
-          29
-          '*PSC'
+          '*RST'
           3
           30
-          'TRIG'
+          '*IDN'
           3
           31
-          'ERRS'
+          '*RCL'
           3
           32
-          'ERRE'
+          '*SAV'
           3
           33
-          'LIAS'
+          '*TST'
           3
           34
-          'LIAE'
+          '*STB'
+          3
+          35
+          '*CLS'
           3
           36
-          'SENS'
+          '*STB'
           3
           37
-          'OFLT'
+          '*SRE'
           3
           38
-          'RMOD'
+          '*ESR'
+          3
+          39
+          '*ESE'
+          3
+          40
+          '*PSC'
           3
           41
-          'AGAN'
+          'TRIG'
           3
           42
-          'ARSV'
+          'ERRS'
+          3
+          43
+          'ERRE'
           3
           44
-          'APHS'
+          'LIAS'
           3
           45
-          'AOFF'
+          'LIAE'
           3
           47
-          'SRAT'
+          'SENS'
           3
           48
-          'STRT'
+          'OFLT'
           3
           49
-          'PAUS'
-          3
-          50
-          'REST'
-          3
-          51
-          'SPTS'
+          'RMOD'
           3
           52
-          'TRCL'
+          'AGAN'
           3
           53
-          'SEND'
-          3
-          54
-          'SNAP'
+          'ARSV'
           3
           55
+          'APHS'
+          3
+          56
+          'AOFF'
+          3
+          57
+          'FMOD'
+          3
+          58
+          'SRAT'
+          3
+          59
+          'STRT'
+          3
+          60
+          'PAUS'
+          3
+          61
+          'REST'
+          3
+          62
+          'SPTS'
+          3
+          63
+          'TRCL'
+          3
+          64
+          'SEND'
+          3
+          65
+          'SNAP'
+          3
+          66
           'DDEF'
         )
       end
@@ -1071,7 +1252,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btDone
     Left = 388
     Height = 25
-    Top = 475
+    Top = 625
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 16
@@ -1262,7 +1443,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btSaveToFile
     Left = 388
     Height = 25
-    Top = 442
+    Top = 592
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 8
@@ -1276,7 +1457,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btLoadFromFile
     Left = 517
     Height = 25
-    Top = 442
+    Top = 592
     Width = 125
     BorderSpacing.Left = 4
     Caption = 'Уст. по умолчанию'
@@ -1290,7 +1471,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Side = asrBottom
     Left = 388
     Height = 25
-    Top = 516
+    Top = 666
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 5

@@ -1,5 +1,5 @@
 object CustomCommandForm: TCustomCommandForm
-  Left = 417
+  Left = 98
   Height = 264
   Top = 33
   Width = 386
@@ -10,7 +10,7 @@ object CustomCommandForm: TCustomCommandForm
   ClientWidth = 386
   OnCreate = FormCreate
   OnShow = FormShow
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.6.0.4'
   object mCustomCommand: TMemo
     AnchorSideLeft.Control = Label2
     AnchorSideTop.Control = Label2

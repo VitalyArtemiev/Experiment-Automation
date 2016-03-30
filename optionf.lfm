@@ -1,5 +1,5 @@
 object OptionForm: TOptionForm
-  Left = 453
+  Left = 134
   Height = 350
   Top = 207
   Width = 350
@@ -11,7 +11,7 @@ object OptionForm: TOptionForm
   Constraints.MinWidth = 350
   OnCloseQuery = FormCloseQuery
   OnShow = FormShow
-  LCLVersion = '1.4.4.0'
+  LCLVersion = '1.6.0.4'
   object btSave: TButton
     AnchorSideLeft.Control = btCancel
     AnchorSideLeft.Side = asrBottom
@@ -206,10 +206,10 @@ object OptionForm: TOptionForm
         Height = 251
         Top = 33
         Width = 342
-        ActivePage = DetTab
+        ActivePage = GenTab
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 4
-        TabIndex = 1
+        TabIndex = 0
         TabOrder = 0
         object GenTab: TTabSheet
           AnchorSideTop.Side = asrBottom
