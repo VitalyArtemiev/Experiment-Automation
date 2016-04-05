@@ -1,7 +1,7 @@
 object CustomCommandForm: TCustomCommandForm
-  Left = 98
+  Left = 100
   Height = 264
-  Top = 33
+  Top = 34
   Width = 386
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow

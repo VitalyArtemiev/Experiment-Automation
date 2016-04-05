@@ -273,7 +273,6 @@ begin
     //eInitCommand.Text:= InitString;
   end;
 
-
   with ReadingsForm, ReadingsForm.CurrentDevice^, eDevice1 do
   begin
     if CurrentDevice^.Model <> '' then

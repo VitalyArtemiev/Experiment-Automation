@@ -45,11 +45,12 @@ type
     Commands: tSSA;
     ParSeparator, CommSeparator, Terminator, InitString: string;
     //Connection: eConnectionKind;
+    Timeout: longword;
     case Connection: eConnectionKind of
      // cNone:   ();
       cSerial: (Parity, StopBits: byte;
                 SoftFlow, HardFlow: boolean;
-                BaudRate, DataBits, Timeout: longword);
+                BaudRate, DataBits: longword);
       cTelNet: (Host, Port: string[15]);
   end;
 
@@ -206,7 +207,7 @@ end;
 procedure tSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
 begin
   case ConnectionKind of
-   // cNone:
+    cNone: ShowMessage('Подключение отсутствует');
     cSerial:
       begin
         if SerPort.InstanceActive then
@@ -218,11 +219,10 @@ begin
           //str(DataVolume, s);
           //DebugBox.Items.Strings[11]:= s;
           //setlength(s, DataVolume);
-          SerPort.RaiseExcept:= false;  //sleep
+            //sleep
           //if SerPort.CanRead(seRecvTimeout.Value) then
           TestResult:= RecvString;
           if TestResult <> '' then ShowMessage('Подключено к ' + TestResult);
-          SerPort.RaiseExcept:= true;
         end;
       end;
     cTelNet:
@@ -289,24 +289,60 @@ begin
         Model:=         Cells[i, longint(hModel)];
         CommSeparator:= Cells[i, longint(hCommSeparator)];
         ParSeparator:=  Cells[i, longint(hParSeparator)];
-
-        case Cells[i, longint(hInterface)] of
-          'Ethernet': Connection:= cTelNet;
-          else Connection:= cSerial;
-        end;
-
         case Cells[i, longint(hTerminator)] of
           'CR':   Terminator:= CR;
           'LF':   Terminator:= LF;
           'CRLF': Terminator:= CRLF;
         end;
 
+        TimeOut:=       valf(Cells[i, longint(hTimeout)]);
+
+        case Cells[i, longint(hInterface)] of
+          'Ethernet':
+          begin
+            Connection:= cTelNet;
+            Host:= Cells[i, longint(hIPAdress)];
+            Port:= Cells[i, longint(hPort)];
+          end;
+          else
+          begin
+            Connection:= cSerial;
+            BaudRate:= valf(Cells[i, longint(hBaudRate)]);
+            DataBits:= valf(Cells[i, longint(hDataBits)]);
+            StopBits:= DeviceForm.cbStopBits.Items.IndexOf(Cells[i, integer(hStopBits)]);
+            Parity:= DeviceForm.cbParity.Items.IndexOf(Cells[i, integer(hParity)]);
+            case DeviceForm.cbHandshake.Items.IndexOf(Cells[i, integer(hHandshake)]) of
+              0:
+              begin
+                SoftFlow:= false;
+                HardFlow:= false;
+              end;
+              1:
+              begin
+                SoftFlow:= true;
+                HardFlow:= false;
+              end;
+              2:
+              begin
+                SoftFlow:= false;
+                HardFlow:= true;
+              end;
+              3:
+              begin
+                SoftFlow:= true;
+                HardFlow:= true;
+              end;
+            end;
+          end;
+        end;
+        //writeprogramlog(strf(baudrate)+''+ strf(databits)+''+ strf(stopbits));
+
         setlength(Commands, RowCount - SGHeaderLength);
         for j:= 0 to RowCount - SGHeaderLength  - 1 do
           Commands[j]:= Cells[i, j + SGHeaderLength];
 
         {for j:= 0 to high(Commands) do
-          writeProgramLog(strf(j) + Commands[j]);   }
+          writeProgramLog(getcommandname(j) + '  ' + Commands[j]);  }
       end;
 
 
@@ -317,18 +353,11 @@ end;
 
 procedure tSerConnectForm.InitDevice;
 var
-  s, t: string;
-  i: integer;
+  s: string;
 begin
   s:= CurrentDevice^.InitString;
   if s = '' then exit;
-
-  t:= SupportedDevices[iDefaultDevice].Terminator;
-  for i:= 1 to high(SupportedDevices) do
-    if pos(PresumedDevice, SupportedDevices[i].Model) <> 0 then
-      t:= SupportedDevices[i].Terminator;
-
-  s+= t;
+  s+= CurrentDevice^.Terminator;
 
   WriteProgramLog('Строка на устройство ' + TestResult);
   WriteProgramLog(s);
@@ -357,8 +386,10 @@ begin
   if SerPort.LastError = 0 then
   begin
     for i:= 1 to high(SupportedDevices) do
-      with SupportedDevices[i] do
-      if Connection = cSerial then
+    begin
+      DeviceIndex:= i;
+      with CurrentDevice^ do
+        if Connection = cSerial then
         begin
           WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
           case Parity of
@@ -368,6 +399,7 @@ begin
             3: P:= 'M';
             4: P:= 'S';
           end;
+
           SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
 
           InitDevice;
@@ -378,12 +410,16 @@ begin
           begin
             if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
             begin
-              DeviceIndex:= i;
               WriteProgramLog('Успешно');
               break;
-            end;
-          end;
+            end
+            else
+              DeviceIndex:= iDefaultDevice;
+          end
+          else
+            DeviceIndex:= iDefaultDevice;
         end;
+    end;
     if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
   end;
 
@@ -512,8 +548,20 @@ begin
       str(eCommonCommand(c),Result);
     else
       case DeviceKind of
-        dGenerator: str(eGenCommand(c),Result);
-        dDetector: str(eDetCommand(c),Result);
+        dGenerator:
+        begin
+          if c > integer(high(eGenCommand)) then
+            Result:= 'Invalid command'
+          else
+            str(eGenCommand(c),Result);
+        end;
+        dDetector:
+        begin
+          if c > integer(high(eDetCommand)) then
+            Result:= 'Invalid command'
+          else
+            str(eDetCommand(c),Result);
+        end;
       end;
   end;
 end;
@@ -584,7 +632,7 @@ begin
     (CurrentDevice^.Commands[c] = '') then
   begin
 
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Currentdevice^.Model);
     exit
   end;
 

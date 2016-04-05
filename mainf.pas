@@ -1057,10 +1057,12 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
+  GetSupportedDevices(DeviceKind);
+
   if not FileExists(Config.DefaultParams) then Config.DefaultParams:= DefaultParams;
   if Config.LoadParamsOnStart then LoadParams(Config.DefaultParams);
 
-  GetSupportedDevices(DeviceKind);
+
 
   cbImpedanceChange(Self);
   cbFuncSelectChange(Self);

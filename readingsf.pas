@@ -660,8 +660,6 @@ begin
         ParToRead[i]:= -1;
 
       setlength(CoordinateSources, cgTransfer.Items.Count);
-      writeprogramlog('l' + strf(length(CoordinateSources)));
-      writeprogramlog('c' + strf(cgTransfer.Items.Count));
 
       for j:= 0 to high(ParToRead) do
       begin
@@ -712,6 +710,7 @@ begin
   StartTime:= Now;
   ReadingNeeded:= true;
   ReadingsThread.Start;
+
 end;
 
 procedure TReadingsForm.PauseLog;
@@ -883,9 +882,13 @@ begin
     exit;
   end;
 
-  for i:= 0 to high(p) do
-    if p[i] = -1 then break;
-  num:= i + 1;
+  i:= 0;
+  while i <= high(p) do
+  begin
+    if p[i] = -1 then break
+    else inc(i);
+  end;
+  num:= i;
   setlength(ParamArr, num);
 
   WriteProgramLog(strf(num) + ' SNAP elements');
@@ -903,9 +906,9 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  sleep(60 + random(30));
-  s:= strf(random)+',' +strf(random)+',' + strf(random);
-  writeprogramlog(s);
+  //sleep(60 + random(30));
+  //s:= strf(random)+',' +strf(random)+',' + strf(random);
+  //writeprogramlog(s);
   if s = '' then
   begin
     Result:= nil;
@@ -1020,10 +1023,10 @@ begin
 
           for k:= (lk + 1) to high(ReadPars) do
           begin
-            WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
+            //WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
             if ReadPars[k] then
             begin
-              writeprogramlog('k' + strf(k));
+              //writeprogramlog('k' + strf(k));
               CoordinateSources[k].Add(v);
               lk:= k;
               break;
@@ -1122,6 +1125,8 @@ begin
     PassCommands;
   LeaveCriticalSection(CommCS);
 
+  deviceindex:= 2;
+
   if DeviceIndex = iDefaultDevice then exit;
 
   OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
@@ -1193,8 +1198,8 @@ begin
   begin
     cbRatio1.Show;
     Label14.Show;
-    cbRatio2.Hide;
-    Label15.Hide;
+    cbRatio2.Show;
+    Label15.Show;
   end;
 
   c:= 0;

@@ -149,7 +149,11 @@ const
     procedure FormShow(Sender: TObject);
     procedure pcDeviceChange(Sender: TObject);
     procedure sgDetCommandsClick(Sender: TObject);
+    procedure sgDetCommandsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure sgGenCommandsClick(Sender: TObject);
+    procedure sgGenCommandsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
     procedure sgGenCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
     procedure sgDetCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
@@ -371,6 +375,13 @@ begin
     end;
 end;
 
+procedure tDeviceForm.sgDetCommandsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  key:= 0;
+  sgDetCommandsClick(Self);
+end;
+
 procedure tDeviceForm.sgGenCommandsClick(Sender: TObject);
 begin
   with sg do
@@ -389,11 +400,17 @@ begin
     end;
 end;
 
+procedure tDeviceForm.sgGenCommandsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  key:= 0;
+  sgGenCommandsClick(Self);
+end;
+
 procedure tDeviceForm.sgGenCommandsSelectCell(Sender: TObject; aCol,
   aRow: Integer; var CanSelect: Boolean);
 begin
-  if Assigned(sg) then
-  with sg do
+  with sgGenCommands do
   begin
     AutoEdit:= true;
     with Columns.Items[aCol - 1] do
@@ -441,8 +458,7 @@ end;
 procedure tDeviceForm.sgDetCommandsSelectCell(Sender: TObject; aCol,
   aRow: Integer; var CanSelect: Boolean);
 begin
-  if Assigned(sg) then
-  with sg do
+  with sgDetCommands do
   begin
     AutoEdit:= true;
     with Columns.Items[aCol - 1] do
@@ -507,7 +523,7 @@ begin
     mComment.Text := Cells[Col, Row];
 
     ShowModal;
-    if mComment.Text <> '' then
+    if (mComment.Text <> '') or (Cells[Col, Row] <> '') then
     begin
      // mComment.Lines.;
       Cells[Col, Row]:= mComment.Text;

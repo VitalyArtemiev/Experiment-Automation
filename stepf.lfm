@@ -1,7 +1,7 @@
 object StepForm: TStepForm
-  Left = 180
+  Left = 181
   Height = 248
-  Top = 337
+  Top = 338
   Width = 304
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow

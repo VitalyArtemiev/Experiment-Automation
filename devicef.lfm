@@ -1,7 +1,7 @@
 object DeviceForm: TDeviceForm
-  Left = 869
+  Left = 736
   Height = 700
-  Top = 120
+  Top = 90
   Width = 650
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
@@ -52,6 +52,7 @@ object DeviceForm: TDeviceForm
         BorderSpacing.Top = 2
         BorderSpacing.Right = 2
         BorderSpacing.Bottom = 2
+        Color = clWhite
         ColCount = 3
         Columns = <        
           item
@@ -67,6 +68,7 @@ object DeviceForm: TDeviceForm
         RowCount = 128
         TabOrder = 0
         OnClick = sgGenCommandsClick
+        OnKeyDown = sgGenCommandsKeyDown
         OnSelection = sgGenCommandsSelection
         OnSelectCell = sgGenCommandsSelectCell
         ColWidths = (
@@ -533,6 +535,7 @@ object DeviceForm: TDeviceForm
         RowCount = 128
         TabOrder = 0
         OnClick = sgDetCommandsClick
+        OnKeyDown = sgDetCommandsKeyDown
         OnSelection = sgGenCommandsSelection
         OnSelectCell = sgDetCommandsSelectCell
         ColWidths = (
@@ -743,7 +746,7 @@ object DeviceForm: TDeviceForm
           'Выбор параметров дисплея'
           1
           0
-          'RS865'
+          'SR865'
           1
           1
           'Stanford_Research_Systems'
@@ -887,7 +890,7 @@ object DeviceForm: TDeviceForm
           'CAPTURECFG'
           2
           0
-          'RS844'
+          'SR844'
           2
           1
           'Stanford_Research_Systems'
@@ -948,12 +951,6 @@ object DeviceForm: TDeviceForm
           2
           23
           'Y'#13#10'Φ'#13#10'Y Noise (V)'#13#10'Y Noise (dBm)'#13#10'AUX IN 2'
-          2
-          24
-          'Нет'#13#10'AUX IN 1'#13#10'AUX IN 2'
-          2
-          25
-          'Нет'#13#10'AUX IN 3'#13#10'AUX IN 4'
           2
           28
           '*RST'
@@ -1067,7 +1064,7 @@ object DeviceForm: TDeviceForm
           'DDEF'
           3
           0
-          'RS830'
+          'SR830'
           3
           1
           'Stanford_Research_Systems'
@@ -1128,6 +1125,12 @@ object DeviceForm: TDeviceForm
           3
           23
           'Y'#13#10'Φ'#13#10'Y Noise'#13#10'AUX IN 3'#13#10'AUX IN 4'
+          3
+          24
+          'Нет'#13#10'AUX IN 1'#13#10'AUX IN 2'
+          3
+          25
+          'Нет'#13#10'AUX IN 3'#13#10'AUX IN 4'
           3
           28
           '*RST'
