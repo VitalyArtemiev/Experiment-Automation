@@ -14,6 +14,7 @@ object StepForm: TStepForm
   OnCloseQuery = FormCloseQuery
   OnHide = FormHide
   OnShow = FormShow
+  Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
   object Label1: TLabel
     AnchorSideLeft.Control = Label7

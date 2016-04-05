@@ -1,11 +1,12 @@
 object AboutForm: TAboutForm
-  Left = 1186
+  Left = 776
   Height = 210
-  Top = 98
+  Top = 343
   Width = 397
   Caption = 'О программе'
   ClientHeight = 210
   ClientWidth = 397
+  Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
   object Label1: TLabel
     AnchorSideLeft.Control = Owner

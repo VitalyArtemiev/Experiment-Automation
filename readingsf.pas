@@ -253,33 +253,6 @@ begin
   i:= cbChart2Show.ItemIndex;
 
   Src:= CoordinateSources[i];
-  {case i of
-    1: Src:= srcX;
-    2: Src:= srcY;
-    3: Src:= srcRV;
-    11:Src:= srcDisp2;
-    else
-    begin
-      if i = QRdbM    then Src:= srcRdBm
-      else
-      if i = QPhi     then Src:= srcPhi
-      else
-      if i = QAUXIN1  then Src:= srcAUXIN1
-      else
-      if i = QAUXIN2  then Src:= srcAUXIN2
-      else
-      if i = QAUXIN3  then Src:= srcAUXIN3
-      else
-      if i = QAUXIN4  then Src:= srcAUXIN4
-      else
-      if i = QRefFreq then Src:= srcRef
-      else
-      if i = QCH1Disp then Src:= srcDisp1
-      else
-      if i = QCH2Disp then Src:= srcDisp2
-    end;
-  end;       }
-                                      //range err prolly wrong pointsnumber
   try
   if Src <> nil then
     AItem.Y:= Src.Values[Aindex]
@@ -1124,8 +1097,6 @@ begin
     AddCommand(dResetStorage);
     PassCommands;
   LeaveCriticalSection(CommCS);
-
-  deviceindex:= 2;
 
   if DeviceIndex = iDefaultDevice then exit;
 

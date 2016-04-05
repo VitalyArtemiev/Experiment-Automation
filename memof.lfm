@@ -1,7 +1,7 @@
 object MemoForm: TMemoForm
-  Left = 0
+  Left = 690
   Height = 314
-  Top = 304
+  Top = 290
   Width = 484
   ActiveControl = btSave
   BorderStyle = bsSizeToolWin
@@ -12,6 +12,7 @@ object MemoForm: TMemoForm
   Constraints.MinWidth = 300
   OnCloseQuery = FormCloseQuery
   OnShow = FormShow
+  Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
   object mComment: TMemo
     AnchorSideLeft.Control = Owner

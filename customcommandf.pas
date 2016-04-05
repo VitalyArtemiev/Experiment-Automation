@@ -135,7 +135,8 @@ begin
     i:= DeviceIndex;
     cbCommands.Items.AddStrings(SupportedDevices[i].Commands);
   end;
-  while cbCommands.Items[0] = '' do cbCommands.Items.Delete(0);
+  if cbCommands.Items.Count > 0 then
+    while cbCommands.Items[0] = '' do cbCommands.Items.Delete(0);
 end;
 
 end.

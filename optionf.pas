@@ -222,7 +222,6 @@ begin
       ShowMessage('Ошибка в поле');
     end;
   end;
-  //OptionForm.Close;
 end;
 
 procedure TOptionForm.FormShow(Sender: TObject);
@@ -232,9 +231,6 @@ begin
 end;
 
 procedure TOptionForm.GetOptions;
-var
-  i: integer;
-  PreviousDevice: string;
 begin
   with Config do
   begin
@@ -316,8 +312,8 @@ begin
   if ReadingsForm.ConnectionKind <> cNone then
     eDevice1.ItemIndex:= eDevice1.Items.IndexOf(ReadingsForm.CurrentDevice^.Model);
 
-  eDevice1Change(Self);
   eDeviceChange(Self);
+  eDevice1Change(Self);
 end;
 
 function TOptionForm.SaveOptions: integer;
@@ -397,8 +393,6 @@ begin
           end
         end;
     end;
-
-    //InitString:= eInitCommand.Text;
   end;
 
   with ReadingsForm, ReadingsForm.SupportedDevices[eDevice1.ItemIndex + 1], DeviceForm.sgDetCommands do
@@ -408,10 +402,11 @@ begin
     case Connection of
       cSerial:
         begin
-          BaudRate:= eBaudRate.Value;
-          Databits:= valf(Cells[eDevice.ItemIndex + 1, longint(hDataBits)]);
 
-          s:= Cells[eDevice.ItemIndex + 1, longint(hStopBits)];
+          BaudRate:= eBaudRate.Value;
+          Databits:= valf(Cells[eDevice1.ItemIndex + 1, longint(hDataBits)]);
+
+          s:= Cells[eDevice1.ItemIndex + 1, longint(hStopBits)];
           StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
 
           Parity:= cbParity1.ItemIndex;
@@ -456,8 +451,6 @@ begin
           end
         end;
     end;
-
-   // InitString:= eInitCommand1.Text;
   end;
 end;
 

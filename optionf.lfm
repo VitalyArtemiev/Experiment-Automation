@@ -1,7 +1,7 @@
 object OptionForm: TOptionForm
-  Left = 135
+  Left = 1294
   Height = 350
-  Top = 208
+  Top = 297
   Width = 350
   BorderStyle = bsToolWindow
   Caption = 'Настройки'
@@ -11,6 +11,7 @@ object OptionForm: TOptionForm
   Constraints.MinWidth = 350
   OnCloseQuery = FormCloseQuery
   OnShow = FormShow
+  Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
   object btSave: TButton
     AnchorSideLeft.Control = btCancel

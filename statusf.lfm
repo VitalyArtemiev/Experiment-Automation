@@ -1,7 +1,7 @@
 object StatusForm: TStatusForm
-  Left = 153
+  Left = 837
   Height = 254
-  Top = 383
+  Top = 237
   Width = 332
   BorderStyle = bsToolWindow
   Caption = 'Состояние прибора'

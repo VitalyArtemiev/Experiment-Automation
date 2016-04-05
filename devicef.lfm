@@ -1,17 +1,18 @@
 object DeviceForm: TDeviceForm
-  Left = 736
+  Left = 1196
   Height = 700
-  Top = 90
-  Width = 650
+  Top = 85
+  Width = 652
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
   ClientHeight = 700
-  ClientWidth = 650
+  ClientWidth = 652
   Constraints.MinHeight = 460
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
+  Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
   object pcDevice: TPageControl
     AnchorSideLeft.Control = Owner
@@ -22,20 +23,20 @@ object DeviceForm: TDeviceForm
     Left = 4
     Height = 692
     Top = 4
-    Width = 376
-    ActivePage = tsGenerators
+    Width = 378
+    ActivePage = tsDetectors
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 8
     BorderSpacing.Bottom = 4
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
       Caption = 'Генераторы'
       ClientHeight = 664
-      ClientWidth = 368
+      ClientWidth = 370
       object sgGenCommands: TStringGrid
         AnchorSideLeft.Control = tsGenerators
         AnchorSideTop.Control = tsGenerators
@@ -46,7 +47,7 @@ object DeviceForm: TDeviceForm
         Left = 0
         Height = 660
         Top = 2
-        Width = 366
+        Width = 368
         Anchors = [akTop, akLeft, akRight, akBottom]
         AutoAdvance = aaDown
         BorderSpacing.Top = 2
@@ -57,10 +58,11 @@ object DeviceForm: TDeviceForm
         Columns = <        
           item
             Title.Caption = 'Title'
-            Width = 69
+            Width = 70
           end        
           item
             Title.Caption = 'Title'
+            Width = 70
           end>
         FixedRows = 0
         MouseWheelOption = mwGrid
@@ -73,8 +75,8 @@ object DeviceForm: TDeviceForm
         OnSelectCell = sgGenCommandsSelectCell
         ColWidths = (
           136
-          69
-          64
+          70
+          70
         )
         Cells = (
           138
@@ -498,7 +500,7 @@ object DeviceForm: TDeviceForm
     object tsDetectors: TTabSheet
       Caption = 'Детекторы'
       ClientHeight = 664
-      ClientWidth = 368
+      ClientWidth = 370
       object sgDetCommands: TStringGrid
         AnchorSideLeft.Control = tsDetectors
         AnchorSideTop.Control = tsDetectors
@@ -509,7 +511,7 @@ object DeviceForm: TDeviceForm
         Left = 0
         Height = 660
         Top = 2
-        Width = 366
+        Width = 368
         Anchors = [akTop, akLeft, akRight, akBottom]
         AutoAdvance = aaDown
         BorderSpacing.Top = 2
@@ -519,11 +521,11 @@ object DeviceForm: TDeviceForm
         Columns = <        
           item
             Title.Caption = 'Title'
-            Width = 69
+            Width = 70
           end        
           item
             Title.Caption = 'Title'
-            Width = 69
+            Width = 70
           end        
           item
             Title.Caption = 'Title'
@@ -540,8 +542,8 @@ object DeviceForm: TDeviceForm
         OnSelectCell = sgDetCommandsSelectCell
         ColWidths = (
           137
-          69
-          69
+          70
+          70
           70
         )
         Cells = (
@@ -1242,7 +1244,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = pcDevice
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 388
+    Left = 390
     Height = 45
     Top = 28
     Width = 249
@@ -1253,7 +1255,7 @@ object DeviceForm: TDeviceForm
   object btSaveToFile: TButton
     AnchorSideLeft.Control = btAddDevice
     AnchorSideBottom.Control = btDone
-    Left = 388
+    Left = 390
     Height = 25
     Top = 625
     Width = 125
@@ -1267,7 +1269,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label5
     AnchorSideTop.Side = asrBottom
-    Left = 388
+    Left = 390
     Height = 15
     Top = 270
     Width = 68
@@ -1280,7 +1282,7 @@ object DeviceForm: TDeviceForm
   object cbTerminator: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label6
-    Left = 517
+    Left = 519
     Height = 23
     Top = 270
     Width = 125
@@ -1299,7 +1301,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTerminator
     AnchorSideRight.Side = asrBottom
-    Left = 517
+    Left = 519
     Height = 25
     Top = 309
     Width = 125
@@ -1315,7 +1317,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btAddDevice
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 517
+    Left = 519
     Height = 25
     Top = 89
     Width = 125
@@ -1330,7 +1332,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
-    Left = 517
+    Left = 519
     Height = 23
     Top = 165
     Width = 125
@@ -1349,7 +1351,7 @@ object DeviceForm: TDeviceForm
   object cbParity: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label4
-    Left = 517
+    Left = 519
     Height = 23
     Top = 200
     Width = 125
@@ -1368,7 +1370,7 @@ object DeviceForm: TDeviceForm
   object cbHandshake: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label5
-    Left = 517
+    Left = 519
     Height = 23
     Top = 235
     Width = 125
@@ -1388,7 +1390,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label2
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbStopBits
-    Left = 388
+    Left = 390
     Height = 15
     Top = 165
     Width = 60
@@ -1402,7 +1404,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label3
     AnchorSideTop.Side = asrBottom
-    Left = 388
+    Left = 390
     Height = 15
     Top = 200
     Width = 53
@@ -1416,7 +1418,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label4
     AnchorSideTop.Side = asrBottom
-    Left = 388
+    Left = 390
     Height = 15
     Top = 235
     Width = 59
@@ -1430,7 +1432,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label1
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
-    Left = 388
+    Left = 390
     Height = 25
     Top = 89
     Width = 125
@@ -1444,7 +1446,7 @@ object DeviceForm: TDeviceForm
   object btLoadFromFile: TButton
     AnchorSideLeft.Control = btSaveToFile
     AnchorSideBottom.Control = btSaveToFile
-    Left = 388
+    Left = 390
     Height = 25
     Top = 592
     Width = 125
@@ -1458,7 +1460,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = btLoadFromFile
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btLoadFromFile
-    Left = 517
+    Left = 519
     Height = 25
     Top = 592
     Width = 125
@@ -1472,7 +1474,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = pcDevice
     AnchorSideBottom.Control = pcDevice
     AnchorSideBottom.Side = asrBottom
-    Left = 388
+    Left = 390
     Height = 25
     Top = 666
     Width = 125
@@ -1486,7 +1488,7 @@ object DeviceForm: TDeviceForm
   object Label2: TLabel
     AnchorSideLeft.Control = Label1
     AnchorSideTop.Control = cbInterface
-    Left = 388
+    Left = 390
     Height = 15
     Top = 130
     Width = 62
@@ -1500,7 +1502,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
-    Left = 517
+    Left = 519
     Height = 23
     Top = 130
     Width = 125

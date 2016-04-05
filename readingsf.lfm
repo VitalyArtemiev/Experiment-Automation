@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 469
+  Left = 694
   Height = 600
-  Top = 57
+  Top = 179
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
@@ -154,17 +154,12 @@ object ReadingsForm: TReadingsForm
           item
             Alignment = calBottom
             Minors = <>
-            Range.Max = 20
           end>
         BackColor = clWhite
         ExpandPercentage = 2
-        Extent.XMax = 20
-        Extent.XMin = 20
         ExtentSizeLimit.UseXMin = True
         ExtentSizeLimit.UseYMin = True
-        ExtentSizeLimit.XMax = 1
         ExtentSizeLimit.XMin = 0.001
-        ExtentSizeLimit.YMax = 1
         ExtentSizeLimit.YMin = 0.001
         Foot.Brush.Color = clBtnFace
         Foot.Font.Color = clBlue
@@ -234,7 +229,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideLeft.Control = Label9
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = PairSplitterSide1
-        Left = 65
+        Left = 34
         Height = 23
         Hint = 'Что регистрируется в Ch1 прибора'#13#10'и отображается на дисплее 1 прибора'
         Top = 0
@@ -260,22 +255,22 @@ object ReadingsForm: TReadingsForm
         Left = 4
         Height = 15
         Top = 0
-        Width = 57
+        Width = 26
         BorderSpacing.Left = 4
-        Caption = 'Дисплей 1'
+        Caption = 'CH 1'
         ParentColor = False
       end
       object Label14: TLabel
         AnchorSideLeft.Control = Label13
         AnchorSideTop.Control = cbRatio1
         AnchorSideRight.Control = cbRatio1
-        Left = 161
+        Left = 141
         Height = 15
         Top = 0
-        Width = 74
+        Width = 94
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
-        Caption = 'Отношение 1'
+        Caption = 'Отношение CH 1'
         ParentColor = False
       end
       object cbRatio1: TComboBox
@@ -406,16 +401,16 @@ object ReadingsForm: TReadingsForm
         Left = 4
         Height = 15
         Top = 0
-        Width = 57
+        Width = 26
         BorderSpacing.Left = 4
-        Caption = 'Дисплей 2'
+        Caption = 'CH 2'
         ParentColor = False
       end
       object cbCh2: TComboBox
         AnchorSideLeft.Control = Label10
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = PairSplitterSide2
-        Left = 65
+        Left = 34
         Height = 23
         Hint = 'Что регистрируется в Ch2 прибора'#13#10'и отображается на дисплее 2 прибора'
         Top = 0
@@ -458,13 +453,13 @@ object ReadingsForm: TReadingsForm
         AnchorSideLeft.Control = Label13
         AnchorSideTop.Control = cbRatio2
         AnchorSideRight.Control = cbRatio2
-        Left = 162
+        Left = 142
         Height = 15
         Top = 0
-        Width = 74
+        Width = 94
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
-        Caption = 'Отношение 2'
+        Caption = 'Отношение CH 2'
         ParentColor = False
       end
     end

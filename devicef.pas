@@ -357,7 +357,7 @@ end;
 
 procedure tDeviceForm.sgDetCommandsClick(Sender: TObject);
 begin
-  with sg do
+  with sgDetCommands do
     case Row of
      integer(hTimeConstOptions),
      integer(hSensitivityOptions),
@@ -366,44 +366,54 @@ begin
      integer(hCH2Options),
      integer(hRatio1Options),
      integer(hRatio2Options):
-        begin
-          //ClearSelections;
-          EditOptionString(Col, Row);
-          //sgDetCommands.led:= false; //CRUTCH to avoid selection troublems
-          //tCrutch.Enabled:= true;
-        end;
+       EditOptionString(Col, Row);
     end;
 end;
 
 procedure tDeviceForm.sgDetCommandsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  key:= 0;
+  with sgDetCommands do
+    case Row of
+     integer(hTimeConstOptions),
+     integer(hSensitivityOptions),
+     integer(hTransferParams),
+     integer(hCH1Options),
+     integer(hCH2Options),
+     integer(hRatio1Options),
+     integer(hRatio2Options):
+       key:= 0;
+    end;
+
   sgDetCommandsClick(Self);
 end;
 
 procedure tDeviceForm.sgGenCommandsClick(Sender: TObject);
 begin
-  with sg do
+  with sgGenCommands do
     case Row of
       integer(hResistanceOptions),
       integer(hFunctionOptions),
       integer(hSweepTypeOptions),
       integer(hsWeepDirectionOptions),
       integer(hModulationOptions):
-        begin
-          //ClearSelections;
-          EditOptionString(Col, Row);
-          //sgDetCommands.led:= false; //CRUTCH to avoid selection troublems
-          //tCrutch.Enabled:= true;
-        end;
+        EditOptionString(Col, Row);
     end;
 end;
 
 procedure tDeviceForm.sgGenCommandsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  key:= 0;
+  with sgGenCommands do
+    case Row of
+      integer(hResistanceOptions),
+      integer(hFunctionOptions),
+      integer(hSweepTypeOptions),
+      integer(hsWeepDirectionOptions),
+      integer(hModulationOptions):
+        key:= 0;
+    end;
+
   sgGenCommandsClick(Self);
 end;
 
@@ -520,12 +530,13 @@ begin
 
     //Row:= r;
 
-    mComment.Text := Cells[Col, Row];
+    mComment.Text:= Cells[Col, Row];
+    Caption:= Cells[0, Row];
 
     ShowModal;
+    Caption:= 'Комментарий';
     if (mComment.Text <> '') or (Cells[Col, Row] <> '') then
     begin
-     // mComment.Lines.;
       Cells[Col, Row]:= mComment.Text;
     end;
   end;
@@ -534,7 +545,7 @@ end;
 function tDeviceForm.CheckConformance: integer;
 var
   s: string;
-  i, o: integer;
+  i, o, e: integer;
 {Exitcodes:
   0 - Success
   in gen
@@ -636,8 +647,8 @@ begin
               exit(-7);
             end;
 
-            o:= valf(Cells[i, integer(hPort)]);
-            if o <= 0 then
+            val(Cells[i, integer(hPort)], o, e);
+            if (e <> 0) or (o < 0) then
             begin
               pcDevice.TabIndex:= 0;
               Row:= integer(hPort);
@@ -674,8 +685,8 @@ begin
         exit(-9);
       end;
 
-      o:= valf(Cells[i, integer(hTimeOut)]);
-      if o <= 0 then
+      val(Cells[i, integer(hTimeOut)], o, e);
+      if (e <> 0) or (o < 0) then
       begin
         pcDevice.TabIndex:= 0;
         Row:= integer(hTimeOut);
@@ -758,8 +769,8 @@ begin
               exit(-17);
             end;
 
-            o:= valf(Cells[i, integer(hPort)]);
-            if o <= 0 then
+            val(Cells[i, integer(hPort)], o, e);
+            if (e <> 0) or (o < 0) then
             begin
               pcDevice.TabIndex:= 1;
               Row:= integer(hPort);
@@ -767,7 +778,6 @@ begin
               ShowMessage('Ошибка в поле "Порт"');
               exit(-18);
             end;
-            { TODO 3 -cImprovement : check if 0 is valid port }
           end;
         2:
           begin
@@ -796,14 +806,82 @@ begin
         exit(-19);
       end;
 
-      o:= valf(Cells[i, integer(hTimeOut)]);
-      if o <= 0 then
+      val(Cells[i, integer(hTimeOut)], o, e);
+      if (e <> 0) or (o < 0) then
       begin
         pcDevice.TabIndex:= 1;
         Row:= integer(hTimeOut);
         Col:= i;
         ShowMessage('Ошибка в поле "Таймаут"');
         exit(-20);
+      end;
+
+      val(Cells[i, integer(hFirstIndex)], o, e);
+      if (e <> 0) or (o < 0) then
+      begin
+        pcDevice.TabIndex:= 1;
+        Row:= integer(hFirstIndex);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Индекс 1-го параметра"');
+        exit(-21);
+      end;
+
+      s:= Cells[i, integer(hIndices)];
+      if pos(',', s) = 0 then
+      begin
+        val(s, o, e);
+        if e <> 0 then
+        begin
+          pcDevice.TabIndex:= 1;
+          Row:= integer(hIndices);
+          Col:= i;
+          ShowMessage('Ошибка в поле "№ строки частоты"');
+          exit(-22);
+        end;
+      end
+      else
+      begin
+        val(copy(s, 1, pos(',', s) - 1), o, e);
+        if e <> 0 then
+        begin
+          pcDevice.TabIndex:= 1;
+          Row:= integer(hIndices);
+          Col:= i;
+          ShowMessage('Ошибка в поле "№ строки частоты"');
+          exit(-22);
+        end;
+        delete(s, 1, pos(',', s));
+
+        val(copy(s, 1, pos(',', s) - 1), o, e);
+        if e <> 0 then
+        begin
+          pcDevice.TabIndex:= 1;
+          Row:= integer(hIndices);
+          Col:= i;
+          ShowMessage('Ошибка в поле "№ строки CH1"');
+          exit(-22);
+        end;
+        delete(s, 1, pos(',', s));
+
+        val(s, o, e);
+        if e <> 0 then
+        begin
+          pcDevice.TabIndex:= 1;
+          Row:= integer(hIndices);
+          Col:= i;
+          ShowMessage('Ошибка в поле "№ строки CH2"');
+          exit(-22);
+        end;
+      end;
+
+      o:= valf(Cells[i, integer(hMaxSimultPars)]);
+      if o <= 0 then
+      begin
+        pcDevice.TabIndex:= 1;
+        Row:= integer(hMaxSimultPars);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Макс. число одновр. запр. параметров"');
+        exit(-23);
       end;
     end;
 end;
