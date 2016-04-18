@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses DeviceF, MainF, ReadingsF, SerConF, GenConst;
+uses DeviceF, MainF, ReadingsF, SerConF;
 
 {$R *.lfm}
 
@@ -153,19 +153,16 @@ begin
   Timer1.Interval:= MainForm.eTimeStep.Value;
 
   ProgressBar1.Max:= StepNumber;
-  //ProgressBar1.Step:= ProgressBar1.Max div StepNumber;
   str(ProgressBar1.max, s);
   lTotalSteps.Caption:= '/' + s;
   lStep.Caption:= '0';
   ProgressBar1.Position:= 0;
-  //ProgressBar1.;
   PauseTime:= 0;
 
   sleep(Params.Delay - Params.TimeStep);
 
   if Config.AutoReadingStep then
   begin
-    ReadingsForm.OnePointPerStep:= MainForm.cbPointPerStep.Checked;
     Params.OnePoint:= MainForm.cbPointPerStep.Checked;
     ReadingsForm.BeginLog;
     ReadingsForm.UpdateTimer.Enabled:= false;
@@ -198,7 +195,7 @@ begin
   else
   begin
     if MainForm.cbPointPerStep.Checked then
-      ReadingsForm.ReadingNeeded:= true;
+      ReadingsThread.Start;
 
     ElapsedTime:= Now - StartTime - PauseLength;
     DateTimeToString(s, 'hh:mm:ss', ElapsedTime);
@@ -213,8 +210,7 @@ begin
     lStep.Caption:= s;
 
     if MainForm.cbPointPerStep.Checked then
-      repeat
-      until ReadingsForm.ReadingsThreadDone;
+      ReadingsThread.WaitFor;
 
     f:= Frequency;
     a:= Amplitude;

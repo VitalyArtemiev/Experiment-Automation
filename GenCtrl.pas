@@ -28,7 +28,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
-  GenConst, DetConst, serconf, AxisSource, AboutF, DeviceF, dialogs;
+  serconf, AxisSource, AboutF, DeviceF, dialogs, ReadingThreads;
 
 {$R *.res}
 

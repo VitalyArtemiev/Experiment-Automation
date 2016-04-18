@@ -14,8 +14,8 @@ type
     hHandShake, hIPAdress, hPort, hInitString, hTimeOut, hMinDelay,
     hParSeparator, hCommSeparator, hTerminator,
     hTimeConstOptions, hSensitivityOptions, hTransferParams, hFirstIndex,
-    hIndices, hMaxSimultPars, hCH1Options, hCH2Options, hRatio1Options,
-    hRatio2Options,
+    hIndices, hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options,
+    hRatio1Options, hRatio2Options, hBufferRateOptions,
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
     hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions
                 );
@@ -41,14 +41,6 @@ type
     dPauseStorage, dResetStorage, dStoredPoints, dReadPointsNative,
     dStorageMode, dReadSimultaneous, dDisplaySelect
                  );
-
-  {rCommand = record
-    case integer of
-      0..integer(cTrigger): (Value: eCommonCommand);
-      integer(gDDS)..integer(gSweepDirection): (Value: eGenCommand);
-      integer(dError)..integer(dDisplaySelect): (Value: eDetCommand);
-    end;
-  end;}
 
   {type
   TSR844Command = (
@@ -77,6 +69,35 @@ type
     CLS, STB, SRE, ESR, ESE, PSC, ERRS, ERRE, LIAS, LIAE,
     RSLP = longint(LIAE) + 1, SLVL, ISRC, IGND, ICPL, ILIN, SYNC, OEXP, ARSV
                                               );                               }
+
+    {  SR844Command: array[longint(RST)..longint(LIAE)] of ansistring = (
+    '*RST', '*IDN', '', '', '', '', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , 'TRIG',
+    'PRST', 'LOCL', 'OVRM',
+    'FMOD', 'HARM', 'FREQ', 'FRAQ', 'FRIQ', 'PHAS', 'APHS', 'REFZ', 'WRSV', 'AWRS', 'INPZ',
+    'SENS', 'AGAN', 'CRSV', 'ACRS', 'OFLT', 'OFSL', 'SETL',
+    'DDEF', 'DRAT', 'FPOP', 'DOFF', 'AOFF', 'DEXP',
+    'AUXI', 'AUXO',
+    'OUTX', 'KCLK', 'ALRM', 'SSET', 'RSET', 'KNOB', 'KEYP',
+    'SSTR', 'SFIN', 'SSTP', 'SMOD', 'RSTO', 'RRDY', 'RCLR', 'RMOD',
+    'SRAT', 'SEND', 'TSTR', 'STRT', 'PAUS', 'REST',
+    'OUTP', 'OUTR', 'SNAP', 'SPTS', 'TRCA', 'TRCB', 'TRCL', 'FAST', 'STRD',
+    'ERRS', 'ERRE', 'LIAS', 'LIAE'
+                                                 );
+
+  SR830Command: array[longint(RST)..longint(ARSV)] of ansistring = (
+    '*RST', '*IDN', '', '', '', '', '*CLS', '*STB', '*SRE', '*ESR', '*ESE', '*PSC' , 'TRIG',
+    '', 'LOCL', 'OVRM',
+    'FMOD', 'HARM', 'FREQ', '', '', 'PHAS', 'APHS', '', '', '', '',
+    'SENS', 'AGAN', '', '', 'OFLT', 'OFSL', '',
+    'DDEF', '', 'FPOP', '', 'AOFF', '',
+    'OAUX', 'AUXV',
+    'OUTX', 'KCLK', 'ALRM', 'SSET', 'RSET', '', '',
+    '', '', '', '', '', '', '', 'RMOD',
+    'SRAT', 'SEND', 'TSTR', 'STRT', 'PAUS', 'REST',
+    'OUTP', 'OUTR', 'SNAP', 'SPTS', 'TRCA', 'TRCB', 'TRCL', 'FAST', 'STRD',
+    'ERRS', 'ERRE', 'LIAS', 'LIAE',
+    'RSLP', 'SLVL', 'ISRC', 'IGND', 'ICPL', 'ILIN', 'SYNC', 'OEXP', 'ARSV'
+                                              );      }
 
    {tDS345Command = (
     AECL = longint(TRG) + 1, AMPL, ATTL, FREQ, FSMP, FUNC, INVT, OFFS, PCLR, PHSE,
@@ -171,7 +192,7 @@ const
   end;
 
 const
-  SGHeaderLength = 28; //кол-во строк в tStringGrid, не относящ. к командам
+  SGHeaderLength = 30; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
 
@@ -365,7 +386,8 @@ begin
      integer(hCH1Options),
      integer(hCH2Options),
      integer(hRatio1Options),
-     integer(hRatio2Options):
+     integer(hRatio2Options),
+     integer(hBufferRateOptions):
        EditOptionString(Col, Row);
     end;
 end;
@@ -381,7 +403,8 @@ begin
      integer(hCH1Options),
      integer(hCH2Options),
      integer(hRatio1Options),
-     integer(hRatio2Options):
+     integer(hRatio2Options),
+     integer(hBufferRateOptions):
        key:= 0;
     end;
 
@@ -504,7 +527,8 @@ begin
       integer(hCH1Options),
       integer(hCH2Options),
       integer(hRatio1Options),
-      integer(hRatio2Options):
+      integer(hRatio2Options),
+      integer(hBufferRateOptions):
         AutoEdit:= false;
       else
         begin
@@ -656,7 +680,6 @@ begin
               ShowMessage('Ошибка в поле "Порт"');
               exit(-8);
             end;
-            { TODO 3 -cImprovement : check if 0 is valid port }
           end;
         2:
           begin
@@ -882,6 +905,16 @@ begin
         Col:= i;
         ShowMessage('Ошибка в поле "Макс. число одновр. запр. параметров"');
         exit(-23);
+      end;
+
+      o:= valf(Cells[i, integer(hPointsInBuffer)]);
+      if o <= 0 then
+      begin
+        pcDevice.TabIndex:= 1;
+        Row:= integer(hPointsInBuffer);
+        Col:= i;
+        ShowMessage('Ошибка в поле "Число точек во внутр. буфере"');
+        exit(-24);
       end;
     end;
 end;

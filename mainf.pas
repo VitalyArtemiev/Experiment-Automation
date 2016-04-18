@@ -25,7 +25,6 @@ type
     cbSweepDirection: TComboBox;
     cbPointPerStep: TCheckBox;
     cbAmplUnit: TComboBox;
-    DebugBox: TMemo;
     eAmplitude: TFloatSpinEdit;
     eSweepStartF: TFloatSpinEdit;
     eSweepStopF: TFloatSpinEdit;
@@ -108,7 +107,6 @@ type
     procedure AboutClick(Sender: TObject);
     procedure cbPointPerStepChange(Sender: TObject);
     procedure cbAmplUnitChange(Sender: TObject);
-    procedure DebugBoxClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
 
     procedure btnConnectClick(Sender: TObject); override;
@@ -163,8 +161,6 @@ const
 
   iDefaultDevice = 0;
 
-  PointsInSR844Buffer = 16383;
-
   TestTimeOut = 2000;
 
   DefaultConfig = 'Default.cfg';
@@ -174,7 +170,7 @@ const
 
 var
  // CurrFunction: FunctionType;
-  AmplitudeUnit: tUnits;
+  AmplitudeUnit: eUnits;
   MainForm: TMainForm;
   ExperimentLog: TFileStream;
   PortList: string;
@@ -329,9 +325,6 @@ begin
     end;
   end;
 
-  { TODO 1 -cFeature : new proc to load connectparams }
-  //MainForm.ConnectParams:= Params.GeneratorCP;
-  //ReadingsForm.ConnectParams:= Params.DetectorCP;
   MainForm.CurrentDevice^.Port:= Params.GeneratorPort;
   ReadingsForm.CurrentDevice^.Port:= Params.DetectorPort;
   MainForm.PresumedDevice:= Params.LastGenerator;
@@ -345,10 +338,6 @@ function TMainForm.SaveParams(FileName: ansistring): word;
 var
   f: file;
 begin
-  Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
-  Params.LastGenerator:= MainForm.CurrentDevice^.Model;
-  Params.DetectorPort:= ReadingsForm.CurrentDevice^.Port;
-  Params.LastDetector:= ReadingsForm.CurrentDevice^.Model;
   system.assign(f, FileName);
   {$I-}
   rewrite(f, sizeof(RParams));
@@ -539,21 +528,13 @@ begin
   btProgram.Caption:= 'Включить' + LineEnding + 'управление';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
   btCustomCommand.Caption:= 'Польз.' + LineEnding + 'команда';
+  btStatus.Caption:= 'Состояние' + LineEnding + ' прибора';
 
-  {SupportedDevices[iDefaultDevice].Commands:= CommonCommand;
-  SupportedDevices[iDS335].Commands:= DS335Command;
-  SupportedDevices[iDS345].Commands:= DS345Command;
-  config.defaultparams:= defaultparams;  }
-
-  //FrequencyTab.Color:= ;
-  //:= TFileStream. Create;
-  //ProgramLog:= TFileStream.Create('log.txt', fmCreate);
   if FileExists('ProgramLog.txt') then DeleteFile('ProgramLog.txt');
   ProgramLog:= TFileStream.Create('ProgramLog.txt', fmCreate);
   InitCriticalSection(LogCS);
   WriteProgramLog('Создание главного окна');
 
-  //InitSerPort;
   DeviceKind:= dGenerator;
   DeviceIndex:= iDefaultDevice;
   PortList:= //'COM1,COM2,COM3,COM4';
@@ -597,7 +578,6 @@ begin
   SerPort.Free;
   TelNetClient.Free;
   DoneCriticalSection(LogCS);
-  //ExperimentLog.Destroy;
   ProgramLog.Free;
 end;
 
@@ -656,17 +636,11 @@ begin
   end
 end;
 
-procedure TMainForm.DebugBoxClick(Sender: TObject);
-begin
-  DebugBox.Lines[0]:= SerPort.LastErrorDesc;
-  DebugBox.Lines[1]:= ReadingsForm.SerPort.LastErrorDesc;
-end;
-
 procedure TMainForm.cbPointPerStepChange(Sender: TObject);
 begin
   if cbPointPerStep.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = 0) then
   begin
-    ReadingsForm.cbReadingsMode.ItemIndex:= 1;
+    ReadingsForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
     ReadingsForm.cbReadingsModeChange(Self);
     ShowMessage('Доступно только в режиме "Одновременный запрос".' + LineEnding +
     'Режим снятия переключен');
@@ -864,6 +838,7 @@ begin
 
         AddCommand(gSweepEnable, false, 0);
 
+        ReadingsForm.OnePointPerStep:= cbPointPerStep.Checked;
         AutoSweep:= false;
         StepStartF:= eStepStartF.Value;
         StepStopF:=  eStepStopF.Value;
@@ -959,13 +934,13 @@ procedure TMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
   readingsform.enablecontrols(true);
-  readingsform.btnConnectClick(self);
+  //readingsform.btnConnectClick(self);
 end;
 
 procedure TMainForm.btQueryClick(Sender: TObject);
 var
   s, cs: string;
-  i, e: integer;
+  i, e: integer;                                      { TODO 2 -cBug : fix query }
 begin
   EnterCriticalSection(CommCS);
     AddCommand(gResistance, true);
@@ -1093,6 +1068,9 @@ begin
   inherited btnConnectClick(Sender);
 
   if DeviceIndex = iDefaultDevice then Exit;
+
+  Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
+  Params.LastGenerator:= MainForm.CurrentDevice^.Model;
 
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
   cbImpedance.Items.Clear;

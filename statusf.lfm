@@ -1,12 +1,12 @@
 object StatusForm: TStatusForm
-  Left = 837
+  Left = 565
   Height = 254
   Top = 237
-  Width = 332
+  Width = 363
   BorderStyle = bsToolWindow
   Caption = 'Состояние прибора'
   ClientHeight = 254
-  ClientWidth = 332
+  ClientWidth = 363
   OnShow = FormShow
   LCLVersion = '1.6.0.4'
   object btPoll: TButton
@@ -39,7 +39,7 @@ object StatusForm: TStatusForm
     AnchorSideTop.Control = btPoll
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 249
+    Left = 280
     Height = 25
     Top = 39
     Width = 75
@@ -60,7 +60,7 @@ object StatusForm: TStatusForm
     Left = 8
     Height = 166
     Top = 80
-    Width = 316
+    Width = 347
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 16
@@ -69,15 +69,18 @@ object StatusForm: TStatusForm
     BevelOuter = bvNone
     BorderStyle = bsSingle
     ClientHeight = 162
-    ClientWidth = 312
+    ClientWidth = 343
     TabOrder = 2
     object eDDS: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lDDSB
-      Left = 175
+      AnchorSideRight.Control = lDDSB
+      Left = 211
       Height = 23
       Top = 81
       Width = 60
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 16
       TabOrder = 0
       Text = '00000000'
     end
@@ -85,11 +88,15 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = lSPSB
       AnchorSideTop.Control = lSESB
       AnchorSideTop.Side = asrBottom
-      Left = 255
+      AnchorSideRight.Control = Panel1
+      AnchorSideRight.Side = asrBottom
+      Left = 287
       Height = 15
       Top = 81
       Width = 48
+      Anchors = [akTop, akRight]
       BorderSpacing.Top = 12
+      BorderSpacing.Right = 8
       Caption = '00000000'
       Color = clWhite
       ParentColor = False
@@ -102,7 +109,7 @@ object StatusForm: TStatusForm
       AnchorSideTop.Side = asrBottom
       AnchorSideBottom.Control = Panel1
       AnchorSideBottom.Side = asrBottom
-      Left = 168
+      Left = 204
       Height = 23
       Top = 135
       Width = 74
@@ -151,11 +158,13 @@ object StatusForm: TStatusForm
     object lSPSB: TLabel
       AnchorSideLeft.Control = Label7
       AnchorSideTop.Control = Label1
+      AnchorSideRight.Control = Panel1
       AnchorSideRight.Side = asrBottom
-      Left = 255
+      Left = 287
       Height = 15
       Top = 27
       Width = 48
+      Anchors = [akTop, akRight]
       BorderSpacing.Right = 8
       Caption = '00000000'
       Color = clWhite
@@ -166,11 +175,15 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = lSPSB
       AnchorSideTop.Control = lSPSB
       AnchorSideTop.Side = asrBottom
-      Left = 255
+      AnchorSideRight.Control = Panel1
+      AnchorSideRight.Side = asrBottom
+      Left = 287
       Height = 15
       Top = 54
       Width = 48
+      Anchors = [akTop, akRight]
       BorderSpacing.Top = 12
+      BorderSpacing.Right = 8
       Caption = '00000000'
       Color = clWhite
       ParentColor = False
@@ -180,11 +193,15 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = lSPSB
       AnchorSideTop.Control = lSESB
       AnchorSideTop.Side = asrBottom
-      Left = 255
+      AnchorSideRight.Control = Panel1
+      AnchorSideRight.Side = asrBottom
+      Left = 287
       Height = 15
       Top = 81
       Width = 48
+      Anchors = [akTop, akRight]
       BorderSpacing.Top = 12
+      BorderSpacing.Right = 8
       Caption = '00000000'
       Color = clWhite
       ParentColor = False
@@ -194,11 +211,15 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = lSPSB
       AnchorSideTop.Control = lLIASB
       AnchorSideTop.Side = asrBottom
-      Left = 255
+      AnchorSideRight.Control = Panel1
+      AnchorSideRight.Side = asrBottom
+      Left = 287
       Height = 15
       Top = 108
       Width = 48
+      Anchors = [akTop, akRight]
       BorderSpacing.Top = 12
+      BorderSpacing.Right = 8
       Caption = '00000000'
       Color = clWhite
       ParentColor = False
@@ -207,66 +228,76 @@ object StatusForm: TStatusForm
     object eSPSB: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSPSB
-      AnchorSideRight.Side = asrBottom
-      Left = 175
+      AnchorSideRight.Control = lSPSB
+      Left = 211
       Height = 23
       Top = 27
       Width = 60
-      BorderSpacing.Right = 8
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 16
       TabOrder = 2
       Text = '00000000'
     end
     object eSESB: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSESB
-      Left = 175
+      AnchorSideRight.Control = lSESB
+      Left = 211
       Height = 23
       Top = 54
       Width = 60
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 16
       TabOrder = 3
       Text = '00000000'
     end
     object eLIAS: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lLIASB
-      Left = 175
+      AnchorSideRight.Control = lLIASB
+      Left = 211
       Height = 23
       Top = 81
       Width = 60
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 16
       TabOrder = 4
       Text = '00000000'
     end
     object eESB: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lESB
-      Left = 175
+      AnchorSideRight.Control = lESB
+      Left = 211
       Height = 23
       Top = 108
       Width = 60
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 16
       TabOrder = 5
       Text = '00000000'
     end
     object Label6: TLabel
+      AnchorSideLeft.Control = eSPSB
       AnchorSideTop.Control = Label7
       AnchorSideRight.Control = Label7
-      Left = 175
+      Left = 211
       Height = 15
       Top = 4
       Width = 56
-      Anchors = [akTop, akRight]
-      BorderSpacing.Right = 24
+      BorderSpacing.Right = 18
       Caption = 'Слежение'
       ParentColor = False
     end
     object Label7: TLabel
+      AnchorSideLeft.Control = lSPSB
       AnchorSideTop.Control = Panel1
       AnchorSideRight.Control = Panel1
       AnchorSideRight.Side = asrBottom
-      Left = 255
+      Left = 287
       Height = 15
       Top = 4
       Width = 53
-      Anchors = [akTop, akRight]
       BorderSpacing.Top = 4
       BorderSpacing.Right = 4
       Caption = 'Значение'

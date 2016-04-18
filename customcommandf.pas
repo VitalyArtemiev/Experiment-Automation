@@ -29,6 +29,7 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    Label5: TLabel;
     mCustomCommand: TMemo;
     eInt1: TSpinEdit;
     eTimeout: TSpinEdit;
@@ -120,21 +121,26 @@ end;
 
 procedure TCustomCommandForm.FormShow(Sender: TObject);
 begin
-  Label2.Caption:= TSerConnectForm(Form).CurrentDevice^.Model;
+  Label2.Caption:= TSerConnectForm(Form).CurrentDevice^.Manufacturer + '' +
+                   TSerConnectForm(Form).CurrentDevice^.Model;
   if Label2.Caption = '' then Label2.Caption:= 'Устройство не опознано';
   GetCommands;
 end;
 
 procedure TCustomCommandForm.GetCommands;
-var
-  i: longint;
 begin
   cbCommands.Clear;
-  with TSerConnectForm(Form)do
+  with TSerConnectForm(Form).CurrentDevice^ do
   begin
-    i:= DeviceIndex;
-    cbCommands.Items.AddStrings(SupportedDevices[i].Commands);
+    cbCommands.Items.AddStrings(Commands);
+    case Terminator of
+      CR:   cbTerminator.ItemIndex:= cbTerminator.Items.IndexOf('CR');
+      LF:   cbTerminator.ItemIndex:= cbTerminator.Items.IndexOf('LF');
+      CRLF: cbTerminator.ItemIndex:= cbTerminator.Items.IndexOf('CRLF');
+    end;
+    eTimeOut.Value:= TimeOut;
   end;
+
   if cbCommands.Items.Count > 0 then
     while cbCommands.Items[0] = '' do cbCommands.Items.Delete(0);
 end;

@@ -52,6 +52,7 @@ Temporary Items
 *.log
 *.dbg
 *.xml
+*visa*
 
 backup
 lib

@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 694
+  Left = 177
   Height = 600
-  Top = 179
+  Top = 156
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
@@ -159,8 +159,8 @@ object ReadingsForm: TReadingsForm
         ExpandPercentage = 2
         ExtentSizeLimit.UseXMin = True
         ExtentSizeLimit.UseYMin = True
-        ExtentSizeLimit.XMin = 0.001
-        ExtentSizeLimit.YMin = 0.001
+        ExtentSizeLimit.XMin = 1E-9
+        ExtentSizeLimit.YMin = 1E-9
         Foot.Brush.Color = clBtnFace
         Foot.Font.Color = clBlue
         ReticuleMode = rmCross
@@ -330,8 +330,8 @@ object ReadingsForm: TReadingsForm
         ExtentSizeLimit.UseXMin = True
         ExtentSizeLimit.UseYMin = True
         ExtentSizeLimit.XMax = 20
-        ExtentSizeLimit.XMin = 0.001
-        ExtentSizeLimit.YMin = 0.001
+        ExtentSizeLimit.XMin = 1E-9
+        ExtentSizeLimit.YMin = 1E-9
         Foot.Brush.Color = clBtnFace
         Foot.Font.Color = clBlue
         ReticuleMode = rmCross

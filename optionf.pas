@@ -83,11 +83,6 @@ uses SynaIP, MainF, ReadingsF, SerConF, DeviceF;
 {$R *.lfm}
 
 { TOptionForm }
-{function NewPar(P: TParity): PParity;
-begin
-  New(NewPar);
-  NewPar^:= P;
-end;}
 
 procedure TOptionForm.btSaveClick(Sender: TObject);
 begin
@@ -219,7 +214,6 @@ begin
     else
     begin
       CanClose:= false;
-      ShowMessage('Ошибка в поле');
     end;
   end;
 end;

@@ -117,7 +117,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="16">
+    <Units Count="18">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -223,6 +223,14 @@
         <ComponentName Value="Form1"/>
         <ResourceBaseClass Value="Form"/>
       </Unit15>
+      <Unit16>
+        <Filename Value="ReadingThreads.inc"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="ReadingThreads.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

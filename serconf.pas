@@ -9,7 +9,7 @@ uses
   Dialogs, Grids, synaser, tlntsend, StatusF, CustomCommandF;
 
 type
-  tIntegerArray = array of Integer;
+  tIntegerArray = array of integer;
 
   ConnectAction = (ANo, AQuery, AReset);
 
@@ -40,7 +40,7 @@ type
 
   pDevice = ^tDevice;
 
-  tDevice = record   //device to each tserconform so that get rid of commcs
+  tDevice = record
     Manufacturer, Model: string;
     Commands: tSSA;
     ParSeparator, CommSeparator, Terminator, InitString: string;
@@ -54,7 +54,7 @@ type
       cTelNet: (Host, Port: string[15]);
   end;
 
-  tUnits = (
+  eUnits = (
     NOUNIT, VP,   VR
             );
 
@@ -113,7 +113,7 @@ type
     procedure AddCommand(c: variant{tCommand}; Query: boolean = false);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tIntegerArray);
-    procedure AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: tUnits);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: eUnits);
     procedure PassCommands;
     function RecvString: string;
   end;
@@ -135,7 +135,7 @@ var
 implementation
 
 uses
-  DeviceF, GenConst, MainF, OptionF;
+  DeviceF, MainF, OptionF;
 
 function strf(x: double): string;
 begin
@@ -506,7 +506,7 @@ begin
       if Connection = cTelNet then
       begin
         WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
-        TelNetClient.TargetHost:= Host;   { TODO 1 -cImprovement : Variable record }
+        TelNetClient.TargetHost:= Host;
         TelNetClient.TargetPort:= Port;
         TelNetClient.Timeout:= TimeOut;
 
@@ -626,7 +626,7 @@ begin
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: real;
-  Units: tUnits);
+  Units: eUnits);
 begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then
