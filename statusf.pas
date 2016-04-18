@@ -41,10 +41,13 @@ type
     procedure btPollClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
-    SerPollSB, StdEventSB, LiaSB, ErrSB, DDSB,
-      eSerPollSB, eStdEventSB, eLiaSB, eErrSB, eDDSB,
-      pSerPollSB, pStdEventSB, pLiaSB, pErrSB, pDDSB: byte;
-    { private declarations }
+  { private declarations }
+    SerPollSB, StdEventSB,         //standard status bytes, non-standard may be words
+      eSerPollSB, eStdEventSB,
+      pSerPollSB, pStdEventSB: byte;
+    LiaSB, ErrSB, DDSB,
+      eLiaSB, eErrSB, eDDSB,
+      pLiaSB, pErrSB, pDDSB: word;
   public
     { public declarations }
     Form: pointer;
@@ -56,7 +59,7 @@ var
 
 implementation
 
-Uses MainF, GenConst, DetConst, SerConF;
+Uses DeviceF, MainF, SerConF;
 
 {$R *.lfm}
 
@@ -87,18 +90,17 @@ begin
   with TSerConnectForm(Form) do
   begin
     EnterCriticalSection(CommCS);
-      AddCommand(SRE, false, eSerPollSB);
-      AddCommand(ESE, false, eStdEventSB);
+      AddCommand(cSerialPollEnable, false, eSerPollSB);
+      AddCommand(cStdEventEnable, false, eStdEventSB);
 
-      if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
+      if DeviceKind = dDetector  then
       begin
-        AddCommand(LIAE, false, eLiaSB);
-        AddCommand(ERRE, false, eErrSB);
+        AddCommand(dLIAEnable, false, eLiaSB);
+        AddCommand(dErrorEnable, false, eErrSB);
       end
       else
-      if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
       begin
-        AddCommand(DENA, false, eDDSB);
+        AddCommand(gDDSEnable, false, eDDSB);
       end;
 
       PassCommands;
@@ -108,16 +110,20 @@ end;
 
 procedure TStatusForm.FormShow(Sender: TObject);
 begin
-  Label5.Caption:= TSerConnectForm(Form).CurrentDevice;
-  if Label5.Caption = '' then Label5.Caption:= 'Устройство не опознано';
-
-  lSPSB.Caption:=  '?';
-  lSESB.Caption:=  '?';
-  lLIASB.Caption:= '?';
-  lESB.Caption:=   '?';
-  lDDSB.Caption:=  '?';
   with TSerConnectForm(Form) do
-    if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
+  begin
+    if DeviceIndex <> iDefaultDevice then
+      Label5.Caption:= CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model
+    else
+      Label5.Caption:= 'Устройство не опознано';
+
+    lSPSB.Caption:=  '?';
+    lSESB.Caption:=  '?';
+    lLIASB.Caption:= '?';
+    lESB.Caption:=   '?';
+    lDDSB.Caption:=  '?';
+
+    if DeviceKind = dDetector then
     begin
       Label10.Show;
       eLIAS.Show;
@@ -126,13 +132,12 @@ begin
       eESB.Show;
       lESB.Show;
 
-      label9.hide;
-      //Label8.Left:= -100;
+      label9.Hide;
       eDDS.Hide;
       lDDSB.Hide;
     end
     else
-    if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
+    if DeviceKind = dGenerator then
     begin
       Label10.Hide;
       eLIAS.Hide;
@@ -144,8 +149,8 @@ begin
       label9.Show;
       eDDS.Show;
       lDDSB.Show;
-    end
-    else
+    end;
+
     if DeviceIndex = iDefaultDevice then
     begin
       Label10.Hide;
@@ -159,11 +164,12 @@ begin
       eDDS.Hide;
       lDDSB.Hide;
     end;
+  end;
 end;
 
 procedure TStatusForm.GetStatus;
 var
-  s{, cs}: string;
+  s: string;
 begin
   with TSerConnectForm(Form) do
   begin
@@ -186,94 +192,103 @@ begin
     eDDSB:=  0;
 
     EnterCriticalSection(CommCS);
-      AddCommand(SRE, true);
+      AddCommand(cSerialPollEnable, true);
       PassCommands;
       s:= Recvstring;
       val(s, eSerPollSB);
 
-      AddCommand(ESE, true);
+      AddCommand(cStdEventEnable, true);
       PassCommands;
       s:= Recvstring;
       val(s, eStdEventSB);
 
 
-      AddCommand(STB, true);
+      AddCommand(cSerialPoll, true);
       PassCommands;
       s:= Recvstring;
       val(s, SerPollSB);
 
-      AddCommand(ESR, true);
+      AddCommand(cStdEvent, true);
       PassCommands;
       s:= Recvstring;
       val(s, StdEventSB);
 
-      if (DeviceIndex = iSR830) or (DeviceIndex = iSR844) then
+      if DeviceKind = dDetector then
       begin
-        AddCommand(LIAE, true);
+        AddCommand(dLIAEnable, true);
         PassCommands;
         s:= Recvstring;
         val(s, eLiaSB);
 
-        AddCommand(ERRE, true);
+        AddCommand(dErrorEnable, true);
         PassCommands;
         s:= Recvstring;
         val(s, eErrSB);
 
 
-        AddCommand(LIAS, true);
+        AddCommand(dLIA, true);
         PassCommands;
         s:= Recvstring;
         val(s, LiaSB);
 
-        AddCommand(ERRS, true);
+        AddCommand(dError, true);
         PassCommands;
         s:= Recvstring;
         val(s, ErrSB);
       end
       else
-      if (DeviceIndex = iDS335) or (DeviceIndex = iDS345) then
+      if DeviceKind = dGenerator then
       begin
-        AddCommand(DENA, true);
+        AddCommand(gDDSEnable, true);
         PassCommands;
         s:= Recvstring;
         val(s, eDDSB);
 
-        AddCommand(STAT, true);
+        AddCommand(gDDS, true);
         PassCommands;
         s:= Recvstring;
         val(s, DDSB);
       end;
     LeaveCriticalSection(CommCS);
 
-    {cs:= SupportedDevices[DeviceIndex].CommSeparator;
-
-    val(copy(s, 1, pos(cs, s) - 1), i);
-    SerPollSB:= i;
-    delete(s, 1, pos(cs, s));
-
-    val(copy(s, 1, pos(cs, s) - 1), i);
-    StdEventSB:= i;
-    delete(s, 1, pos(cs, s));
-
-    val(copy(s, 1, pos(cs, s) - 1), i);
-    LiaSB:= i;
-    delete(s, 1, pos(cs, s));
-
-    val(copy(s, 1, pos(cs, s) - 1), i);
-    ErrSB:= i;
-    delete(s, 1, pos(cs, s));}
-
     lSPSB.Caption:=  BinStr(SerPollSB, 8);
-    lSESB.Caption:=  BinStr(StdEventSB, 8);
-    lLIASB.Caption:= BinStr(LiaSB, 8);
-    lESB.Caption:=   BinStr(ErrSB, 8);
-    lDDSB.Caption:=   BinStr(DDSB, 8);
-
     eSPSB.Text:=  BinStr(eSerPollSB, 8);
+
+    lSESB.Caption:=  BinStr(StdEventSB, 8);
     eSESB.Text:=  BinStr(eStdEventSB, 8);
-    eLIAS.Text:= BinStr(eLiaSB, 8);
-    eESB.Text:=   BinStr(eErrSB, 8);
-    eDDS.Text:=   BinStr(eDDSB, 8);
+
+    if LiaSB < 256 then
+    begin
+      lLIASB.Caption:= BinStr(LiaSB, 8);
+      eLIAS.Text:= BinStr(eLiaSB, 8);
+    end
+    else
+    begin
+      lLIASB.Caption:= BinStr(LiaSB, 16);
+      eLIAS.Text:= BinStr(eLiaSB,16);
+    end;
+
+    if ErrSB < 256 then
+    begin
+      lESB.Caption:=   BinStr(ErrSB, 8);
+      eESB.Text:=   BinStr(eErrSB, 8);
+    end
+    else
+    begin
+      lESB.Caption:=   BinStr(ErrSB, 16);
+      eESB.Text:=   BinStr(eErrSB, 16);
+    end;
+
+    if DDSB < 256 then
+    begin
+      lDDSB.Caption:=   BinStr(DDSB, 8);
+      eDDS.Text:=   BinStr(eDDSB, 8);
+    end
+    else
+    begin
+      lDDSB.Caption:=   BinStr(DDSB, 16);
+      eDDS.Text:=   BinStr(eDDSB, 16);
+    end;
   end;
 end;
 

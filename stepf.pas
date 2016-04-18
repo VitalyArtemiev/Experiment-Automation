@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses MainF, ReadingsF, SerConF, GenConst;
+uses DeviceF, MainF, ReadingsF, SerConF;
 
 {$R *.lfm}
 
@@ -142,8 +142,8 @@ begin
   str(Frequency:19:6, s);
   FrequencyReading.Caption:= s;
 
-  MainForm.AddCommand(FREQ, false, Frequency, NOUNIT);
-  MainForm.AddCommand(AMPL, false, Amplitude, AmplitudeUnit);
+  MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+  MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
   MainForm.PassCommands;
 
   Finished:= false;
@@ -153,19 +153,16 @@ begin
   Timer1.Interval:= MainForm.eTimeStep.Value;
 
   ProgressBar1.Max:= StepNumber;
-  //ProgressBar1.Step:= ProgressBar1.Max div StepNumber;
   str(ProgressBar1.max, s);
   lTotalSteps.Caption:= '/' + s;
   lStep.Caption:= '0';
   ProgressBar1.Position:= 0;
-  //ProgressBar1.;
   PauseTime:= 0;
 
   sleep(Params.Delay - Params.TimeStep);
 
   if Config.AutoReadingStep then
   begin
-    ReadingsForm.OnePointPerStep:= MainForm.cbPointPerStep.Checked;
     Params.OnePoint:= MainForm.cbPointPerStep.Checked;
     ReadingsForm.BeginLog;
     ReadingsForm.UpdateTimer.Enabled:= false;
@@ -198,7 +195,7 @@ begin
   else
   begin
     if MainForm.cbPointPerStep.Checked then
-      ReadingsForm.ReadingNeeded:= true;
+      ReadingsThread.Start;
 
     ElapsedTime:= Now - StartTime - PauseLength;
     DateTimeToString(s, 'hh:mm:ss', ElapsedTime);
@@ -213,8 +210,7 @@ begin
     lStep.Caption:= s;
 
     if MainForm.cbPointPerStep.Checked then
-      repeat
-      until ReadingsForm.ReadingsThreadDone;
+      ReadingsThread.WaitFor;
 
     f:= Frequency;
     a:= Amplitude;
@@ -236,17 +232,17 @@ begin
       case StepMode of
       0:
         begin
-          MainForm.AddCommand(FREQ, false, Frequency, NOUNIT);
-          MainForm.AddCommand(AMPL, false, Amplitude, AmplitudeUnit);
+          MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+          MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
         end;
       1:
         begin
-          MainForm.AddCommand(FREQ, false, Frequency, NOUNIT);
+          MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
           StopA:= Amplitude;
         end;
       2:
         begin
-          MainForm.AddCommand(AMPL, false, Amplitude, AmplitudeUnit);
+          MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
           StopF:= Frequency;
         end;
       end;

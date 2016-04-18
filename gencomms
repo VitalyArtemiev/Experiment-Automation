@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <grid version="3">
+    <saveoptions create="False" position="False" content="True"/>
+    <content>
+      <cells cellcount="64">
+        <cell1 column="0" row="0" text="Модель"/>
+        <cell2 column="0" row="1" text="Изготовитель"/>
+        <cell3 column="0" row="2" text="Интерфейс"/>
+        <cell4 column="0" row="3" text="Разделитель параметров"/>
+        <cell5 column="0" row="4" text="Разделитель команд"/>
+        <cell6 column="0" row="5" text="Терминатор"/>
+        <cell7 column="0" row="6" text="Baud rate"/>
+        <cell8 column="0" row="7" text="Биты данных"/>
+        <cell9 column="0" row="8" text="Стор-биты"/>
+        <cell10 column="0" row="9" text="Парность"/>
+        <cell11 column="0" row="10" text="Handshake"/>
+        <cell12 column="0" row="11" text="Строка инициализации"/>
+        <cell13 column="0" row="12" text="Таймаут"/>
+        <cell14 column="0" row="13" text="Мин. задержка при передаче"/>
+        <cell15 column="0" row="15" text="Команды:"/>
+        <cell16 column="0" row="16" text="Сброс"/>
+        <cell17 column="0" row="17" text="Идентификация"/>
+        <cell18 column="0" row="18" text="Загрузить профиль"/>
+        <cell19 column="0" row="19" text="Сохранить профиль"/>
+        <cell20 column="0" row="20" text="Проверка"/>
+        <cell21 column="0" row="21" text="Калибровка"/>
+        <cell22 column="0" row="22" text="Очистить статус"/>
+        <cell23 column="0" row="23" text="Байт опроса STB"/>
+        <cell24 column="0" row="24" text="Байт слежения за STB"/>
+        <cell25 column="0" row="25" text="Байт стд. событий ESR"/>
+        <cell26 column="0" row="26" text="Байт слежения за ESR"/>
+        <cell27 column="0" row="27" text="Сброс статуса при включении PSC"/>
+        <cell28 column="0" row="28" text="Триггер"/>
+        <cell29 column="0" row="29" text="Перезагрузка"/>
+        <cell30 column="1" row="0" text="DS345"/>
+        <cell31 column="1" row="1" text="StanfordResearchSystems"/>
+        <cell32 column="1" row="2" text="RS232"/>
+        <cell33 column="1" row="3" text=","/>
+        <cell34 column="1" row="4" text=";"/>
+        <cell35 column="1" row="5" text="CR"/>
+        <cell36 column="1" row="6" text="9600"/>
+        <cell37 column="1" row="7" text="8"/>
+        <cell38 column="1" row="8" text="2"/>
+        <cell39 column="1" row="9" text="Отсутствует"/>
+        <cell40 column="1" row="10" text="Аппаратное"/>
+        <cell41 column="1" row="16" text="*RST"/>
+        <cell42 column="1" row="17" text="*IDN"/>
+        <cell43 column="1" row="18" text="*RCL"/>
+        <cell44 column="1" row="19" text="*SAV"/>
+        <cell45 column="1" row="20" text="*TST"/>
+        <cell46 column="1" row="21" text="*CAL"/>
+        <cell47 column="1" row="22" text="*CLS"/>
+        <cell48 column="1" row="23" text="*STB"/>
+        <cell49 column="1" row="24" text="*SRE"/>
+        <cell50 column="1" row="25" text="*ESR"/>
+        <cell51 column="1" row="26" text="*ESE"/>
+        <cell52 column="1" row="27" text="*PSC"/>
+        <cell53 column="1" row="28" text="*TRG"/>
+        <cell54 column="2" row="0" text="DS335"/>
+        <cell55 column="2" row="1" text="StanfordResearchSystems"/>
+        <cell56 column="2" row="2" text="RS232"/>
+        <cell57 column="2" row="3" text=","/>
+        <cell58 column="2" row="4" text=";"/>
+        <cell59 column="2" row="5" text="CR"/>
+        <cell60 column="2" row="6" text="9600"/>
+        <cell61 column="2" row="7" text="8"/>
+        <cell62 column="2" row="8" text="2"/>
+        <cell63 column="2" row="9" text="Отсутствует"/>
+        <cell64 column="2" row="10" text="Аппаратное"/>
+      </cells>
+    </content>
+  </grid>
+</CONFIG>

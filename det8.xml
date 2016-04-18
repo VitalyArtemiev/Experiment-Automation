@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <grid version="3">
+    <saveoptions create="False" position="False" content="True"/>
+    <content>
+      <cells cellcount="229">
+        <cell1 column="0" row="0" text="Модель"/>
+        <cell2 column="0" row="1" text="Изготовитель"/>
+        <cell3 column="0" row="2" text="Интерфейс"/>
+        <cell4 column="0" row="3" text="Baud rate"/>
+        <cell5 column="0" row="4" text="Биты данных"/>
+        <cell6 column="0" row="5" text="Стоп-биты"/>
+        <cell7 column="0" row="6" text="Парность"/>
+        <cell8 column="0" row="7" text="Handshake"/>
+        <cell9 column="0" row="8" text="IP-адрес"/>
+        <cell10 column="0" row="9" text="Порт"/>
+        <cell11 column="0" row="10" text="Строка инициализации"/>
+        <cell12 column="0" row="11" text="Таймаут"/>
+        <cell13 column="0" row="12" text="Мин. задержка при передаче"/>
+        <cell14 column="0" row="13" text="Разделитель параметров"/>
+        <cell15 column="0" row="14" text="Разделитель команд"/>
+        <cell16 column="0" row="15" text="Терминатор"/>
+        <cell17 column="0" row="16" text="Опции константы времени"/>
+        <cell18 column="0" row="17" text="Опции чувствительности"/>
+        <cell19 column="0" row="18" text="Снимаемые параметры"/>
+        <cell20 column="0" row="19" text="Индекс 1-го параметра"/>
+        <cell21 column="0" row="20" text="№ строки частоты, CH1, CH2"/>
+        <cell22 column="0" row="21" text="Макс. число одновр. запр. параметров"/>
+        <cell23 column="0" row="22" text="Опции CH1"/>
+        <cell24 column="0" row="23" text="Опции CH2"/>
+        <cell25 column="0" row="24" text="Опции отношения CH1"/>
+        <cell26 column="0" row="25" text="Опции отношения CH2"/>
+        <cell27 column="0" row="27" text="Команды:"/>
+        <cell28 column="0" row="28" text="Сброс"/>
+        <cell29 column="0" row="29" text="Перезагрузка"/>
+        <cell30 column="0" row="30" text="Идентификация"/>
+        <cell31 column="0" row="31" text="Загрузить профиль"/>
+        <cell32 column="0" row="32" text="Сохранить профиль"/>
+        <cell33 column="0" row="33" text="Проверка"/>
+        <cell34 column="0" row="34" text="Калибровка"/>
+        <cell35 column="0" row="35" text="Очистить статус"/>
+        <cell36 column="0" row="36" text="Байт опроса STB"/>
+        <cell37 column="0" row="37" text="Байт слежения за STB"/>
+        <cell38 column="0" row="38" text="Байт стд. событий ESR"/>
+        <cell39 column="0" row="39" text="Байт слежения за ESR"/>
+        <cell40 column="0" row="40" text="Сброс статуса при включении PSC"/>
+        <cell41 column="0" row="41" text="Триггер"/>
+        <cell42 column="0" row="42" text="Байт неполадок ERRS"/>
+        <cell43 column="0" row="43" text="Байт слежения за ERRS"/>
+        <cell44 column="0" row="44" text="Байт состояния детектора LIAS"/>
+        <cell45 column="0" row="45" text="Байт слежения за LIAS"/>
+        <cell46 column="0" row="46" text="Входная амплитуда"/>
+        <cell47 column="0" row="47" text="Чувствительность"/>
+        <cell48 column="0" row="48" text="Константа времени"/>
+        <cell49 column="0" row="49" text="Close reserve"/>
+        <cell50 column="0" row="50" text="Wide reserve"/>
+        <cell51 column="0" row="51" text="Автоамплитуда"/>
+        <cell52 column="0" row="52" text="Авточувствительнусть"/>
+        <cell53 column="0" row="53" text="auto Close reserve"/>
+        <cell54 column="0" row="54" text="auto wide reserve"/>
+        <cell55 column="0" row="55" text="Автофаза"/>
+        <cell56 column="0" row="56" text="Автосмещение"/>
+        <cell57 column="0" row="57" text="Источник синх. сигнала"/>
+        <cell58 column="0" row="58" text="Частота вн. буфера"/>
+        <cell59 column="0" row="59" text="Начало снятия (вн. буфер)"/>
+        <cell60 column="0" row="60" text="Пауза снятия (вн. буфер)"/>
+        <cell61 column="0" row="61" text="Сбросить вн. буфер"/>
+        <cell62 column="0" row="62" text="Кол-во точек в буфере"/>
+        <cell63 column="0" row="63" text="Считать точки из буфера"/>
+        <cell64 column="0" row="64" text="Режим записи буфера"/>
+        <cell65 column="0" row="65" text="Одновременная запись параметров"/>
+        <cell66 column="0" row="66" text="Выбор параметров дисплея"/>
+        <cell67 column="1" row="0" text="RS865"/>
+        <cell68 column="1" row="1" text="Stanford_Research_Systems"/>
+        <cell69 column="1" row="2" text="Ethernet"/>
+        <cell70 column="1" row="8" text="192.168.1.1"/>
+        <cell71 column="1" row="9" text="80"/>
+        <cell72 column="1" row="11" text="300"/>
+        <cell73 column="1" row="13" text=","/>
+        <cell74 column="1" row="14" text=";"/>
+        <cell75 column="1" row="15" text="CR"/>
+        <cell76 column="1" row="16" text="1 мкс
+3 мкс
+10 мкс
+30 мкс
+100 мкс
+300 мкс
+1 мс
+3 мс
+10 мс
+30 мс
+100 мс
+300 мс
+1 с
+3 с
+10 с
+30 с
+100 с
+300 с
+1 кс
+3 кс
+10 кс
+30 кс"/>
+        <cell77 column="1" row="17" text="1 В/мкА
+500 мВ/нА
+200 мВ/нА
+100 мВ/нА
+50 мВ/нА
+20 мВ/нА
+10 мВ/нА
+5 мВ/нА
+2 мВ/нА
+1 мВ/нА
+500 мкВ/пА
+200 мкВ/пА
+100 мкВ/пА
+50 мкВ/пА
+20 мкВ/пА
+10 мкВ/пА
+5 мкВ/пА
+2 мкВ/пА
+1 мкВ/пА
+500 нВ/фА
+200 нВ/фА
+100 нВ/фА
+50 нВ/фА
+20 нВ/фА
+10 нВ/фА
+5 нВ/фА
+2 нВ/фА
+1 нВ/фА"/>
+        <cell78 column="1" row="18" text="X
+Y
+R
+Φ
+AUX IN 1
+AUX IN 2
+AUX IN 3
+AUX IN 4
+AUX OUT 1
+AUX OUT 2
+X Noise
+Y Noise
+Фаза опорн. сигн.
+Амплитуда (выход)
+Смещение (выход)
+Внутр. опорн. част.
+Внеш. опорн. част.
+"/>
+        <cell79 column="1" row="19" text="0"/>
+        <cell80 column="1" row="20" text="16"/>
+        <cell81 column="1" row="21" text="3"/>
+        <cell82 column="1" row="22" text="X
+R"/>
+        <cell83 column="1" row="23" text="Y
+Φ"/>
+        <cell84 column="1" row="28" text="*RST"/>
+        <cell85 column="1" row="30" text="*IDN"/>
+        <cell86 column="1" row="31" text="*RCL"/>
+        <cell87 column="1" row="32" text="*SAV"/>
+        <cell88 column="1" row="33" text="*TST"/>
+        <cell89 column="1" row="34" text="*CAL"/>
+        <cell90 column="1" row="35" text="*CLS"/>
+        <cell91 column="1" row="36" text="*STB"/>
+        <cell92 column="1" row="37" text="*SRE"/>
+        <cell93 column="1" row="38" text="*ESR"/>
+        <cell94 column="1" row="39" text="*ESE"/>
+        <cell95 column="1" row="40" text="*PSC"/>
+        <cell96 column="1" row="41" text="TRIG"/>
+        <cell97 column="1" row="42" text="ERRS"/>
+        <cell98 column="1" row="43" text="ERRE"/>
+        <cell99 column="1" row="44" text="LIAS"/>
+        <cell100 column="1" row="45" text="LIAE"/>
+        <cell101 column="1" row="46" text="IRNG"/>
+        <cell102 column="1" row="47" text="SCAL"/>
+        <cell103 column="1" row="48" text="OFLT"/>
+        <cell104 column="1" row="51" text="ARNG"/>
+        <cell105 column="1" row="52" text="ASCL"/>
+        <cell106 column="1" row="55" text="APHS"/>
+        <cell107 column="1" row="57" text="RSRC"/>
+        <cell108 column="1" row="58" text="CAPTURERATE"/>
+        <cell109 column="1" row="59" text="CAPTURESTART"/>
+        <cell110 column="1" row="61" text="CAPTURESTOP"/>
+        <cell111 column="1" row="62" text="CAPTUREPROG"/>
+        <cell112 column="1" row="63" text="CAPTUREGET"/>
+        <cell113 column="1" row="65" text="SNAP"/>
+        <cell114 column="1" row="66" text="CAPTURECFG"/>
+        <cell115 column="2" row="0" text="RS844"/>
+        <cell116 column="2" row="1" text="Stanford_Research_Systems"/>
+        <cell117 column="2" row="2" text="RS232"/>
+        <cell118 column="2" row="3" text="19200"/>
+        <cell119 column="2" row="4" text="8"/>
+        <cell120 column="2" row="5" text="1"/>
+        <cell121 column="2" row="6" text="Отсутствует"/>
+        <cell122 column="2" row="7" text="Аппаратное"/>
+        <cell123 column="2" row="10" text="OUTX0"/>
+        <cell124 column="2" row="11" text="800"/>
+        <cell125 column="2" row="13" text=","/>
+        <cell126 column="2" row="14" text=";"/>
+        <cell127 column="2" row="15" text="CR"/>
+        <cell128 column="2" row="16" text="100 мкс
+300 мкс
+1 мс
+3 мс
+10 мс
+30 мс
+100 мс
+300 мс
+1 с
+3 с
+10 с
+30 с
+100 с
+300 с
+1 кс
+3 кс
+10 кс
+30 кс  "/>
+        <cell129 column="2" row="17" text="100 нВсркв/-127 дБ
+300 нВсркв/-117 дБ
+1 мкВсркв/-107 дБ
+3 мкВсркв/-97 дБ
+10 мкВсркв/-87 дБ
+30 мкВсркв/-77 дБ
+100 мкВсркв/-67 дБ
+300 мкВсркв/-57 дБ
+1 мВсркв/-47 дБ
+3 мВсркв/-37 дБ
+10 мВсркв/-27 дБ
+30 мВсркв/-17 дБ
+100 мВсркв/-7 дБ
+300 мВсркв/+3 дБ
+1 Всркв/+13 дБ"/>
+        <cell130 column="2" row="18" text="X
+Y
+R (V)
+R (dBm)
+Φ
+AUX IN 1
+AUX IN 2
+Опорная частота
+Дисплей 1
+Дисплей 2"/>
+        <cell131 column="2" row="19" text="1"/>
+        <cell132 column="2" row="20" text="7, 8, 9"/>
+        <cell133 column="2" row="21" text="6"/>
+        <cell134 column="2" row="22" text="X
+R (V)
+R (dBm)
+X Noise
+AUX IN 1"/>
+        <cell135 column="2" row="23" text="Y
+Φ
+Y Noise (V)
+Y Noise (dBm)
+AUX IN 2"/>
+        <cell136 column="2" row="24" text="Нет
+AUX IN 1
+AUX IN 2"/>
+        <cell137 column="2" row="25" text="Нет
+AUX IN 3
+AUX IN 4"/>
+        <cell138 column="2" row="28" text="*RST"/>
+        <cell139 column="2" row="29" text="PRST"/>
+        <cell140 column="2" row="30" text="*IDN"/>
+        <cell141 column="2" row="31" text="*RCL"/>
+        <cell142 column="2" row="32" text="*SAV"/>
+        <cell143 column="2" row="33" text="*TST"/>
+        <cell144 column="2" row="34" text="*CAL"/>
+        <cell145 column="2" row="35" text="*CLS"/>
+        <cell146 column="2" row="36" text="*STB"/>
+        <cell147 column="2" row="37" text="*SRE"/>
+        <cell148 column="2" row="38" text="*ESR"/>
+        <cell149 column="2" row="39" text="*ESE"/>
+        <cell150 column="2" row="40" text="*PSC"/>
+        <cell151 column="2" row="41" text="TRIG"/>
+        <cell152 column="2" row="42" text="ERRS"/>
+        <cell153 column="2" row="43" text="ERRE"/>
+        <cell154 column="2" row="44" text="LIAS"/>
+        <cell155 column="2" row="45" text="LIAE"/>
+        <cell156 column="2" row="47" text="SENS"/>
+        <cell157 column="2" row="48" text="OFLT"/>
+        <cell158 column="2" row="49" text="CRSV"/>
+        <cell159 column="2" row="50" text="WRSV"/>
+        <cell160 column="2" row="52" text="AGAN"/>
+        <cell161 column="2" row="53" text="ACRS"/>
+        <cell162 column="2" row="54" text="AWRS"/>
+        <cell163 column="2" row="55" text="APHS"/>
+        <cell164 column="2" row="56" text="AOFF"/>
+        <cell165 column="2" row="57" text="FMOD"/>
+        <cell166 column="2" row="58" text="SRAT"/>
+        <cell167 column="2" row="59" text="STRT"/>
+        <cell168 column="2" row="60" text="PAUS"/>
+        <cell169 column="2" row="61" text="REST"/>
+        <cell170 column="2" row="62" text="SPTS"/>
+        <cell171 column="2" row="63" text="TRCL"/>
+        <cell172 column="2" row="64" text="SEND"/>
+        <cell173 column="2" row="65" text="SNAP"/>
+        <cell174 column="2" row="66" text="DDEF"/>
+        <cell175 column="3" row="0" text="RS830"/>
+        <cell176 column="3" row="1" text="Stanford_Research_Systems"/>
+        <cell177 column="3" row="2" text="RS232"/>
+        <cell178 column="3" row="3" text="19200"/>
+        <cell179 column="3" row="4" text="8"/>
+        <cell180 column="3" row="5" text="1"/>
+        <cell181 column="3" row="6" text="Отсутствует"/>
+        <cell182 column="3" row="7" text="Аппаратное"/>
+        <cell183 column="3" row="10" text="OUTX0"/>
+        <cell184 column="3" row="11" text="800"/>
+        <cell185 column="3" row="13" text=","/>
+        <cell186 column="3" row="14" text=";"/>
+        <cell187 column="3" row="15" text="CR"/>
+        <cell188 column="3" row="16" text="10 мкс
+30 мкс
+100 мкс
+300 мкс
+1 мс
+3 мс
+10 мс
+30 мс
+100 мс
+300 мс
+1 с
+3 с
+10 с
+30 с
+100 с
+300 с
+1 кс
+3 кс
+10 кс
+30 кс "/>
+        <cell189 column="3" row="17" text="2 нВ/фА
+5 нВ/фА
+10 нВ/фА
+20 нВ/фА
+50 нВ/фА
+100 нВ/фА
+200 нВ/фА
+500 нВ/фА
+1 мкВ/пА
+2 мкВ/пА
+5 мкВ/пА
+10 мкВ/пА
+20 мкВ/пА
+50 мкВ/пА
+100 мкВ/пА
+200 мкВ/пА
+500 мкВ/пА
+1 мВ/нА
+2 мВ/нА
+5 мВ/нА
+10 мВ/нА
+20 мВ/нА
+50 мВ/нА
+100 мВ/нА
+200 мВ/нА
+500 мВ/нА
+1 В/мкА"/>
+        <cell190 column="3" row="18" text="X
+Y
+R
+Φ
+AUX IN 1
+AUX IN 2
+AUX IN 3
+AUX IN 4
+Опорная частота
+Дисплей 1
+Дисплей 2"/>
+        <cell191 column="3" row="19" text="1"/>
+        <cell192 column="3" row="20" text="8, 9, 10"/>
+        <cell193 column="3" row="21" text="6"/>
+        <cell194 column="3" row="22" text="X
+R
+X Noise
+AUX IN 1
+AUX IN 2"/>
+        <cell195 column="3" row="23" text="Y
+Φ
+Y Noise
+AUX IN 3
+AUX IN 4"/>
+        <cell196 column="3" row="28" text="*RST"/>
+        <cell197 column="3" row="30" text="*IDN"/>
+        <cell198 column="3" row="31" text="*RCL"/>
+        <cell199 column="3" row="32" text="*SAV"/>
+        <cell200 column="3" row="33" text="*TST"/>
+        <cell201 column="3" row="34" text="*STB"/>
+        <cell202 column="3" row="35" text="*CLS"/>
+        <cell203 column="3" row="36" text="*STB"/>
+        <cell204 column="3" row="37" text="*SRE"/>
+        <cell205 column="3" row="38" text="*ESR"/>
+        <cell206 column="3" row="39" text="*ESE"/>
+        <cell207 column="3" row="40" text="*PSC"/>
+        <cell208 column="3" row="41" text="TRIG"/>
+        <cell209 column="3" row="42" text="ERRS"/>
+        <cell210 column="3" row="43" text="ERRE"/>
+        <cell211 column="3" row="44" text="LIAS"/>
+        <cell212 column="3" row="45" text="LIAE"/>
+        <cell213 column="3" row="47" text="SENS"/>
+        <cell214 column="3" row="48" text="OFLT"/>
+        <cell215 column="3" row="49" text="RMOD"/>
+        <cell216 column="3" row="52" text="AGAN"/>
+        <cell217 column="3" row="53" text="ARSV"/>
+        <cell218 column="3" row="55" text="APHS"/>
+        <cell219 column="3" row="56" text="AOFF"/>
+        <cell220 column="3" row="57" text="FMOD"/>
+        <cell221 column="3" row="58" text="SRAT"/>
+        <cell222 column="3" row="59" text="STRT"/>
+        <cell223 column="3" row="60" text="PAUS"/>
+        <cell224 column="3" row="61" text="REST"/>
+        <cell225 column="3" row="62" text="SPTS"/>
+        <cell226 column="3" row="63" text="TRCL"/>
+        <cell227 column="3" row="64" text="SEND"/>
+        <cell228 column="3" row="65" text="SNAP"/>
+        <cell229 column="3" row="66" text="DDEF"/>
+      </cells>
+    </content>
+  </grid>
+</CONFIG>

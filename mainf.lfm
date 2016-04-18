@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 104
+  Left = 409
   Height = 600
-  Top = 273
+  Top = 88
   Width = 524
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -133,7 +133,7 @@ object MainForm: TMainForm
     Default = True
     Enabled = False
     OnClick = btApplyClick
-    TabOrder = 10
+    TabOrder = 9
   end
   object btTrigger: TButton
     AnchorSideLeft.Control = cbPortSelect
@@ -147,7 +147,7 @@ object MainForm: TMainForm
     Caption = 'Триггер'
     Enabled = False
     OnClick = btTriggerClick
-    TabOrder = 9
+    TabOrder = 8
   end
   object FrequencyTab: TPageControl
     AnchorSideLeft.Control = btReset
@@ -162,11 +162,11 @@ object MainForm: TMainForm
     BorderSpacing.Left = 12
     BorderSpacing.Top = 24
     TabIndex = 2
-    TabOrder = 7
+    TabOrder = 6
     object TabSheet1: TTabSheet
       Caption = 'Постоянная частота'
       ClientHeight = 164
-      ClientWidth = 422
+      ClientWidth = 394
       object FrequencyReading: TLabel
         AnchorSideLeft.Control = eFrequency
         AnchorSideLeft.Side = asrBottom
@@ -704,6 +704,7 @@ object MainForm: TMainForm
         Anchors = [akTop, akRight]
         BorderSpacing.Top = 20
         Caption = 'Снимать только 1 точку на шаг'
+        Enabled = False
         OnChange = cbPointPerStepChange
         TabOrder = 7
       end
@@ -757,7 +758,7 @@ object MainForm: TMainForm
     Caption = 'Остановить'
     Enabled = False
     OnClick = btStopClick
-    TabOrder = 8
+    TabOrder = 7
   end
   object btProgram: TSpeedButton
     AnchorSideLeft.Control = btReset
@@ -805,25 +806,6 @@ object MainForm: TMainForm
     ShowHint = True
     ParentShowHint = False
   end
-  object DebugBox: TMemo
-    AnchorSideTop.Control = Owner
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    Left = 8
-    Height = 48
-    Top = 184
-    Width = 102
-    Anchors = [akLeft]
-    Lines.Strings = (
-      ''
-      ''
-      ''
-      ''
-      ''
-    )
-    OnClick = DebugBoxClick
-    TabOrder = 5
-  end
   object pnConnection: TPanel
     AnchorSideLeft.Control = btReset
     AnchorSideLeft.Side = asrBottom
@@ -839,7 +821,7 @@ object MainForm: TMainForm
     BorderStyle = bsSingle
     ClientHeight = 180
     ClientWidth = 396
-    TabOrder = 6
+    TabOrder = 5
     object cbACEnable: TCheckBox
       AnchorSideLeft.Control = Label1
       AnchorSideLeft.Side = asrBottom

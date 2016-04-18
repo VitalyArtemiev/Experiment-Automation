@@ -1,7 +1,7 @@
 object StepForm: TStepForm
-  Left = 1256
+  Left = 181
   Height = 248
-  Top = 337
+  Top = 338
   Width = 304
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
@@ -14,7 +14,8 @@ object StepForm: TStepForm
   OnCloseQuery = FormCloseQuery
   OnHide = FormHide
   OnShow = FormShow
-  LCLVersion = '1.4.4.0'
+  Position = poOwnerFormCenter
+  LCLVersion = '1.6.0.4'
   object Label1: TLabel
     AnchorSideLeft.Control = Label7
     AnchorSideRight.Control = AmplitudeReading

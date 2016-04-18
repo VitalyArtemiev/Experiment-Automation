@@ -1,7 +1,7 @@
 object CustomCommandForm: TCustomCommandForm
-  Left = 1387
+  Left = 495
   Height = 264
-  Top = 33
+  Top = 239
   Width = 386
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsToolWindow
@@ -10,7 +10,8 @@ object CustomCommandForm: TCustomCommandForm
   ClientWidth = 386
   OnCreate = FormCreate
   OnShow = FormShow
-  LCLVersion = '1.4.4.0'
+  Position = poOwnerFormCenter
+  LCLVersion = '1.6.0.4'
   object mCustomCommand: TMemo
     AnchorSideLeft.Control = Label2
     AnchorSideTop.Control = Label2
@@ -239,6 +240,18 @@ object CustomCommandForm: TCustomCommandForm
     Top = 8
     Width = 85
     Caption = 'Список команд'
+    ParentColor = False
+  end
+  object Label5: TLabel
+    AnchorSideLeft.Control = eTimeout
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = eTimeout
+    Left = 202
+    Height = 15
+    Top = 197
+    Width = 15
+    BorderSpacing.Left = 8
+    Caption = 'мс'
     ParentColor = False
   end
 end
