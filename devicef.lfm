@@ -1,7 +1,7 @@
 object DeviceForm: TDeviceForm
-  Left = 281
+  Left = 255
   Height = 700
-  Top = 43
+  Top = 113
   Width = 652
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
@@ -1542,6 +1542,17 @@ object DeviceForm: TDeviceForm
     )
     TabOrder = 12
     Text = 'RS232'
+  end
+  object btResetDefaultFile: TButton
+    AnchorSideLeft.Control = btSetDefaultFile
+    AnchorSideTop.Control = btSaveToFile
+    Left = 519
+    Height = 25
+    Top = 625
+    Width = 125
+    Caption = 'Сбросить'
+    OnClick = btResetDefaultFileClick
+    TabOrder = 13
   end
   object OpenDialog: TOpenDialog
     left = 392

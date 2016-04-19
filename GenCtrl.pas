@@ -33,7 +33,7 @@ uses
 {$R *.res}
 
 begin
-  Application.Title:= 'Generator Control';
+  Application.Title:='Generator-Amplifier Control';
   Application.MainFormOnTaskBar:= true;
   RequireDerivedFormResource:= True;
   Application.Initialize;

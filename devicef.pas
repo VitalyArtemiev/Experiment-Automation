@@ -140,6 +140,7 @@ const
     btLoadFromFile: TButton;
     btSetDefaultFile: TButton;
     btDone: TButton;
+    btResetDefaultFile: TButton;
     cbHandshake: TComboBox;
     cbParity: TComboBox;
     cbStopBits: TComboBox;
@@ -163,6 +164,7 @@ const
     procedure btDeleteDeviceClick(Sender: TObject);
     procedure btDoneClick(Sender: TObject);
     procedure btLoadFromFileClick(Sender: TObject);
+    procedure btResetDefaultFileClick(Sender: TObject);
     procedure btSaveToFileClick(Sender: TObject);
     procedure btSetDefaultFileClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -204,7 +206,104 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, SynaIP, MainF, ReadingsF, OptionF, serconf, MemoF;
+  LCLType, Math, SynaIP, MainF, ReadingsF, OptionF, serconf, MemoF, ButtonPanel;
+
+const
+  InputQueryWidth = 300;
+
+function InputQueryActiveMonitor: TMonitor;
+begin
+  if Screen.ActiveCustomForm <> nil then
+    Result := Screen.ActiveCustomForm.Monitor
+  else
+  if Application.MainForm <> nil then
+    Result := Application.MainForm.Monitor
+  else
+    Result := Screen.PrimaryMonitor;
+end;
+
+function CustomInputDialog(const InputCaption, InputPrompt : String;
+  MaskInput : Boolean; var Value : String) : Boolean;
+var
+  Form: TForm;
+  Prompt: TLabel;
+  Edit: TEdit;
+  MinEditWidth: integer;
+  AMonitor: TMonitor;
+begin
+  Result := False;
+  Form := TForm(TForm.NewInstance);
+  Form.DisableAutoSizing{$IFDEF DebugDisableAutoSizing}('ShowInputDialog'){$ENDIF};
+  Form.CreateNew(nil, 0);
+  with Form do
+  begin
+    PopupMode := pmAuto;
+    BorderStyle := bsDialog;
+    Caption := InputCaption;
+    Position := poScreenCenter;
+    Width := InputQueryWidth;
+    Prompt := TLabel.Create(Form);
+    with Prompt do
+    begin
+      Parent := Form;
+      Caption := InputPrompt;
+      Align := alTop;
+      AutoSize := True;
+    end;
+    Edit := TEdit.Create(Form);
+    with Edit do
+    begin
+      Parent := Form;
+      Top := Prompt.Height;
+      Align := alTop;
+      BorderSpacing.Top := 3;
+      AMonitor := InputQueryActiveMonitor;
+      // check that edit is smaller than our monitor, it must be smaller at least
+      // by 6 * 2 pixels (spacing from window borders) + window border
+      MinEditWidth := Min(AMonitor.Width - 20, InputQueryWidth - 16);
+      Constraints.MinWidth := MinEditWidth;
+      Text := Value;
+      TabStop := True;
+      if MaskInput then
+      begin
+        EchoMode := emPassword;
+        PasswordChar := '*';
+      end else
+      begin
+        EchoMode := emNormal;
+        PasswordChar := #0;
+      end;
+      TabOrder := 0;
+    end;
+
+    with TButtonPanel.Create(Form) do
+    begin
+      Top := Edit.Top + Edit.Height;
+      Parent := Form;
+      ShowBevel := False;
+      ShowButtons := [pbOK, pbCancel];
+      OKButton.Caption:= 'ОК';
+      OKButton.Glyph:= nil;
+      CancelButton.Caption:= 'Отмена';
+      CancelButton.Glyph:= nil;
+      Align := alTop;
+    end;
+
+    ChildSizing.TopBottomSpacing := 6;
+    ChildSizing.LeftRightSpacing := 6;
+    AutoSize := True;
+
+    // upon show, the edit control will be focused for editing, because it's
+    // the first in the tab order
+    Form.EnableAutoSizing{$IFDEF DebugDisableAutoSizing}('ShowInputDialog'){$ENDIF};
+    if (ShowModal = mrOk) and (Edit.Text <> '') then
+    begin
+      Value := Edit.Text;
+      Result := True;
+    end;
+    Form.Free;
+  end;
+end;
 
 { TDeviceForm }
 
@@ -212,13 +311,17 @@ procedure tDeviceForm.btAddDeviceClick(Sender: TObject);
 var
   Model: string;
 begin
-  Model:= InputBox('Новое устройство','Введите название модели','');
-  if Model <> '' then
-  with sg do
-  begin
-    Columns.Add;
-    Cols[ColCount - 1].Add(Model);
-  end;
+  //InputBox('Новое устройство','Введите название модели','');
+  if CustomInputDialog(
+                        'Новое устройство', 'Введите название модели',
+                        false, Model
+                        ) then
+    with sg do
+    begin
+      Columns.Add;
+      Cells[ColCount - 1, 0]:= Model;
+      //Cols[].Add(Model);
+    end;
 end;
 
 procedure tDeviceForm.btApplyClick(Sender: TObject);
@@ -237,13 +340,18 @@ end;
 procedure tDeviceForm.btDeleteDeviceClick(Sender: TObject);
 begin
   if CurrColumn < 0 then exit;
-  if Application.MessageBox(
-                            pchar('Будет удалено устройство ' +
-                            sg.Cells[CurrColumn, 0] +
-                            '. Продолжить?'),
-                            'Подтверждение', MB_YESNO
-                            ) = IDYES then
-    sg.DeleteCol(CurrColumn);
+  with sg do
+  begin
+  if QuestionDlg(
+                 'Удаление устройства', 'Будет удалено устройство ' +
+                 Cells[CurrColumn, 0] + '. Продолжить?',
+                 mtCustom,[mrYes,'Да', mrNo, 'Нет'], ''
+                 ) = mrYes then
+    if CurrColumn > 0 then
+      DeleteCol(CurrColumn);
+  if CurrColumn > ColCount - 1 then
+    CurrColumn:= ColCount - 1;
+  end;
 end;
 
 procedure tDeviceForm.btDoneClick(Sender: TObject);
@@ -286,6 +394,16 @@ begin
            end;
       end;
     end;
+  end;
+end;
+
+procedure tDeviceForm.btResetDefaultFileClick(Sender: TObject);
+begin
+  case pcDevice.TabIndex of
+    0:
+      Config.DefaultGens:= '';
+    1:
+      Config.DefaultDets:= '';
   end;
 end;
 
@@ -446,45 +564,47 @@ begin
   with sgGenCommands do
   begin
     AutoEdit:= true;
-    with Columns.Items[aCol - 1] do
-    case aRow of
-      integer(hInterface):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbInterface.Items;
-        end;
-      integer(hStopBits):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbStopBits.Items;
-        end;
-      integer(hParity):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbParity.Items;
-        end;
-      integer(hHandshake):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbHandshake.Items;
-        end;
-      integer(hTerminator):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbTerminator.Items;
-        end;
-      integer(hResistanceOptions),
-      integer(hFunctionOptions),
-      integer(hSweepTypeOptions),
-      integer(hSweepDirectionOptions),
-      integer(hModulationOptions):
-        AutoEdit:= false;
-      else
-        begin
-           ButtonStyle:= cbsAuto;
-           PickList:= nil;
-        end;
-    end;
+    if aCol > 0 then
+      with Columns.Items[aCol - 1] do
+      case aRow of
+        integer(hInterface):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbInterface.Items;
+          end;
+        integer(hStopBits):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbStopBits.Items;
+          end;
+        integer(hParity):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbParity.Items;
+          end;
+        integer(hHandshake):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbHandshake.Items;
+          end;
+        integer(hTerminator):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbTerminator.Items;
+          end;
+        integer(hResistanceOptions),
+        integer(hFunctionOptions),
+        integer(hSweepTypeOptions),
+        integer(hSweepDirectionOptions),
+        integer(hModulationOptions):
+          AutoEdit:= false;
+        else
+          begin
+             ButtonStyle:= cbsAuto;
+             if PickList <> nil then
+               PickList:= nil;
+          end;
+      end;
   end;
 end;
 
@@ -494,48 +614,50 @@ begin
   with sgDetCommands do
   begin
     AutoEdit:= true;
-    with Columns.Items[aCol - 1] do
-    case aRow of
-      integer(hInterface):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbInterface.Items;
-        end;
-      integer(hStopBits):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbStopBits.Items;
-        end;
-      integer(hParity):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbParity.Items;
-        end;
-      integer(hHandshake):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbHandshake.Items;
-        end;
-      integer(hTerminator):
-        begin
-          ButtonStyle:= cbsPickList;
-          PickList:= cbTerminator.Items;
-        end;
-      integer(hTimeConstOptions),
-      integer(hSensitivityOptions),
-      integer(hTransferParams),
-      integer(hCH1Options),
-      integer(hCH2Options),
-      integer(hRatio1Options),
-      integer(hRatio2Options),
-      integer(hBufferRateOptions):
-        AutoEdit:= false;
-      else
-        begin
-           ButtonStyle:= cbsAuto;
-           PickList:= nil;
-        end;
-    end;
+    if aCol > 0 then
+      with Columns.Items[aCol - 1] do
+      case aRow of
+        integer(hInterface):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbInterface.Items;
+          end;
+        integer(hStopBits):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbStopBits.Items;
+          end;
+        integer(hParity):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbParity.Items;
+          end;
+        integer(hHandshake):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbHandshake.Items;
+          end;
+        integer(hTerminator):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbTerminator.Items;
+          end;
+        integer(hTimeConstOptions),
+        integer(hSensitivityOptions),
+        integer(hTransferParams),
+        integer(hCH1Options),
+        integer(hCH2Options),
+        integer(hRatio1Options),
+        integer(hRatio2Options),
+        integer(hBufferRateOptions):
+          AutoEdit:= false;
+        else
+          begin
+             ButtonStyle:= cbsAuto;
+             if PickList <> nil then
+               PickList:= nil;
+          end;
+      end;
   end;
 end;
 

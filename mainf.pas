@@ -522,6 +522,8 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   p: integer;
 begin
+  WriteProgramLog('Создание главного окна');
+
   Top:= Screen.Height div 2 - Height div 2;
   Left:= Screen.Width div 2 - Width - 8;
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
@@ -533,7 +535,6 @@ begin
   if FileExists('ProgramLog.txt') then DeleteFile('ProgramLog.txt');
   ProgramLog:= TFileStream.Create('ProgramLog.txt', fmCreate);
   InitCriticalSection(LogCS);
-  WriteProgramLog('Создание главного окна');
 
   DeviceKind:= dGenerator;
   DeviceIndex:= iDefaultDevice;
@@ -563,6 +564,8 @@ begin
   inc(PortCount);
 
   LoadConfig(DefaultConfig);
+  if Config.WorkConfig <> DefaultConfig then
+    LoadConfig(Config.WorkConfig);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -695,6 +698,7 @@ begin
     s:= UTF8toANSI(SaveDialog.FileName);
     if s <> '' then SaveConfig(s);
   end;
+  Config.WorkConfig:= s;
 end;
 
 procedure TMainForm.ReadingTimerStartTimer(Sender: TObject);

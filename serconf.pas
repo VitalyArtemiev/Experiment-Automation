@@ -21,7 +21,7 @@ type
   pSSA = ^tSSA;
 
   rConfig = record
-    DefaultParams, DefaultGens, DefaultDets: shortstring;
+    DefaultParams, WorkConfig, DefaultGens, DefaultDets: shortstring;
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
     AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;

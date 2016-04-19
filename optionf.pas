@@ -190,6 +190,8 @@ begin
     LoadParams(DefaultParams);
   end;
   GetOptions;
+  ShowMessage('Загружено:' + LineEnding + DefaultConfig
+              + LineEnding + DefaultParams);
 end;
 
 procedure TOptionForm.btDeviceListClick(Sender: TObject);
@@ -238,7 +240,6 @@ begin
     cgReadings.Checked[2]:= AutoReadingStep;
     eReadingTime.Value:= Params.ReadingTime;
 
-    {showmessage(DefaultParams);}                 //!!!!!!!!!!1
     NewDefaultParams:= DefaultParams;
   end;
 
@@ -247,7 +248,7 @@ begin
   with MainForm, MainForm.CurrentDevice^, eDevice do
   begin
     if CurrentDevice^.Model <> '' then
-      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)          //!!!???
+      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)
     else
       ItemIndex:= Items.IndexOf(PresumedDevice);
     if ItemIndex < 0 then ItemIndex:= 0;
@@ -260,13 +261,12 @@ begin
     else
     if SoftFlow then cbHandShake.ItemIndex:= 1
     else cbHandShake.ItemIndex:= 2;
-    //eInitCommand.Text:= InitString;
   end;
 
   with ReadingsForm, ReadingsForm.CurrentDevice^, eDevice1 do
   begin
     if CurrentDevice^.Model <> '' then
-      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)          //!!!???
+      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)
     else
       ItemIndex:= Items.IndexOf(PresumedDevice);
     if ItemIndex < 0 then ItemIndex:= 0;
