@@ -1,5 +1,5 @@
 object StepForm: TStepForm
-  Left = 181
+  Left = 971
   Height = 248
   Top = 338
   Width = 304
@@ -86,7 +86,7 @@ object StepForm: TStepForm
     AnchorSideTop.Control = FrequencyReading
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = lTotalSteps
-    AnchorSideBottom.Control = ProgressBar1
+    AnchorSideBottom.Control = ProgressBar
     Left = 184
     Height = 15
     Top = 122
@@ -115,7 +115,7 @@ object StepForm: TStepForm
   object btPause: TButton
     AnchorSideLeft.Control = Owner
     AnchorSideLeft.Side = asrCenter
-    AnchorSideTop.Control = ProgressBar1
+    AnchorSideTop.Control = ProgressBar
     Left = 107
     Height = 23
     Top = 217
@@ -138,7 +138,7 @@ object StepForm: TStepForm
     OnClick = btFinishClick
     TabOrder = 3
   end
-  object ProgressBar1: TProgressBar
+  object ProgressBar: TProgressBar
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Elapsed
     AnchorSideTop.Side = asrBottom

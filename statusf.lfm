@@ -1,5 +1,5 @@
 object StatusForm: TStatusForm
-  Left = 565
+  Left = 971
   Height = 254
   Top = 237
   Width = 363
@@ -75,11 +75,10 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lDDSB
       AnchorSideRight.Control = lDDSB
-      Left = 211
+      Left = 163
       Height = 23
       Top = 81
       Width = 60
-      Anchors = [akTop, akRight]
       BorderSpacing.Right = 16
       TabOrder = 0
       Text = '00000000'
@@ -109,7 +108,7 @@ object StatusForm: TStatusForm
       AnchorSideTop.Side = asrBottom
       AnchorSideBottom.Control = Panel1
       AnchorSideBottom.Side = asrBottom
-      Left = 204
+      Left = 156
       Height = 23
       Top = 135
       Width = 74
@@ -190,7 +189,7 @@ object StatusForm: TStatusForm
       Transparent = False
     end
     object lLIASB: TLabel
-      AnchorSideLeft.Control = lSPSB
+      AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSESB
       AnchorSideTop.Side = asrBottom
       AnchorSideRight.Control = Panel1
@@ -229,11 +228,10 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSPSB
       AnchorSideRight.Control = lSPSB
-      Left = 211
+      Left = 163
       Height = 23
       Top = 27
       Width = 60
-      Anchors = [akTop, akRight]
       BorderSpacing.Right = 16
       TabOrder = 2
       Text = '00000000'
@@ -242,11 +240,10 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSESB
       AnchorSideRight.Control = lSESB
-      Left = 211
+      Left = 163
       Height = 23
       Top = 54
       Width = 60
-      Anchors = [akTop, akRight]
       BorderSpacing.Right = 16
       TabOrder = 3
       Text = '00000000'
@@ -255,11 +252,10 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lLIASB
       AnchorSideRight.Control = lLIASB
-      Left = 211
+      Left = 163
       Height = 23
       Top = 81
       Width = 60
-      Anchors = [akTop, akRight]
       BorderSpacing.Right = 16
       TabOrder = 4
       Text = '00000000'
@@ -268,23 +264,23 @@ object StatusForm: TStatusForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lESB
       AnchorSideRight.Control = lESB
-      Left = 211
+      Left = 163
       Height = 23
       Top = 108
       Width = 60
-      Anchors = [akTop, akRight]
       BorderSpacing.Right = 16
       TabOrder = 5
       Text = '00000000'
     end
     object Label6: TLabel
-      AnchorSideLeft.Control = eSPSB
+      AnchorSideLeft.Control = eLIAS
       AnchorSideTop.Control = Label7
       AnchorSideRight.Control = Label7
-      Left = 211
+      Left = 163
       Height = 15
       Top = 4
       Width = 56
+      Anchors = [akTop]
       BorderSpacing.Right = 18
       Caption = 'Слежение'
       ParentColor = False

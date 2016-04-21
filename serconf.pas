@@ -6,14 +6,14 @@ interface
 
 uses
   Classes, SysUtils, Forms, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons,
-  Dialogs, Grids, synaser, tlntsend, StatusF, CustomCommandF;
+  Dialogs, Grids, synaser, tlntsend, visa, session, {libusboop, libusb,} StatusF, CustomCommandF;
 
 type
   tIntegerArray = array of integer;
 
   ConnectAction = (ANo, AQuery, AReset);
 
-  eConnectionKind = (cNone, cSerial, cTelNet);
+  eConnectionKind = (cNone = -1, cSerial, cUSB, cTelNet, cVXI);
 
   eDeviceKind = (dGenerator, dDetector);
 
@@ -75,7 +75,7 @@ type
 
     Label3: TLabel;
     Label8: TLabel;
-    StatusBar1: TStatusBar;
+    StatusBar: TStatusBar;
 
     procedure btnConnectClick(Sender: TObject); virtual;
     procedure btCustomCommandClick(Sender: TObject);
@@ -90,12 +90,14 @@ type
 
     function GetCurDev: pDevice;
     procedure SetTOE(AValue: longword);
-
   public
     ConnectionKind: eConnectionKind;
-    CommCS: TRTLCriticalSection;
-    SerPort: TBlockSerial;
+    CommCS: tRTLCriticalSection;
+
+    SerPort: tBlockSerial;
     TelNetClient: tTelNetSend;
+    //UsbContext : tLibUsbContext;
+
     CommandString, PresumedDevice: shortstring;
     DeviceIndex: longint;
     DeviceKind: eDeviceKind;
@@ -108,6 +110,8 @@ type
     procedure InitDevice;
     function ConnectSerial: longint; virtual;
     function ConnectTelNet: longint; virtual;
+    function ConnectVXI: longint; virtual;
+    function ConnectUSB: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
     function GetCommandName(c: variant): string;
     procedure AddCommand(c: variant{tCommand}; Query: boolean = false);
@@ -124,9 +128,14 @@ type
   function valf(s: string): integer;
 
 const
-  sUnits: array[0..2] of shortstring =   (
+  sUnits: array[0..2] of shortstring = (
                   '', 'VP', 'VR'
                   );
+
+  spConnection = 0;
+  spDevice = 1;
+  spTimeOuts = 2;
+  spStatus = 3;
 
 var
   ProgramLog: TFileStream;
@@ -174,6 +183,11 @@ begin
     else
       ConnectSerial;
   end;
+  if ConnectionKind <> cNone then
+  begin
+    StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
+    StatusBar.Panels[spStatus].Text:= '';
+  end;
 end;
 
 procedure tSerConnectForm.btnDisconnectClick(Sender: TObject);
@@ -185,7 +199,7 @@ begin
       SerPort.Purge;
       SerPort.CloseSocket;
 
-      StatusBar1.Caption:= 'Нет подключения'; { TODO 2 -cImprovement : Sort out statusbars }
+      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
       EnableControls(false);
       ConnectionKind:= cNone;
       DeviceIndex:= iDefaultdevice;
@@ -195,13 +209,14 @@ begin
 
   if assigned(TelNetClient) then
   begin
-    StatusBar1.Caption:= 'Нет подключения';
+    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
     EnableControls(false);
     ConnectionKind:= cNone;
     DeviceIndex:= iDefaultdevice;
 
     freeandnil(TelNetClient);
   end;
+  StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
 end;
 
 procedure tSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
@@ -257,7 +272,7 @@ end;
 
 procedure tSerConnectForm.SetTOE(AValue: longword);
 begin
-  StatusBar1.SimpleText:= 'Таймаутов:' + strf(AValue);
+  StatusBar.Panels[spTimeouts].Text:= 'Таймаутов:' + strf(AValue);
   WriteProgramLog('Timeout receiving string');
   fTimeOuts:= AValue;
 end;
@@ -298,7 +313,7 @@ begin
         TimeOut:=       valf(Cells[i, longint(hTimeout)]);
 
         case Cells[i, longint(hInterface)] of
-          'Ethernet':
+          'Ethernet - VXI', 'Ethernet - Telnet':
           begin
             Connection:= cTelNet;
             Host:= Cells[i, longint(hIPAdress)];
@@ -391,7 +406,10 @@ begin
       with CurrentDevice^ do
         if Connection = cSerial then
         begin
-          WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
+          s:= 'Попытка подключения к ' + Model;
+          StatusBar.Panels[spStatus].Text:= s;
+          StatusBar.Update;
+          WriteProgramLog(s);
           case Parity of
             0: P:= 'N';   //none, odd, even, mark, space
             1: P:= 'O';
@@ -427,6 +445,7 @@ begin
   begin
     s:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
     WriteProgramLog(s);
+    StatusBar.Panels[spStatus].Text:= s;
     ShowMessage(s);
     SerPort.CloseSocket;
     SerPort.RaiseExcept:= true;
@@ -469,10 +488,9 @@ begin
 
   if SerPort.InstanceActive then
   begin
-    StatusBar1.Caption:= 'Есть подключение';
+    StatusBar.Panels[spConnection].Text:= 'Подключено к ' + cbPortSelect.Text;
     Result:= 0;
     TimeOutErrors:= 0;
-    StatusBar1.SimpleText:= '';
     EnableControls(true);
 
     case Config.OnConnect of
@@ -485,7 +503,7 @@ begin
   end
   else
     begin
-      StatusBar1.Caption:= 'Нет подключения';
+      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
       SerPort.CloseSocket;
       ConnectionKind:= cNone;
       freeandnil(SerPort);
@@ -525,6 +543,7 @@ begin
       end;
   if DeviceIndex <> iDefaultDevice then
   begin
+    StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
     Result:= 0;
     case Config.OnConnect of
       AQuery: btQueryClick(Self);
@@ -534,11 +553,91 @@ begin
   end
   else
   begin
+    StatusBar.Panels[spStatus].Text:= 'Устройство не опознано';
     ShowMessage('Устройство не опознано');
     ConnectionKind:= cNone;
     freeandnil(TelNetClient);
     Result:= -1;
   end;
+end;
+
+function tSerConnectForm.ConnectVXI: longint;
+begin
+
+end;
+
+function tSerConnectForm.ConnectUSB: longint;
+var
+  i, USBDeviceCount: integer;
+ // USBDevices: PPlibusb_device ;
+  //portpath: TDynByteArray;
+  Address, Bus, Port: byte;
+ // Descriptor: libusb_device_descriptor;
+begin
+  {DeviceIndex:= iDefaultDevice;
+  ConnectionKind:= cUSB;
+  USBContext.Create;
+  USBDeviceCount:= eLibUSB.Check(USBCOntext.GetDeviceList(USBDevices), 'Список устройств');
+
+    For i:= 0 to USBDeviceCount - 1 do
+      Begin
+        Address  := UsbContext.GetDeviceAddress   (USBDevices[I]);
+        Bus      := UsbContext.GetBusNumber       (USBDevices[I]);
+        Port     := UsbContext.GetPortNumber      (USBDevices[I]);
+        PortPath := USBContext.GetPortPath        (USBDevices[I]);
+        //Speed    := TLibUsbContext.GetDeviceSpeed     (USBDevices[I]);
+        Descriptor  := UsbContext.GetDeviceDescriptor(USBDevices[I]);
+        writeprogramlog('Bus' + strf(Bus));
+        writeprogramlog('Device'+strf(Address)+': ID ' +IntToHex(Descriptor.idVendor,4) +':' +IntToHex(Descriptor.idProduct,4));
+        {writeprogramlog();
+        writeprogramlog();
+        writeprogramlog();
+        writeprogramlog();
+        Write(); }
+        Write(',  port: ',Port:3);
+      end;
+
+  USBContext.FreeDeviceList(USBDevices);
+  for i:= 1 to high(SupportedDevices) do
+    with SupportedDevices[i] do
+      if Connection = cUSB then
+      begin
+        WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
+        TelNetClient.TargetHost:= Host;
+        TelNetClient.TargetPort:= Port;
+        TelNetClient.Timeout:= TimeOut;
+
+        TelNetClient.Login;
+
+        InitDevice;
+        btnTestClick(Self);
+        WriteProgramLog('Ответ устройства: ' + TestResult);
+
+        if TestResult <> '' then
+          if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
+          begin
+            DeviceIndex:= i;
+            break;
+          end;
+      end;
+  if DeviceIndex <> iDefaultDevice then
+  begin
+    StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
+    Result:= 0;
+    case Config.OnConnect of
+      AQuery: btQueryClick(Self);
+      AReset: btResetClick(Self);
+    end;
+    CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
+  end
+  else
+  begin
+    StatusBar.Panels[spStatus].Text:= 'Устройство не опознано';
+    ShowMessage('Устройство не опознано');
+    ConnectionKind:= cNone;
+    freeandnil(USBContext);
+    Result:= -1;
+  end; }
 end;
 
 function tSerConnectForm.GetCommandName(c: variant): string;

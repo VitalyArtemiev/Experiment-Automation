@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 409
+  Left = 529
   Height = 600
-  Top = 88
+  Top = 112
   Width = 524
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -46,15 +46,26 @@ object MainForm: TMainForm
     ParentColor = False
     Transparent = False
   end
-  object StatusBar1: TStatusBar
+  object StatusBar: TStatusBar
     Left = 0
     Height = 23
     Top = 557
     Width = 524
     Panels = <    
       item
-        Width = 50
+        Text = 'Нет подключения'
+        Width = 130
+      end    
+      item
+        Width = 80
+      end    
+      item
+        Width = 120
+      end    
+      item
+        Width = 200
       end>
+    SimplePanel = False
   end
   object btnConnect: TButton
     AnchorSideLeft.Control = cbPortSelect
@@ -192,7 +203,7 @@ object MainForm: TMainForm
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
-        MaxValue = 3500000
+        MaxValue = 30000000
         MinValue = 1E-6
         TabOrder = 0
         Value = 1E-6
@@ -213,13 +224,12 @@ object MainForm: TMainForm
       end
       object Label26: TLabel
         AnchorSideLeft.Control = FrequencyReading
-        AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = Label4
-        Left = 362
+        Left = 365
         Height = 15
         Top = 8
         Width = 13
-        BorderSpacing.Left = 113
+        BorderSpacing.Left = 121
         Caption = 'Гц'
         ParentColor = False
       end
@@ -385,7 +395,7 @@ object MainForm: TMainForm
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
-        MaxValue = 3500000
+        MaxValue = 30000000
         MinValue = 1E-6
         OnChange = eSweepStopFChange
         TabOrder = 4
@@ -403,7 +413,7 @@ object MainForm: TMainForm
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
-        MaxValue = 3500000
+        MaxValue = 30000000
         MinValue = 1E-6
         OnChange = eSweepStartFChange
         TabOrder = 5
@@ -469,7 +479,7 @@ object MainForm: TMainForm
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
-        MaxValue = 3500000
+        MaxValue = 30000000
         MinValue = 1E-6
         OnChange = eStepChange
         TabOrder = 1
@@ -486,7 +496,7 @@ object MainForm: TMainForm
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
-        MaxValue = 3500000
+        MaxValue = 30000000
         MinValue = 1E-6
         OnChange = eStepChange
         TabOrder = 2
@@ -506,7 +516,7 @@ object MainForm: TMainForm
         DecimalPlaces = 6
         Enabled = False
         Increment = 100
-        MaxValue = 3500000
+        MaxValue = 30000000
         MinValue = 0
         OnChange = eStepChange
         TabOrder = 0
@@ -823,18 +833,20 @@ object MainForm: TMainForm
     ClientWidth = 396
     TabOrder = 5
     object cbACEnable: TCheckBox
-      AnchorSideLeft.Control = Label1
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = Label1
-      Left = 71
+      AnchorSideLeft.Control = Label5
+      AnchorSideTop.Control = eAmplitude
+      Left = 6
       Height = 19
       Hint = 'Вкл./выкл. переменный ток'
       Top = 119
-      Width = 20
-      BorderSpacing.Left = 4
+      Width = 81
+      Alignment = taLeftJustify
+      Caption = 'Амплитуда'
       Checked = True
+      Color = clWhite
       Enabled = False
       OnChange = cbACEnableChange
+      ParentColor = False
       ParentShowHint = False
       ShowHint = True
       State = cbChecked
@@ -910,7 +922,7 @@ object MainForm: TMainForm
     end
     object AmplitudeReading: TLabel
       AnchorSideLeft.Control = Label7
-      AnchorSideTop.Control = Label1
+      AnchorSideTop.Control = cbACEnable
       Left = 246
       Height = 15
       Top = 119
@@ -985,23 +997,8 @@ object MainForm: TMainForm
       ParentColor = False
       Transparent = False
     end
-    object Label1: TLabel
-      AnchorSideLeft.Control = Label5
-      AnchorSideTop.Control = Label6
-      AnchorSideTop.Side = asrBottom
-      Left = 6
-      Height = 15
-      Top = 119
-      Width = 61
-      BorderSpacing.Top = 8
-      Caption = 'Амплитуда'
-      Color = clWhite
-      ParentColor = False
-      Transparent = False
-    end
     object eAmplitude: TFloatSpinEdit
       AnchorSideLeft.Control = cbFuncSelect
-      AnchorSideTop.Control = Label1
       Left = 109
       Height = 23
       Top = 119
@@ -1047,6 +1044,23 @@ object MainForm: TMainForm
       TabOrder = 5
       Text = 'В(p-p)'
     end
+    object Label1: TLabel
+      AnchorSideLeft.Control = cbACEnable
+      AnchorSideTop.Control = cbACEnable
+      AnchorSideRight.Control = cbACEnable
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = cbACEnable
+      AnchorSideBottom.Side = asrBottom
+      Left = 6
+      Height = 19
+      Top = 119
+      Width = 81
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      AutoSize = False
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
   end
   object btStatus: TSpeedButton
     AnchorSideLeft.Control = btReset
@@ -1060,7 +1074,6 @@ object MainForm: TMainForm
   end
   object MainMenu1: TMainMenu
     left = 480
-    top = 8
     object miFile: TMenuItem
       Caption = 'Файл'
       object NewReport: TMenuItem
@@ -1110,17 +1123,17 @@ object MainForm: TMainForm
   end
   object OpenDialog: TOpenDialog
     left = 480
-    top = 80
+    top = 56
   end
   object SaveDialog: TSaveDialog
     Title = 'Сохранить файл конфигурации как'
     left = 480
-    top = 152
+    top = 112
   end
   object ReadingTimer: TTimer
     OnTimer = ReadingTimerTimer
     OnStartTimer = ReadingTimerStartTimer
-    left = 43
-    top = 72
+    left = 480
+    top = 168
   end
 end

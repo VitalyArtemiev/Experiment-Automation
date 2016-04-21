@@ -54,8 +54,11 @@ Temporary Items
 *.xml
 *.txt
 *visa*
-
+*libusb*
+ProgramLog.txt
 backup
 lib
 local
 Synapse
+ProgramLog.txt
+Default.cfg

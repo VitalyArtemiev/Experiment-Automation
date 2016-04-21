@@ -1,5 +1,5 @@
 object MemoForm: TMemoForm
-  Left = 449
+  Left = 971
   Height = 314
   Top = 290
   Width = 484

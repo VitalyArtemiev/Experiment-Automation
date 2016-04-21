@@ -17,7 +17,8 @@ type
     hIndices, hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options,
     hRatio1Options, hRatio2Options, hBufferRateOptions,
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
-    hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions
+    hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions,
+    hMaxFrequencies
                 );
 
   eCommonCommand = (
@@ -537,7 +538,8 @@ begin
       integer(hFunctionOptions),
       integer(hSweepTypeOptions),
       integer(hsWeepDirectionOptions),
-      integer(hModulationOptions):
+      integer(hModulationOptions),
+      integer(hMaxFrequencies):
         EditOptionString(Col, Row);
     end;
 end;
@@ -551,11 +553,13 @@ begin
       integer(hFunctionOptions),
       integer(hSweepTypeOptions),
       integer(hsWeepDirectionOptions),
-      integer(hModulationOptions):
+      integer(hModulationOptions),
+      integer(hMaxFrequencies):
+      begin
         key:= 0;
+        EditOptionString(Col, Row);
+      end;
     end;
-
-  sgGenCommandsClick(Self);
 end;
 
 procedure tDeviceForm.sgGenCommandsSelectCell(Sender: TObject; aCol,
@@ -596,7 +600,8 @@ begin
         integer(hFunctionOptions),
         integer(hSweepTypeOptions),
         integer(hSweepDirectionOptions),
-        integer(hModulationOptions):
+        integer(hModulationOptions),
+        integer(hMaxFrequencies):
           AutoEdit:= false;
         else
           begin
@@ -726,7 +731,7 @@ begin
       s:= Cells[i, integer(hInterface)];
       o:= DeviceForm.cbInterface.Items.IndexOf(s);
       case o of
-        0:
+        integer(cSerial):
           begin
             o:= valf(Cells[i, integer(hBaudRate)]);
             if o < 50 then
@@ -781,7 +786,13 @@ begin
               exit(-6);
             end;
           end;
-        1:
+        integer(cUSB):
+          begin
+            pcDevice.TabIndex:= 0;
+            ShowMessage('USB не поддерживается');
+            exit(-30);
+          end;
+        integer(cTelnet), integer(cVXI):
           begin
             s:= Cells[i, integer(hIPAdress)];
             if not IsIP(s) then
@@ -802,12 +813,6 @@ begin
               ShowMessage('Ошибка в поле "Порт"');
               exit(-8);
             end;
-          end;
-        2:
-          begin
-            pcDevice.TabIndex:= 0;
-            ShowMessage('USB не поддерживается');
-            exit(-30);
           end;
         else
           begin
@@ -847,7 +852,7 @@ begin
       s:= Cells[i, integer(hInterface)];
       o:= DeviceForm.cbInterface.Items.IndexOf(s);
       case o of
-        0:
+        integer(cSerial):
           begin
             o:= valf(Cells[i, integer(hBaudRate)]);
             if o < 50 then
@@ -902,7 +907,13 @@ begin
               exit(-16);
             end;
           end;
-        1:
+        integer(cUSB):
+          begin
+            pcDevice.TabIndex:= 1;
+            ShowMessage('USB не поддерживается');
+            exit(-30);
+          end;
+        integer(cTelnet), integer(cVXI):
           begin
             s:= Cells[i, integer(hIPAdress)];
             if not IsIP(s) then
@@ -923,12 +934,6 @@ begin
               ShowMessage('Ошибка в поле "Порт"');
               exit(-18);
             end;
-          end;
-        2:
-          begin
-            pcDevice.TabIndex:= 1;
-            ShowMessage('USB не поддерживается');
-            exit(-30);
           end;
         else
           begin

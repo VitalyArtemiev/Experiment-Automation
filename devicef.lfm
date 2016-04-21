@@ -1,12 +1,12 @@
 object DeviceForm: TDeviceForm
-  Left = 255
+  Left = 456
   Height = 700
-  Top = 113
-  Width = 652
+  Top = 46
+  Width = 651
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
   ClientHeight = 700
-  ClientWidth = 652
+  ClientWidth = 651
   Constraints.MinHeight = 460
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
@@ -23,7 +23,7 @@ object DeviceForm: TDeviceForm
     Left = 4
     Height = 692
     Top = 4
-    Width = 378
+    Width = 377
     ActivePage = tsDetectors
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
@@ -79,7 +79,7 @@ object DeviceForm: TDeviceForm
           70
         )
         Cells = (
-          138
+          139
           0
           0
           'Модель'
@@ -143,6 +143,9 @@ object DeviceForm: TDeviceForm
           0
           20
           'Функции модуляции'
+          0
+          21
+          'Максимальные частоты соотв. функциям'
           0
           29
           'Команды:'
@@ -500,7 +503,7 @@ object DeviceForm: TDeviceForm
     object tsDetectors: TTabSheet
       Caption = 'Детекторы'
       ClientHeight = 664
-      ClientWidth = 370
+      ClientWidth = 369
       object sgDetCommands: TStringGrid
         AnchorSideLeft.Control = tsDetectors
         AnchorSideTop.Control = tsDetectors
@@ -511,7 +514,7 @@ object DeviceForm: TDeviceForm
         Left = 0
         Height = 660
         Top = 2
-        Width = 368
+        Width = 367
         Anchors = [akTop, akLeft, akRight, akBottom]
         AutoAdvance = aaDown
         BorderSpacing.Top = 2
@@ -625,10 +628,10 @@ object DeviceForm: TDeviceForm
           'Опции CH2'
           0
           25
-          'Опции отношения CH1'
+          'Опции отношения CH1 (Ratio)'
           0
           26
-          'Опции отношения CH2'
+          'Опции отношения CH2 (Ratio)'
           0
           27
           'Опции частоты внутр. буфера'
@@ -760,7 +763,7 @@ object DeviceForm: TDeviceForm
           'Stanford_Research_Systems'
           1
           2
-          'Ethernet'
+          'Ethernet - VXI'
           1
           8
           '192.168.1.1'
@@ -1268,19 +1271,19 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = pcDevice
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 390
-    Height = 45
+    Left = 389
+    Height = 108
     Top = 28
     Width = 249
     AutoSize = False
     BorderSpacing.Top = 24
-    Caption = 'Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'
+    Caption = 'Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10#13#10'Заполните поля "Опции отношения" только '#13#10'если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
     ParentColor = False
   end
   object btSaveToFile: TButton
     AnchorSideLeft.Control = btAddDevice
     AnchorSideBottom.Control = btDone
-    Left = 390
+    Left = 389
     Height = 25
     Top = 625
     Width = 125
@@ -1294,9 +1297,9 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label5
     AnchorSideTop.Side = asrBottom
-    Left = 390
+    Left = 389
     Height = 15
-    Top = 270
+    Top = 333
     Width = 68
     BorderSpacing.Top = 20
     Caption = 'Терминатор'
@@ -1307,9 +1310,9 @@ object DeviceForm: TDeviceForm
   object cbTerminator: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label6
-    Left = 519
+    Left = 518
     Height = 23
-    Top = 270
+    Top = 333
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1326,9 +1329,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTerminator
     AnchorSideRight.Side = asrBottom
-    Left = 519
+    Left = 518
     Height = 25
-    Top = 309
+    Top = 372
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1342,9 +1345,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btAddDevice
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 519
+    Left = 518
     Height = 25
-    Top = 89
+    Top = 152
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 8
@@ -1357,9 +1360,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
-    Left = 519
+    Left = 518
     Height = 23
-    Top = 165
+    Top = 228
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 12
@@ -1376,9 +1379,9 @@ object DeviceForm: TDeviceForm
   object cbParity: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label4
-    Left = 519
+    Left = 518
     Height = 23
-    Top = 200
+    Top = 263
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1395,9 +1398,9 @@ object DeviceForm: TDeviceForm
   object cbHandshake: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label5
-    Left = 519
+    Left = 518
     Height = 23
-    Top = 235
+    Top = 298
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1415,9 +1418,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label2
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbStopBits
-    Left = 390
+    Left = 389
     Height = 15
-    Top = 165
+    Top = 228
     Width = 60
     BorderSpacing.Top = 20
     Caption = 'Стоп-биты'
@@ -1429,9 +1432,9 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label3
     AnchorSideTop.Side = asrBottom
-    Left = 390
+    Left = 389
     Height = 15
-    Top = 200
+    Top = 263
     Width = 53
     BorderSpacing.Top = 20
     Caption = 'Парность'
@@ -1443,9 +1446,9 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label4
     AnchorSideTop.Side = asrBottom
-    Left = 390
+    Left = 389
     Height = 15
-    Top = 235
+    Top = 298
     Width = 59
     BorderSpacing.Top = 20
     Caption = 'Handshake'
@@ -1457,9 +1460,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label1
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
-    Left = 390
+    Left = 389
     Height = 25
-    Top = 89
+    Top = 152
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1471,7 +1474,7 @@ object DeviceForm: TDeviceForm
   object btLoadFromFile: TButton
     AnchorSideLeft.Control = btSaveToFile
     AnchorSideBottom.Control = btSaveToFile
-    Left = 390
+    Left = 389
     Height = 25
     Top = 592
     Width = 125
@@ -1485,7 +1488,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = btLoadFromFile
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btLoadFromFile
-    Left = 519
+    Left = 518
     Height = 25
     Top = 592
     Width = 125
@@ -1499,7 +1502,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = pcDevice
     AnchorSideBottom.Control = pcDevice
     AnchorSideBottom.Side = asrBottom
-    Left = 390
+    Left = 389
     Height = 25
     Top = 666
     Width = 125
@@ -1513,9 +1516,9 @@ object DeviceForm: TDeviceForm
   object Label2: TLabel
     AnchorSideLeft.Control = Label1
     AnchorSideTop.Control = cbInterface
-    Left = 390
+    Left = 389
     Height = 15
-    Top = 130
+    Top = 193
     Width = 62
     Caption = 'Интерфейс'
     Color = clWhite
@@ -1527,9 +1530,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
-    Left = 519
+    Left = 518
     Height = 23
-    Top = 130
+    Top = 193
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1537,8 +1540,9 @@ object DeviceForm: TDeviceForm
     ItemIndex = 0
     Items.Strings = (
       'RS232'
-      'Ethernet'
       'USB'
+      'Ethernet - Telnet'
+      'Ethernet - VXI'
     )
     TabOrder = 12
     Text = 'RS232'
@@ -1546,7 +1550,7 @@ object DeviceForm: TDeviceForm
   object btResetDefaultFile: TButton
     AnchorSideLeft.Control = btSetDefaultFile
     AnchorSideTop.Control = btSaveToFile
-    Left = 519
+    Left = 518
     Height = 25
     Top = 625
     Width = 125

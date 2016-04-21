@@ -332,120 +332,126 @@ begin
     OnConnect:= ConnectAction(rgOnConnect.ItemIndex);
   end;
 
-  with MainForm, Mainform.SupportedDevices[eDevice.ItemIndex + 1], DeviceForm.sgGenCommands do
-  begin
-    PresumedDevice:= eDevice.Text;
-    Timeout:= seRecvTimeOut.Value;
-    case Connection of
-      cSerial:
-        begin
-          BaudRate:= eBaudRate.Value;
-          Databits:= valf(Cells[eDevice.ItemIndex + 1, longint(hDataBits)]);
-
-          s:= Cells[eDevice.ItemIndex + 1, longint(hStopBits)];
-          StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
-
-          Parity:= cbParity.ItemIndex;
-
-          case cbHandShake.ItemIndex of
-            0: begin
-                 SoftFlow:= false;
-                 HardFlow:= false;
-               end;
-            1: begin
-                 SoftFlow:= true;
-                 HardFlow:= false;
-               end;
-            2: begin
-                 SoftFlow:= false;
-                 HardFlow:= true;
-               end;
-            3: begin
-                 SoftFlow:= true;
-                 HardFlow:= true;
-               end;
-          end;
-        end;
-      cTelNet:
-        begin
-          if IsIP(eIPAdress.Text) then
-            Host:= eIPAdress.Text
-          else
+  if eDevice.ItemIndex >= 0 then
+    with MainForm, Mainform.SupportedDevices[eDevice.ItemIndex + 1], DeviceForm.sgGenCommands do
+    begin
+      PresumedDevice:= eDevice.Text;
+      Timeout:= seRecvTimeOut.Value;
+      case Connection of
+        cSerial:
           begin
-            ShowMessage('Ошибка в поле "IP-адрес"');
-            DevicePage.TabIndex:= 0;
-            exit(-1);
-          end;
+            BaudRate:= eBaudRate.Value;
+            Databits:= valf(Cells[eDevice.ItemIndex + 1, longint(hDataBits)]);
 
-          if valf(ePort.Text) > 0 then
-            Port:= ePort.Text
-          else
-          begin
-            ShowMessage('Ошибка в поле "Порт"');
-            DevicePage.TabIndex:= 0;
-            exit(-2);
-          end
-        end;
-    end;
-  end;
+            s:= Cells[eDevice.ItemIndex + 1, longint(hStopBits)];
+            StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
 
-  with ReadingsForm, ReadingsForm.SupportedDevices[eDevice1.ItemIndex + 1], DeviceForm.sgDetCommands do
-  begin
-    PresumedDevice:= eDevice1.Text;
-    Timeout:= seRecvTimeOut.Value;
-    case Connection of
-      cSerial:
-        begin
+            Parity:= cbParity.ItemIndex;
 
-          BaudRate:= eBaudRate.Value;
-          Databits:= valf(Cells[eDevice1.ItemIndex + 1, longint(hDataBits)]);
-
-          s:= Cells[eDevice1.ItemIndex + 1, longint(hStopBits)];
-          StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
-
-          Parity:= cbParity1.ItemIndex;
-
-          case cbHandShake1.ItemIndex of
-            0: begin
-                 SoftFlow:= false;
-                 HardFlow:= false;
-               end;
-            1: begin
-                 SoftFlow:= true;
-                 HardFlow:= false;
-               end;
-            2: begin
-                 SoftFlow:= false;
-                 HardFlow:= true;
-               end;
-            3: begin
-                 SoftFlow:= true;
-                 HardFlow:= true;
-               end;
+            case cbHandShake.ItemIndex of
+              0: begin
+                   SoftFlow:= false;
+                   HardFlow:= false;
+                 end;
+              1: begin
+                   SoftFlow:= true;
+                   HardFlow:= false;
+                 end;
+              2: begin
+                   SoftFlow:= false;
+                   HardFlow:= true;
+                 end;
+              3: begin
+                   SoftFlow:= true;
+                   HardFlow:= true;
+                 end;
             end;
-        end;
-      cTelNet:
-        begin
-          if IsIP(eIPAdress1.Text) then
-            Host:= eIPAdress1.Text
-          else
-          begin
-            ShowMessage('Ошибка в поле "IP-адрес"');
-            DevicePage.TabIndex:= 1;
-            exit(-1);
           end;
+        cUSB:
+        begin
 
-          if valf(ePort1.Text) > 0 then
-            Port:= ePort1.Text
-          else
-          begin
-            ShowMessage('Ошибка в поле "Порт"');
-            DevicePage.TabIndex:= 1;
-            exit(-2);
-          end
         end;
+        cTelNet, cVXI:
+          begin
+            if IsIP(eIPAdress.Text) then
+              Host:= eIPAdress.Text
+            else
+            begin
+              ShowMessage('Ошибка в поле "IP-адрес"');
+              DevicePage.TabIndex:= 0;
+              exit(-1);
+            end;
+
+            if valf(ePort.Text) > 0 then
+              Port:= ePort.Text
+            else
+            begin
+              ShowMessage('Ошибка в поле "Порт"');
+              DevicePage.TabIndex:= 0;
+              exit(-2);
+            end
+          end;
+      end;
     end;
-  end;
+
+  if eDevice1.ItemIndex >= 0 then
+    with ReadingsForm, ReadingsForm.SupportedDevices[eDevice1.ItemIndex + 1], DeviceForm.sgDetCommands do
+    begin
+      PresumedDevice:= eDevice1.Text;
+      Timeout:= seRecvTimeOut.Value;
+      case Connection of
+        cSerial:
+          begin
+
+            BaudRate:= eBaudRate.Value;
+            Databits:= valf(Cells[eDevice1.ItemIndex + 1, longint(hDataBits)]);
+
+            s:= Cells[eDevice1.ItemIndex + 1, longint(hStopBits)];
+            StopBits:= DeviceForm.cbStopBits.Items.IndexOf(s);
+
+            Parity:= cbParity1.ItemIndex;
+
+            case cbHandShake1.ItemIndex of
+              0: begin
+                   SoftFlow:= false;
+                   HardFlow:= false;
+                 end;
+              1: begin
+                   SoftFlow:= true;
+                   HardFlow:= false;
+                 end;
+              2: begin
+                   SoftFlow:= false;
+                   HardFlow:= true;
+                 end;
+              3: begin
+                   SoftFlow:= true;
+                   HardFlow:= true;
+                 end;
+              end;
+          end;
+        cTelNet:
+          begin
+            if IsIP(eIPAdress1.Text) then
+              Host:= eIPAdress1.Text
+            else
+            begin
+              ShowMessage('Ошибка в поле "IP-адрес"');
+              DevicePage.TabIndex:= 1;
+              exit(-1);
+            end;
+
+            if valf(ePort1.Text) > 0 then
+              Port:= ePort1.Text
+            else
+            begin
+              ShowMessage('Ошибка в поле "Порт"');
+              DevicePage.TabIndex:= 1;
+              exit(-2);
+            end
+          end;
+      end;
+    end;
 end;
 
 end.

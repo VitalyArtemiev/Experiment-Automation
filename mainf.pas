@@ -39,6 +39,7 @@ type
     eAStep: TFloatSpinEdit;
     eTimeStep: TSpinEdit;
     FrequencyTab: TPageControl;
+    Label1: TLabel;
     Label10: TLabel;
     Label13: TLabel;
     Label14: TLabel;
@@ -72,13 +73,11 @@ type
     ReadingTimer: TTimer;
     eDelay: TSpinEdit;
 
-
     TotalTime: TLabel;
     NewReport: TMenuItem;
     miExportParams: TMenuItem;
     SweepStartFReading: TLabel;
     SweepStopFReading: TLabel;
-    Label1: TLabel;
     Label11: TLabel;
     Label12: TLabel;
     Label2: TLabel;
@@ -356,6 +355,8 @@ var
   f: file;
   s: string;
 begin
+  if Config.WorkConfig = '' then
+    Config.WorkConfig:= DefaultConfig;
   system.assign(f, FileName);
   {$I-}
   rewrite(f, sizeof(RConfig));
@@ -538,11 +539,13 @@ begin
 
   DeviceKind:= dGenerator;
   DeviceIndex:= iDefaultDevice;
+  ConnectionKind:= cNone;
   PortList:= //'COM1,COM2,COM3,COM4';
              GetSerialPortNames;
   PortCount:= 0;
 
-  if Portlist = '' then StatusBar1.Caption:= 'Нет доступных портов'
+  if Portlist = '' then
+    StatusBar.Panels[spStatus].Text:= 'Нет доступных COM-портов'
   else
     begin
       p:= pos(',', PortList);
@@ -562,6 +565,8 @@ begin
     end;
   cbPortSelect.AddItem('Ethernet', nil);
   inc(PortCount);
+
+  if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
 
   LoadConfig(DefaultConfig);
   if Config.WorkConfig <> DefaultConfig then
@@ -838,7 +843,7 @@ begin
       if ((eStepStartF.Value <> eStepStopF.Value) and (eFStep.Value <> 0)) or
       ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
       begin
-        EnableControls(false);
+        if Config.AutoReadingStep then EnableControls(false);
 
         AddCommand(gSweepEnable, false, 0);
 
@@ -909,7 +914,7 @@ begin
         Frequency:= eFrequency.Value;
 
         AddCommand(gFrequency, false, Frequency, NOUNIT);
-        AddCommand(gFrequency, false, 0);
+        AddCommand(gSweepEnable, false, 0);
         if Config.AutoExportParams and not Config.AutoReadingConst then
         begin
           ExportParams(false);
@@ -944,7 +949,7 @@ end;
 procedure TMainForm.btQueryClick(Sender: TObject);
 var
   s, cs: string;
-  i, e: integer;                                      { TODO 2 -cBug : fix query }
+  i, e: integer;
 begin
   EnterCriticalSection(CommCS);
     AddCommand(gResistance, true);
@@ -959,13 +964,12 @@ begin
     AddCommand(gSweepRate, true);
     AddCommand(gSweepStartFrequency, true);
     AddCommand(gSweepStopFrequency, true);
-    //AddCommand(SWEN, true);         ?индикатор
 
     PassCommands;
 
     s:= RecvString;
   LeaveCriticalSection(CommCS);
-  statusbar1.SimpleText:= s;
+  StatusBar.Panels[spStatus].Text:= s;
 
   cs:= CurrentDevice^.CommSeparator;
 
@@ -1005,8 +1009,7 @@ begin
   SweepStartFReading.Caption:= copy(s, 1, pos(cs, s) - 1);
   delete(s, 1, pos(cs, s));
 
-  SweepStopFReading.Caption:= s; {copy(s, 1, pos(cs, s) - 1);
-  delete(s, 1, pos(cs, s));}
+  SweepStopFReading.Caption:= s;
 end;
 
 procedure TMainForm.btStopClick(Sender: TObject);
@@ -1038,10 +1041,10 @@ procedure TMainForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
 
-  if not FileExists(Config.DefaultParams) then Config.DefaultParams:= DefaultParams;
-  if Config.LoadParamsOnStart then LoadParams(Config.DefaultParams);
-
-
+  if not FileExists(Config.DefaultParams) then
+    Config.DefaultParams:= DefaultParams;
+  if Config.LoadParamsOnStart then
+    LoadParams(Config.DefaultParams);
 
   cbImpedanceChange(Self);
   cbFuncSelectChange(Self);
@@ -1051,23 +1054,18 @@ end;
 
 procedure TMainForm.btnConnectClick(Sender: TObject);
 begin
-  if ConnectionKind = cSerial then
+  if ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
   begin
-  if (ReadingsForm.Serport.InstanceActive) and
-    (ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex) then
+    if ReadingsForm.ConnectionKind = cSerial then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
-    end;
-
-  end
-  else
-  if ConnectionKind = cTelnet then
-  begin
-    if ReadingsForm.ConnectionKind = cTelNet then showmessage('check ip');
+    end
+    else
+    if ReadingsForm.ConnectionKind = cTelNet then
+      showmessage('check ip');
        { TODO 2 -cImprovement : check ip }
   end;
-
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 

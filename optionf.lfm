@@ -1,5 +1,5 @@
 object OptionForm: TOptionForm
-  Left = 583
+  Left = 971
   Height = 350
   Top = 297
   Width = 350

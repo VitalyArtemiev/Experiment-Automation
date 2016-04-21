@@ -28,7 +28,7 @@ type
     Label7: TLabel;
     Label8: TLabel;
     Elapsed: TLabel;
-    ProgressBar1: TProgressBar;
+    ProgressBar: TProgressBar;
     Timer1: TTimer;
     procedure btCancelClick(Sender: TObject);
     procedure btFinishClick(Sender: TObject);
@@ -53,7 +53,7 @@ var
 
 implementation
 
-uses DeviceF, MainF, ReadingsF, SerConF;
+uses DeviceF, MainF, ReadingsF, ReadingThreads, SerConF;
 
 {$R *.lfm}
 
@@ -152,11 +152,11 @@ begin
   btFinish.Enabled:= false;
   Timer1.Interval:= MainForm.eTimeStep.Value;
 
-  ProgressBar1.Max:= StepNumber;
-  str(ProgressBar1.max, s);
+  ProgressBar.Max:= StepNumber;
+  str(ProgressBar.max, s);
   lTotalSteps.Caption:= '/' + s;
   lStep.Caption:= '0';
-  ProgressBar1.Position:= 0;
+  ProgressBar.Position:= 0;
   PauseTime:= 0;
 
   sleep(Params.Delay - Params.TimeStep);
@@ -179,7 +179,7 @@ var
 begin
   if Finished then
   begin
-    ProgressBar1.StepIt;
+    ProgressBar.StepIt;
 
     btCancel.Enabled:= false;
     btPause.Enabled:= false;
@@ -195,22 +195,25 @@ begin
   else
   begin
     if MainForm.cbPointPerStep.Checked then
-      ReadingsThread.Start;
+      ReadingsThread:= tOnePerStepThread.Create;
 
     ElapsedTime:= Now - StartTime - PauseLength;
     DateTimeToString(s, 'hh:mm:ss', ElapsedTime);
     Elapsed.Caption:= s;
-    ProgressBar1.StepIt;
+    ProgressBar.StepIt;
 
     str(Amplitude:0:2, s);
     AmplitudeReading.Caption:= s;
     str(Frequency:10:6, s);
     FrequencyReading.Caption:= s;
-    str(ProgressBar1.Position, s);
+    str(ProgressBar.Position, s);
     lStep.Caption:= s;
 
     if MainForm.cbPointPerStep.Checked then
+    begin
       ReadingsThread.WaitFor;
+      freeandnil(ReadingsThread);
+    end;
 
     f:= Frequency;
     a:= Amplitude;
@@ -229,7 +232,7 @@ begin
       else
       if (FStep < 0) and (Frequency < StopF) then Frequency:= StopF;
 
-      case StepMode of
+      case StepMode of   { TODO 3 -cImprovement : enum }
       0:
         begin
           MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
@@ -257,7 +260,7 @@ procedure TStepForm.FormHide(Sender: TObject);
 begin
   MainForm.CommandString:= '';
   Timer1.Enabled:= false;
-  MainForm.EnableControls(true);
+  if Config.AutoReadingStep then MainForm.EnableControls(true);
   ReadingsForm.btStartPauseLog.Enabled:= true;
   ReadingsForm.btStopLog.Enabled:= true;
 end;

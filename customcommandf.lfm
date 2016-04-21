@@ -1,5 +1,5 @@
 object CustomCommandForm: TCustomCommandForm
-  Left = 495
+  Left = 971
   Height = 264
   Top = 239
   Width = 386

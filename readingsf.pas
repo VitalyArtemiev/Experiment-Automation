@@ -253,6 +253,7 @@ begin
   MaxSimultPars:= -1;
   DeviceKind:= dDetector;
   DeviceIndex:= iDefaultDevice;
+  ConnectionKind:= cNone;
   DrawnBuffers:= 0;
   t:= 0;
 
@@ -262,6 +263,11 @@ begin
 
   for i:= 0 to PortCount - 1 do
     cbPortSelect.AddItem(MainForm.cbPortSelect.Items[i], nil);
+
+  if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
+
+  if PortCount = 1 then
+    StatusBar.Panels[spStatus].Text:= 'Нет доступных COM-портов';
 
   Threadlist:= TThreadList.Create;
   InitCriticalSection(CommCS);
@@ -398,13 +404,23 @@ begin
 
   ReadingMode:= eReadMode(cbReadingsMode.ItemIndex);
 
-    if ReadingMode = rSimultaneous then
+  case ReadingMode of
+    rSimultaneous:
     begin
-      if LogFreq and (not cgTransfer.Checked[ReferenceIndex]) and (not UseGenFreq) then
-        cgTransfer.Checked[ReferenceIndex]:= true;
-      cgTransferItemClick(Self, 0);
-
-      if not cgTransfer.Enabled then  { TODO 1 -cBug : wtf is this shit??? }
+      if LogFreq and (not cgTransfer.Checked[ReferenceIndex]) and (not UseGenFreq) then    //when logfreq set by mainform
+      begin
+        if cgTransfer.CheckEnabled[ReferenceIndex] then
+          cgTransfer.Checked[ReferenceIndex]:= true
+        else
+        begin
+          ShowMessage('Необходимо логирование опорной чатоты');
+          WriteProgramLog('Data collection could not start: not logging ref');
+          btStartPauseLog.Caption:= 'Начать снятие';
+          exit;
+        end;
+      cgTransferItemClick(Self, -1);
+      end;
+      if not cgTransfer.Enabled then
       begin
         ShowMessage('Необходимо логирование опорной чатоты');
         WriteProgramLog('Data collection could not start: not logging ref');
@@ -448,8 +464,8 @@ begin
         srcCH1:= CoordinateSources[CH1Index];
       if CH2Index >= 0 then
         srcCH2:= CoordinateSources[CH2Index];
-    end
-    else
+    end;
+    rBuffer:
     begin
       LogTime:= true;  //???
       if LogFreq then cbUseGenFreq.Checked:= true;
@@ -460,6 +476,7 @@ begin
       srcCH1:= CoordinateSources[0];
       srcCH2:= CoordinateSources[1];
     end;
+  end;
 
   if LogTime then srcTime:= TAxisSource.Create(128);
   if LogFreq and UseGenFreq then srcFreq:= TAxisSource.Create(128);
@@ -495,7 +512,7 @@ begin
     rSimultaneous:
     begin
       if OnePointPerStep then
-        ReadingsThread:= tOnePerStepThread.Create
+        ReadingsThread:= nil //
       else
         ReadingsThread:= tSimultaneousThread.Create;
     end;
@@ -559,7 +576,8 @@ begin
 
   if LogState <> lInActive then
   begin
-   ReadingsThread.WaitFor;
+   if assigned(ReadingsThread) then
+     ReadingsThread.WaitFor;
    ProcessBuffers;
 
    WriteProgramLog('Сохранение - результат: ' + strf(SaveLog));
@@ -624,15 +642,15 @@ begin
     ExperimentLog:= TFileStream.Create(FileName, fmCreate);
     //showmessage(experimentlog.FileName);
     s1:= '';
+    if LogTime then s1+= cbXAxis.Items.Strings[0] + HT;
     if LogFreq and UseGenFreq then s1+= 'Частота (генератор)' + HT;
     if LogAmpl then s1+= 'Амплитуда (генератор)' + HT;
 
     case ReadingMode of
       rBuffer:
-        s1+= cbXAxis.Items.Strings[0] + HT + cbCh1.Text + HT + cbCh2.Text;
+        s1+= cbCh1.Text + HT + cbCh2.Text;
       rSimultaneous:
       begin
-        if LogTime then s1+= cbXAxis.Items.Strings[0] + HT;
         for i:= 0 to high(ParToRead) do
         begin
           if ParToRead[i] = -1 then break;
@@ -909,6 +927,7 @@ begin
 
       end;}
       WriteProgramLog('pb done');
+  StatusBar.Panels[spStatus].Text:= 'Точек: ' + strf(ProcessedPoints);
 end;
 
 procedure tReadingsForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -936,19 +955,16 @@ var
   i, c : word;
   s: string;
 begin
-  if ConnectionKind = cSerial then
+  if MainForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
   begin
-   if (MainForm.Serport.InstanceActive) and
-    (MainForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex) then
+    if MainForm.ConnectionKind = cSerial then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
-    end;
-  end
-  else
-  if ConnectionKind = cTelnet then
-  begin
-    if ReadingsForm.ConnectionKind = cTelNet then showmessage('check ip');
+    end
+    else
+    if MainForm.ConnectionKind = cTelNet then
+      showmessage('check ip');
        { TODO 2 -cImprovement : check ip }
   end;
 
@@ -1074,6 +1090,8 @@ begin
   freeandnil(srcAmpl);
   for i:= 0 to high(CoordinateSources) do
     freeandnil(CoordinateSources[i]);
+
+  StatusBar.Panels[spStatus].Text:= '';
 end;
 
 procedure tReadingsForm.btApplyClick(Sender: TObject);
@@ -1142,7 +1160,7 @@ begin
     AddCommand(dDisplaySelect, true, 1);
     AddCommand(dDisplaySelect, true, 2);
     AddCommand(dSampleRate, true);
-    AddCommand(dSensitivity, true);                          { TODO 2 -cBug : fix query }
+    AddCommand(dSensitivity, true);
     AddCommand(dTimeConstant, true);
     PassCommands;
 
@@ -1162,7 +1180,7 @@ begin
     if e = 0 then cbTimeConstant.ItemIndex:= i;
   LeaveCriticalSection(CommCS);
 
- { if DeviceIndex = iSR830 then
+  if cbRatio1.ItemIndex >= 0 then
   begin
     s3:= CurrentDevice^.ParSeparator;
 
@@ -1183,14 +1201,13 @@ begin
     cbRatio2.ItemIndex:= i;
   end
   else
-  if DeviceIndex = iSR844 then
   begin
     val(s1, i, e);
     if e = 0 then cbCh1.ItemIndex:= i;
 
     val(s2, i, e);
     if e = 0 then cbCh2.ItemIndex:= i;
-  end; }
+  end;
 end;
 
 procedure tReadingsForm.btStopLogClick(Sender: TObject);
@@ -1244,6 +1261,8 @@ end;
 procedure tReadingsForm.cbUseGenFreqChange(Sender: TObject);
 begin
   UseGenFreq:= cbUseGenFreq.Checked;
+  if UseGenFreq then
+    LogFreq:= true;
 end;
 
 procedure tReadingsForm.cbXAxisChange(Sender: TObject);
@@ -1257,7 +1276,8 @@ var
   i, ParNum: word;
 begin
   if (Index = ReferenceIndex) and not cgTransfer.Checked[Index] then
-  if not UseGenFreq then LogFreq:= false;
+    if not UseGenFreq then
+      LogFreq:= false;
 
   ParNum:= 0;
   with cgTransfer do
