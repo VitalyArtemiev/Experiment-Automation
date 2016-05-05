@@ -15,10 +15,11 @@ type
     hParSeparator, hCommSeparator, hTerminator,
     hTimeConstOptions, hSensitivityOptions, hTransferParams, hFirstIndex,
     hIndices, hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options,
-    hRatio1Options, hRatio2Options, hBufferRateOptions,
+    hRatio1Options, hRatio2Options, hBufferRateOptions, hCloseReserveOptions,
+    hWideReserveOptions, hRangeOptions,
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
     hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions,
-    hMaxFrequencies
+    hAmplitudeUnits, hMaxFrequencies, hMinMaxAmplitudes
                 );
 
   eCommonCommand = (
@@ -36,7 +37,7 @@ type
 
   eDetCommand = (
     dError = integer(cTrigger) + 1, dErrorEnable, dLIA, dLIAEnable,
-    dRange, dSensitivity, dTimeConstant, dCloseReserve, dWideReserve,
+    dInputRange, dSensitivity, dTimeConstant, dCloseReserve, dWideReserve,
     dAutoRange, dAutoSensitivity, dAutoCloseReserve, dAutoWideReserve,
     dAutoPhase, dAutoOffset, dReferenceSource,  dSampleRate, dStartStorage,
     dPauseStorage, dResetStorage, dStoredPoints, dReadPointsNative,
@@ -195,7 +196,7 @@ const
   end;
 
 const
-  SGHeaderLength = 30; //кол-во строк в tStringGrid, не относящ. к командам
+  SGHeaderLength = integer(high(eHeaderRow)) + 2; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
 
@@ -207,7 +208,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, Math, SynaIP, MainF, ReadingsF, OptionF, serconf, MemoF, ButtonPanel;
+  LCLType, Math, StrUtils, SynaIP, MainF, ReadingsF, OptionF, serconf, MemoF, ButtonPanel;
 
 const
   InputQueryWidth = 300;
@@ -312,7 +313,6 @@ procedure tDeviceForm.btAddDeviceClick(Sender: TObject);
 var
   Model: string;
 begin
-  //InputBox('Новое устройство','Введите название модели','');
   if CustomInputDialog(
                         'Новое устройство', 'Введите название модели',
                         false, Model
@@ -388,7 +388,6 @@ begin
              if FileExists(CurrDetFileName) then
              with sg do
              begin
-
                sg.Clean;
                LoadFromFile(CurrDetFileName);
              end;
@@ -423,12 +422,12 @@ begin
     begin
       case pcDevice.TabIndex of
         0: begin
-             CurrGenFileName:= UTF8toANSI(FileName); //  проверить на доп символы
-             if CurrGenFileName <> '' then sg.SaveToFile(CurrGenFileName);
+             CurrGenFileName:= UTF8toANSI(FileName);
+             sg.SaveToFile(CurrGenFileName);
            end;
         1: begin
              CurrDetFileName:= UTF8toANSI(FileName);
-             if CurrDetFileName <> '' then sg.SaveToFile(CurrDetFileName);
+             sg.SaveToFile(CurrDetFileName);
            end;
       end;
     end;
@@ -506,7 +505,10 @@ begin
      integer(hCH2Options),
      integer(hRatio1Options),
      integer(hRatio2Options),
-     integer(hBufferRateOptions):
+     integer(hBufferRateOptions),
+     integer(hCloseReserveOptions),
+     integer(hWideReserveOptions),
+     integer(hRangeOptions):
        EditOptionString(Col, Row);
     end;
 end;
@@ -523,7 +525,10 @@ begin
      integer(hCH2Options),
      integer(hRatio1Options),
      integer(hRatio2Options),
-     integer(hBufferRateOptions):
+     integer(hBufferRateOptions),
+     integer(hCloseReserveOptions),
+     integer(hWideReserveOptions),
+     integer(hRangeOptions):
        key:= 0;
     end;
 
@@ -539,7 +544,9 @@ begin
       integer(hSweepTypeOptions),
       integer(hsWeepDirectionOptions),
       integer(hModulationOptions),
-      integer(hMaxFrequencies):
+      integer(hAmplitudeUnits),
+      integer(hMaxFrequencies),
+      integer(hMinMaxAmplitudes):
         EditOptionString(Col, Row);
     end;
 end;
@@ -554,7 +561,9 @@ begin
       integer(hSweepTypeOptions),
       integer(hsWeepDirectionOptions),
       integer(hModulationOptions),
-      integer(hMaxFrequencies):
+      integer(hAmplitudeUnits),
+      integer(hMaxFrequencies),
+      integer(hMinMaxAmplitudes):
       begin
         key:= 0;
         EditOptionString(Col, Row);
@@ -601,7 +610,9 @@ begin
         integer(hSweepTypeOptions),
         integer(hSweepDirectionOptions),
         integer(hModulationOptions),
-        integer(hMaxFrequencies):
+        integer(hAmplitudeUnits),
+        integer(hMaxFrequencies),
+        integer(hMinMaxAmplitudes):
           AutoEdit:= false;
         else
           begin
@@ -654,7 +665,10 @@ begin
         integer(hCH2Options),
         integer(hRatio1Options),
         integer(hRatio2Options),
-        integer(hBufferRateOptions):
+        integer(hBufferRateOptions),
+        integer(hCloseReserveOptions),
+        integer(hWideReserveOptions),
+        integer(hRangeOptions):
           AutoEdit:= false;
         else
           begin
@@ -676,27 +690,25 @@ procedure tDeviceForm.EditOptionString(c, r: integer);
 begin
   with sg, MemoForm  do
   begin
-
-    //Col:= c;
-
-    //Row:= r;
-
     mComment.Text:= Cells[Col, Row];
     Caption:= Cells[0, Row];
 
     ShowModal;
     Caption:= 'Комментарий';
-    if (mComment.Text <> '') or (Cells[Col, Row] <> '') then
+    if (not IsEmptyStr(mComment.Text,   [' '])) or
+       (not IsEmptyStr(Cells[Col, Row], [' '])) then
     begin
       Cells[Col, Row]:= mComment.Text;
     end;
+    mComment.Lines.Clear;
   end;
 end;
 
 function tDeviceForm.CheckConformance: integer;
 var
   s: string;
-  i, o, e: integer;
+  i, j, n, o, e: integer;
+  m: double;
 {Exitcodes:
   0 - Success
   in gen
@@ -711,23 +723,28 @@ var
   -9 - terminator
   -10 - timeout
   in det
-  -11 - Interface
-  -12 - Baud rate
-  -13 - Databits
-  -14 - Stop bits
-  -15 - Parity
-  -16 - Handshake
-  -17 - ip
-  -18 - port
-  -19 - terminator
-  -20 - timeout
-  -30 temp usb wip
+  -$11 - Interface
+  -$12 - Baud rate
+  -$13 - Databits
+  -$14 - Stop bits
+  -$15 - Parity
+  -$16 - Handshake
+  -$17 - ip
+  -$18 - port
+  -$19 - terminator
+  -$20 - timeout
+  -$30 temp usb wip
   }
 begin
   Result:= 0;
   with sgGenCommands do
     for i:= 1 to ColCount - 1 do
     begin
+      for j:= 0 to RowCount - 1 do
+      begin
+        if IsEmptyStr(Cells[i, j], [' ']) then Cells[i, j]:= '';
+      end;
+
       s:= Cells[i, integer(hInterface)];
       o:= DeviceForm.cbInterface.Items.IndexOf(s);
       case o of
@@ -842,13 +859,97 @@ begin
         Row:= integer(hTimeOut);
         Col:= i;
         ShowMessage('Ошибка в поле "Таймаут"');
-        exit(-10);
+        exit(-$a);
+      end;
+
+      s:= sgGenCommands.Cells[i, integer(hMaxFrequencies)];
+      if not IsEmptyStr(s, [' ']) then
+      with MemoForm do
+      begin
+        mComment.Text:= sgGenCommands.Cells[i, integer(hFunctionOptions)];
+        o:= mComment.Lines.Count;
+        mComment.Text:= s;
+        n:= mComment.Lines.Count;
+
+        if o <> n then
+        begin
+          pcDevice.TabIndex:= 0;
+          Row:= integer(hMaxFrequencies);
+          Col:= i;
+          ShowMessage('Ошибка в поле "Максимальные частоты соотв. функциям:"' + LineEnding +
+                      'число параметров не соответствует числу функций');
+          exit(-$b);
+        end;
+
+        for j:= 0 to n - 1 do
+        begin
+          val(mComment.Lines[j], o, e);
+          if e <> 0 then
+          begin
+            pcDevice.TabIndex:= 0;
+            Row:= integer(hMaxFrequencies);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Максимальные частоты соотв. функциям"');
+            exit(-$b);
+          end;
+        end;
+        mComment.Lines.Clear;
+      end;
+
+      s:= sgGenCommands.Cells[i, integer(hMinMaxAmplitudes)];
+      if not IsEmptyStr(s, [' ']) then
+      with MemoForm do
+      begin
+        mComment.Text:= sgGenCommands.Cells[i, integer(hResistanceOptions)];
+        o:= mComment.Lines.Count;
+        mComment.Text:= s;
+        n:= mComment.Lines.Count;
+
+        if ((o > 0) and (o <> n)) or ((o = 0) and (n > 1)) then
+        begin
+          pcDevice.TabIndex:= 0;
+          Row:= integer(hMinMaxAmplitudes);
+          Col:= i;
+          ShowMessage('Ошибка в поле "Мин.-макс. амплитуды соотв. импедансу"' + LineEnding +
+                      'число параметров не соответствует числу вариантов импеданса');
+          exit(-$b);
+        end;
+
+        for j:= 0 to n - 1 do
+        begin
+          s:= mComment.Lines[j];
+          val(Copy2SymbDel(s, '-'), m, e);   //удаляем  включая "-"
+          if e <> 0 then
+          begin
+            pcDevice.TabIndex:= 0;
+            Row:= integer(hMinMaxAmplitudes);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Мин.-макс. амплитуды соотв. импедансу"');
+            exit(-$b);
+          end;
+
+          val(s, m, e);
+          if e <> 0 then
+          begin
+            pcDevice.TabIndex:= 0;
+            Row:= integer(hMinMaxAmplitudes);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Мин.-макс. амплитуды соотв. импедансу"');
+            exit(-$b);
+          end;
+        end;
+        mComment.Lines.Clear;
       end;
     end;
 
   with sgDetCommands do
     for i:= 1 to ColCount - 1 do
     begin
+      for j:= 0 to RowCount - 1 do
+      begin
+        if IsEmptyStr(Cells[i, j], [' ']) then Cells[i, j]:= '';
+      end;
+
       s:= Cells[i, integer(hInterface)];
       o:= DeviceForm.cbInterface.Items.IndexOf(s);
       case o of
@@ -861,7 +962,7 @@ begin
               Row:= integer(hBaudRate);
               Col:= i;
               ShowMessage('Ошибка в поле "Бод-частота"');
-              exit(-12);
+              exit(-$12);
             end;
 
             o:= valf(Cells[i, integer(hDataBits)]);
@@ -871,7 +972,7 @@ begin
               Row:= integer(hDataBits);
               Col:= i;
               ShowMessage('Ошибка в поле "Биты данных"');
-              exit(-13);
+              exit(-$13);
             end;
 
             s:= Cells[i, integer(hStopBits)];
@@ -882,7 +983,7 @@ begin
               Row:= integer(hStopBits);
               Col:= i;
               ShowMessage('Ошибка в поле "Стоп-биты"');
-              exit(-14);
+              exit(-$14);
             end;
 
             s:= Cells[i, integer(hParity)];
@@ -893,7 +994,7 @@ begin
               Row:= integer(hParity);
               Col:= i;
               ShowMessage('Ошибка в поле "Парность"');
-              exit(-15);
+              exit(-$15);
             end;
 
             s:= Cells[i, integer(hHandshake)];
@@ -904,14 +1005,14 @@ begin
               Row:= integer(hHandShake);
               Col:= i;
               ShowMessage('Ошибка в поле "Handshake"');
-              exit(-16);
+              exit(-$16);
             end;
           end;
         integer(cUSB):
           begin
             pcDevice.TabIndex:= 1;
             ShowMessage('USB не поддерживается');
-            exit(-30);
+            exit(-$30);
           end;
         integer(cTelnet), integer(cVXI):
           begin
@@ -922,7 +1023,7 @@ begin
               Row:= integer(hIPAdress);
               Col:= i;
               ShowMessage('Ошибка в поле "IP-адрес"');
-              exit(-17);
+              exit(-$17);
             end;
 
             val(Cells[i, integer(hPort)], o, e);
@@ -932,7 +1033,7 @@ begin
               Row:= integer(hPort);
               Col:= i;
               ShowMessage('Ошибка в поле "Порт"');
-              exit(-18);
+              exit(-$18);
             end;
           end;
         else
@@ -941,7 +1042,7 @@ begin
             Row:= integer(hInterface);
             Col:= i;
             ShowMessage('Ошибка в поле "Интерфейс"');
-            exit(-11);
+            exit(-$11);
           end;
       end;
 
@@ -953,7 +1054,7 @@ begin
         Row:= integer(hTerminator);
         Col:= i;
         ShowMessage('Ошибка в поле "Терминатор"');
-        exit(-19);
+        exit(-$19);
       end;
 
       val(Cells[i, integer(hTimeOut)], o, e);
@@ -963,7 +1064,7 @@ begin
         Row:= integer(hTimeOut);
         Col:= i;
         ShowMessage('Ошибка в поле "Таймаут"');
-        exit(-20);
+        exit(-$20);
       end;
 
       val(Cells[i, integer(hFirstIndex)], o, e);
@@ -973,7 +1074,7 @@ begin
         Row:= integer(hFirstIndex);
         Col:= i;
         ShowMessage('Ошибка в поле "Индекс 1-го параметра"');
-        exit(-21);
+        exit(-$21);
       end;
 
       s:= Cells[i, integer(hIndices)];
@@ -986,7 +1087,7 @@ begin
           Row:= integer(hIndices);
           Col:= i;
           ShowMessage('Ошибка в поле "№ строки частоты"');
-          exit(-22);
+          exit(-$22);
         end;
       end
       else
@@ -998,7 +1099,7 @@ begin
           Row:= integer(hIndices);
           Col:= i;
           ShowMessage('Ошибка в поле "№ строки частоты"');
-          exit(-22);
+          exit(-$22);
         end;
         delete(s, 1, pos(',', s));
 
@@ -1009,7 +1110,7 @@ begin
           Row:= integer(hIndices);
           Col:= i;
           ShowMessage('Ошибка в поле "№ строки CH1"');
-          exit(-22);
+          exit(-$22);
         end;
         delete(s, 1, pos(',', s));
 
@@ -1020,7 +1121,7 @@ begin
           Row:= integer(hIndices);
           Col:= i;
           ShowMessage('Ошибка в поле "№ строки CH2"');
-          exit(-22);
+          exit(-$22);
         end;
       end;
 
@@ -1031,7 +1132,7 @@ begin
         Row:= integer(hMaxSimultPars);
         Col:= i;
         ShowMessage('Ошибка в поле "Макс. число одновр. запр. параметров"');
-        exit(-23);
+        exit(-$23);
       end;
 
       o:= valf(Cells[i, integer(hPointsInBuffer)]);
@@ -1041,7 +1142,7 @@ begin
         Row:= integer(hPointsInBuffer);
         Col:= i;
         ShowMessage('Ошибка в поле "Число точек во внутр. буфере"');
-        exit(-24);
+        exit(-$24);
       end;
     end;
 end;

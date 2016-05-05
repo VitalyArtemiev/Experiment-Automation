@@ -30,7 +30,8 @@ type
   rParams = record
     Amplitude, Offset, Frequency, SweepStartF, SweepStopF, SweepRate, StepStartF,
       StepStopF, StepF, StepStartA, StepStopA, StepA, AxisLimit: double;
-    Impedance, CurrFunc, AmpUnit, SweepType, SweepDir, SampleRate, TimeConstant, Sensitivity,
+    Impedance, CurrFunc, AmplUnit, SweepType, SweepDir, SampleRate, TimeConstant,
+      Sensitivity, CloseReserve, WideReserve, InputRange,
       XAxis, ReadingsMode, Display1, Display2, Ratio1, Ratio2, Show1, Show2: shortint;
     ACOn, AutoSweep, GenFreq, OnePoint: boolean;
     TransferPars: array [0..19] of boolean;
@@ -55,7 +56,7 @@ type
   end;
 
   eUnits = (
-    NOUNIT, VP,   VR
+    uNone, uVPeak, uVRms
             );
 
   { TSerConnectForm }
@@ -72,7 +73,6 @@ type
     btCustomCommand: TSpeedButton;
     cbPortSelect: TComboBox;
     seRecvTimeout: TSpinEdit;
-
     Label3: TLabel;
     Label8: TLabel;
     StatusBar: TStatusBar;
@@ -98,6 +98,7 @@ type
     TelNetClient: tTelNetSend;
     //UsbContext : tLibUsbContext;
 
+    ParamsApplied: boolean;
     CommandString, PresumedDevice: shortstring;
     DeviceIndex: longint;
     DeviceKind: eDeviceKind;
@@ -117,15 +118,17 @@ type
     procedure AddCommand(c: variant{tCommand}; Query: boolean = false);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tIntegerArray);
-    procedure AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: eUnits);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: eUnits = uNone);
     procedure PassCommands;
     function RecvString: string;
+    function RecvString(TimeOut: longword): string;
   end;
 
   procedure WriteProgramLog(Log: string);
   function strf(x: double): string;
   function strf(x: longint): string;
   function valf(s: string): integer;
+ // function SubstrCount(const aString, aSubstring: string): Integer;
 
 const
   sUnits: array[0..2] of shortstring = (
@@ -144,7 +147,7 @@ var
 implementation
 
 uses
-  DeviceF, MainF, OptionF;
+  StrUtils, DeviceF, MainF, OptionF;
 
 function strf(x: double): string;
 begin
@@ -160,6 +163,19 @@ function valf(s: string): integer;
 begin
   val(s, Result);
 end;
+
+{function SubstrCount(const aString, aSubstring: string): Integer;
+var
+  lPosition: Integer;
+begin
+  Result := 0;
+  lPosition := PosEx(aSubstring, aString);
+  while lPosition <> 0 do
+  begin
+    Inc(Result);
+    lPosition := PosEx(aSubstring, aString, lPosition + Length(aSubstring));
+  end;
+end; }
 
 procedure WriteProgramLog(Log: string);
 begin
@@ -178,7 +194,7 @@ begin
   btnDisconnectClick(Sender);
   if cbPortSelect.ItemIndex >= 0 then
   begin
-    if cbPortSelect.Text = 'Ethernet' then
+    if pos('Ethernet', cbPortSelect.Text) <> 0 then
       ConnectTelNet
     else
       ConnectSerial;
@@ -192,6 +208,7 @@ end;
 
 procedure tSerConnectForm.btnDisconnectClick(Sender: TObject);
 begin
+  ParamsApplied:= false;
   if assigned(SerPort) then
   begin
     if SerPort.InstanceActive then
@@ -237,7 +254,7 @@ begin
             //sleep
           //if SerPort.CanRead(seRecvTimeout.Value) then
           TestResult:= RecvString;
-          if TestResult <> '' then ShowMessage('Подключено к ' + TestResult);
+          if not IsEmptyStr(TestResult, [' ']) then ShowMessage('Подключено к ' + TestResult);
         end;
       end;
     cTelNet:
@@ -245,7 +262,7 @@ begin
         AddCommand(cIdentify, true);
         PassCommands;
         TestResult:= RecvString;
-        if TestResult <> '' then ShowMessage('Подключено к ' + TestResult);
+        if not IsEmptyStr(TestResult, [' ']) then ShowMessage('Подключено к ' + TestResult);
       end;
   end;
 end;
@@ -371,7 +388,7 @@ var
   s: string;
 begin
   s:= CurrentDevice^.InitString;
-  if s = '' then exit;
+  if IsEmptyStr(s, [' ']) then exit;
   s+= CurrentDevice^.Terminator;
 
   WriteProgramLog('Строка на устройство ' + TestResult);
@@ -397,7 +414,9 @@ begin
 
   SerPort.TestDsr:= true;
   SerPort.RaiseExcept:= false;
+  writeprogramlog('connecting to' + cbportselect.text );
   SerPort.Connect(cbPortSelect.Text);
+  writeprogramlog('success');
   if SerPort.LastError = 0 then
   begin
     for i:= 1 to high(SupportedDevices) do
@@ -418,13 +437,14 @@ begin
             4: P:= 'S';
           end;
 
+          writeprogramlog('config' + strf(baudrate) + strf(databits) + p + strf(stopbits));
           SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
-
+          writeprogramlog('sucess');
           InitDevice;
           btnTestClick(Self);
           WriteProgramLog('Ответ устройства: ' + TestResult);
 
-          if TestResult <> '' then
+          if not IsEmptyStr(TestResult, [' ']) then
           begin
             if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
             begin
@@ -534,7 +554,7 @@ begin
         btnTestClick(Self);
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
-        if TestResult <> '' then
+        if not IsEmptyStr(TestResult, [' ']) then
           if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
           begin
             DeviceIndex:= i;
@@ -668,7 +688,7 @@ end;
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
 begin
   if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then    //commcs just bc suppdev???
+    (CurrentDevice^.Commands[c] = '') then  //time critical so no complicated checks???
   begin
     WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
     exit
@@ -725,7 +745,7 @@ begin
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: real;
-  Units: eUnits);
+  Units: eUnits = uNone);
 begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then
@@ -780,6 +800,32 @@ begin
         begin
           SerPort.RaiseExcept:= false;
           Result:= SerPort.RecvString(CurrentDevice^.Timeout);
+          SerPort.RaiseExcept:= true;
+
+          writeprogramlog('Получена строка ' + Result);
+
+          if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+        end;
+      end;
+    cTelNet:
+      begin;
+        Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+
+        writeprogramlog('Получена строка ' + Result);
+      end;
+  end;
+end;
+
+function tSerConnectForm.RecvString(TimeOut: longword): string;
+begin
+  case ConnectionKind of
+    //cNone: ;
+    cSerial:
+      begin
+        if (serport.instanceactive) and (serport.CTS) then
+        begin
+          SerPort.RaiseExcept:= false;
+          Result:= SerPort.RecvString(Timeout);
           SerPort.RaiseExcept:= true;
 
           writeprogramlog('Получена строка ' + Result);

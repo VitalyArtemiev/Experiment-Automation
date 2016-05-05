@@ -1,14 +1,14 @@
 object MainForm: TMainForm
-  Left = 529
+  Left = 405
   Height = 600
-  Top = 112
-  Width = 524
+  Top = 124
+  Width = 528
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Управление генератором'
   ClientHeight = 580
-  ClientWidth = 524
+  ClientWidth = 528
   Constraints.MinHeight = 600
   Constraints.MinWidth = 524
   Menu = MainMenu1
@@ -21,12 +21,13 @@ object MainForm: TMainForm
   object cbPortSelect: TComboBox
     AnchorSideLeft.Control = Label3
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = Label3
-    Left = 233
+    AnchorSideTop.Control = Owner
+    Left = 225
     Height = 23
     Top = 8
     Width = 121
     BorderSpacing.Left = 31
+    BorderSpacing.Top = 8
     ItemHeight = 15
     Style = csDropDownList
     TabOrder = 0
@@ -34,12 +35,13 @@ object MainForm: TMainForm
   object Label3: TLabel
     AnchorSideLeft.Control = btReset
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = Owner
-    Left = 130
+    AnchorSideTop.Control = cbPortSelect
+    AnchorSideTop.Side = asrCenter
+    Left = 122
     Height = 15
-    Top = 8
+    Top = 12
     Width = 72
-    BorderSpacing.Left = 20
+    BorderSpacing.Left = 16
     BorderSpacing.Top = 8
     Caption = 'Выбор порта'
     Color = clWhite
@@ -50,7 +52,7 @@ object MainForm: TMainForm
     Left = 0
     Height = 23
     Top = 557
-    Width = 524
+    Width = 528
     Panels = <    
       item
         Text = 'Нет подключения'
@@ -70,8 +72,8 @@ object MainForm: TMainForm
   object btnConnect: TButton
     AnchorSideLeft.Control = cbPortSelect
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = Label3
-    Left = 370
+    AnchorSideTop.Control = cbPortSelect
+    Left = 362
     Height = 23
     Top = 8
     Width = 91
@@ -84,7 +86,7 @@ object MainForm: TMainForm
     AnchorSideLeft.Control = btnConnect
     AnchorSideTop.Control = btnConnect
     AnchorSideTop.Side = asrBottom
-    Left = 370
+    Left = 362
     Height = 23
     Top = 39
     Width = 91
@@ -97,7 +99,7 @@ object MainForm: TMainForm
     AnchorSideLeft.Control = btnConnect
     AnchorSideTop.Control = btnDisconnect
     AnchorSideTop.Side = asrBottom
-    Left = 370
+    Left = 362
     Height = 23
     Top = 70
     Width = 91
@@ -109,7 +111,7 @@ object MainForm: TMainForm
   object seRecvTimeout: TSpinEdit
     AnchorSideLeft.Control = cbPortSelect
     AnchorSideTop.Control = btnTest
-    Left = 233
+    Left = 225
     Height = 23
     Hint = 'Время ожидания ответа прибора'
     Top = 70
@@ -124,9 +126,10 @@ object MainForm: TMainForm
   object Label8: TLabel
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = seRecvTimeout
-    Left = 130
+    AnchorSideTop.Side = asrCenter
+    Left = 122
     Height = 15
-    Top = 70
+    Top = 74
     Width = 67
     Caption = 'Таймаут, мс'
     Color = clWhite
@@ -136,7 +139,7 @@ object MainForm: TMainForm
   object btApply: TButton
     AnchorSideLeft.Control = btnConnect
     AnchorSideTop.Control = btTrigger
-    Left = 370
+    Left = 362
     Height = 23
     Top = 525
     Width = 91
@@ -150,7 +153,7 @@ object MainForm: TMainForm
     AnchorSideLeft.Control = cbPortSelect
     AnchorSideTop.Control = FrequencyTab
     AnchorSideTop.Side = asrBottom
-    Left = 233
+    Left = 225
     Height = 23
     Top = 525
     Width = 91
@@ -163,28 +166,32 @@ object MainForm: TMainForm
   object FrequencyTab: TPageControl
     AnchorSideLeft.Control = btReset
     AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = pnConnection
+    AnchorSideTop.Control = pnBaseParams
     AnchorSideTop.Side = asrBottom
-    Left = 122
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 114
     Height = 192
     Top = 325
-    Width = 402
-    ActivePage = TabSheet3
-    BorderSpacing.Left = 12
+    Width = 410
+    ActivePage = tsStep
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
     BorderSpacing.Top = 24
+    BorderSpacing.Right = 4
     TabIndex = 2
     TabOrder = 6
-    object TabSheet1: TTabSheet
+    object tsConstantFrequency: TTabSheet
       Caption = 'Постоянная частота'
       ClientHeight = 164
-      ClientWidth = 394
+      ClientWidth = 402
       object FrequencyReading: TLabel
         AnchorSideLeft.Control = eFrequency
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = Label4
         Left = 244
         Height = 15
-        Top = 8
+        Top = 12
         Width = 5
         BorderSpacing.Left = 16
         Caption = '?'
@@ -193,13 +200,14 @@ object MainForm: TMainForm
         Transparent = False
       end
       object eFrequency: TFloatSpinEdit
-        AnchorSideLeft.Control = TabSheet1
-        AnchorSideTop.Control = Label4
+        AnchorSideLeft.Control = tsConstantFrequency
+        AnchorSideTop.Control = tsConstantFrequency
         Left = 107
         Height = 23
         Top = 8
         Width = 121
         BorderSpacing.Left = 107
+        BorderSpacing.Top = 8
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
@@ -209,11 +217,12 @@ object MainForm: TMainForm
         Value = 1E-6
       end
       object Label4: TLabel
-        AnchorSideLeft.Control = TabSheet1
-        AnchorSideTop.Control = TabSheet1
+        AnchorSideLeft.Control = tsConstantFrequency
+        AnchorSideTop.Control = eFrequency
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 15
-        Top = 8
+        Top = 12
         Width = 43
         BorderSpacing.Left = 4
         BorderSpacing.Top = 8
@@ -227,23 +236,24 @@ object MainForm: TMainForm
         AnchorSideTop.Control = Label4
         Left = 365
         Height = 15
-        Top = 8
+        Top = 12
         Width = 13
         BorderSpacing.Left = 121
         Caption = 'Гц'
         ParentColor = False
       end
     end
-    object TabSheet2: TTabSheet
+    object tsSweep: TTabSheet
       Caption = 'Сканирование'
       ClientHeight = 164
-      ClientWidth = 394
+      ClientWidth = 402
       object SweepRateReading: TLabel
         AnchorSideLeft.Control = SweepStartFReading
         AnchorSideTop.Control = eSweepRate
+        AnchorSideTop.Side = asrCenter
         Left = 244
         Height = 15
-        Top = 86
+        Top = 90
         Width = 5
         Caption = '?'
         Color = clWhite
@@ -253,9 +263,10 @@ object MainForm: TMainForm
       object Label14: TLabel
         AnchorSideLeft.Control = Label11
         AnchorSideTop.Control = cbSweepType
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 30
-        Top = 125
+        Top = 121
         Width = 78
         Caption = 'Тип'#13#10'сканирования'
         Color = clWhite
@@ -309,6 +320,7 @@ object MainForm: TMainForm
         Hint = 'Вкл./выкл. автоматическое сканирование/по триггеру'
         Top = 86
         Width = 20
+        Anchors = [akLeft]
         BorderSpacing.Left = 4
         Checked = True
         Enabled = False
@@ -320,9 +332,10 @@ object MainForm: TMainForm
       object Label13: TLabel
         AnchorSideLeft.Control = Label11
         AnchorSideTop.Control = eSweepRate
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 30
-        Top = 86
+        Top = 82
         Width = 78
         Caption = 'Частота'#13#10'сканирования'
         Color = clWhite
@@ -341,16 +354,17 @@ object MainForm: TMainForm
         Enabled = False
         Increment = 10
         MaxValue = 1000
-        MinValue = 0.01
+        MinValue = 1E-6
         TabOrder = 3
         Value = 0.01
       end
       object SweepStopFReading: TLabel
         AnchorSideLeft.Control = SweepStartFReading
         AnchorSideTop.Control = eSweepStopF
+        AnchorSideTop.Side = asrCenter
         Left = 244
         Height = 15
-        Top = 47
+        Top = 51
         Width = 5
         Caption = '?'
         Color = clWhite
@@ -361,9 +375,10 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eSweepStartF
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eSweepStartF
+        AnchorSideTop.Side = asrCenter
         Left = 244
         Height = 15
-        Top = 8
+        Top = 12
         Width = 5
         BorderSpacing.Left = 16
         Caption = '?'
@@ -374,9 +389,10 @@ object MainForm: TMainForm
       object Label12: TLabel
         AnchorSideLeft.Control = Label11
         AnchorSideTop.Control = eSweepStopF
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 30
-        Top = 47
+        Top = 43
         Width = 53
         Caption = 'Конечная'#13#10'частота'
         Color = clWhite
@@ -402,8 +418,8 @@ object MainForm: TMainForm
         Value = 1E-6
       end
       object eSweepStartF: TFloatSpinEdit
-        AnchorSideLeft.Control = TabSheet2
-        AnchorSideTop.Control = TabSheet2
+        AnchorSideLeft.Control = tsSweep
+        AnchorSideTop.Control = tsSweep
         Left = 107
         Height = 23
         Top = 8
@@ -420,11 +436,12 @@ object MainForm: TMainForm
         Value = 1E-6
       end
       object Label11: TLabel
-        AnchorSideLeft.Control = TabSheet2
+        AnchorSideLeft.Control = tsSweep
         AnchorSideTop.Control = eSweepStartF
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 30
-        Top = 8
+        Top = 4
         Width = 60
         BorderSpacing.Left = 4
         Caption = 'Начальная'#13#10'частота'
@@ -448,7 +465,7 @@ object MainForm: TMainForm
         AnchorSideTop.Control = SweepStopFReading
         Left = 365
         Height = 15
-        Top = 47
+        Top = 51
         Width = 13
         Caption = 'Гц'
         ParentColor = False
@@ -458,24 +475,24 @@ object MainForm: TMainForm
         AnchorSideTop.Control = SweepRateReading
         Left = 365
         Height = 15
-        Top = 86
+        Top = 90
         Width = 13
         Caption = 'Гц'
         ParentColor = False
       end
     end
-    object TabSheet3: TTabSheet
+    object tsStep: TTabSheet
       Caption = 'Пошагово'
       ClientHeight = 164
-      ClientWidth = 394
+      ClientWidth = 402
       object eStepStartF: TFloatSpinEdit
         AnchorSideLeft.Control = eFStep
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eFStep
-        Left = 173
+        Left = 168
         Height = 23
         Top = 27
-        Width = 110
+        Width = 105
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
@@ -489,10 +506,10 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eStepStartF
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eFStep
-        Left = 283
+        Left = 273
         Height = 23
         Top = 27
-        Width = 110
+        Width = 105
         DecimalPlaces = 6
         Enabled = False
         Increment = 1000
@@ -510,7 +527,7 @@ object MainForm: TMainForm
         Left = 63
         Height = 23
         Top = 27
-        Width = 110
+        Width = 105
         BorderSpacing.Left = 20
         BorderSpacing.Top = 8
         DecimalPlaces = 6
@@ -526,13 +543,13 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eFStep
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eAStep
-        Left = 173
+        Left = 168
         Height = 23
-        Top = 62
-        Width = 110
+        Top = 66
+        Width = 105
         Enabled = False
         Increment = 0.01
-        MaxValue = 100
+        MaxValue = 20
         MinValue = 0
         OnChange = eStepChange
         TabOrder = 4
@@ -542,13 +559,13 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eStepStartF
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eAStep
-        Left = 283
+        Left = 273
         Height = 23
-        Top = 62
-        Width = 110
+        Top = 66
+        Width = 105
         Enabled = False
         Increment = 0.01
-        MaxValue = 100
+        MaxValue = 20
         MinValue = 0
         OnChange = eStepChange
         TabOrder = 5
@@ -561,10 +578,10 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 63
         Height = 23
-        Top = 62
-        Width = 110
+        Top = 66
+        Width = 105
         BorderSpacing.Left = 20
-        BorderSpacing.Top = 12
+        BorderSpacing.Top = 16
         Enabled = False
         Increment = 0.01
         MaxValue = 20
@@ -575,18 +592,21 @@ object MainForm: TMainForm
       end
       object Label10: TLabel
         AnchorSideTop.Control = eFStep
+        AnchorSideTop.Side = asrCenter
         Left = 0
         Height = 15
-        Top = 27
+        Top = 31
         Width = 43
         Caption = 'Частота'
         ParentColor = False
       end
       object Label15: TLabel
+        AnchorSideLeft.Control = Label10
         AnchorSideTop.Control = eAStep
+        AnchorSideTop.Side = asrCenter
         Left = 0
         Height = 15
-        Top = 62
+        Top = 70
         Width = 61
         Caption = 'Амплитуда'
         ParentColor = False
@@ -595,7 +615,7 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eFStep
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = Label18
-        Left = 173
+        Left = 168
         Height = 15
         Top = 4
         Width = 60
@@ -606,7 +626,7 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eStepStartF
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = Label18
-        Left = 283
+        Left = 273
         Height = 15
         Top = 4
         Width = 53
@@ -616,7 +636,7 @@ object MainForm: TMainForm
       object Label18: TLabel
         AnchorSideLeft.Control = Label10
         AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = TabSheet3
+        AnchorSideTop.Control = tsStep
         Left = 63
         Height = 15
         Top = 4
@@ -627,10 +647,12 @@ object MainForm: TMainForm
         ParentColor = False
       end
       object Label19: TLabel
+        AnchorSideLeft.Control = Label10
         AnchorSideTop.Control = eTimeStep
+        AnchorSideTop.Side = asrCenter
         Left = 0
         Height = 15
-        Top = 97
+        Top = 109
         Width = 53
         Caption = 'Интервал'
         ParentColor = False
@@ -638,10 +660,10 @@ object MainForm: TMainForm
       object Label20: TLabel
         AnchorSideLeft.Control = eTimeStep
         AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = eTimeStep
-        Left = 177
+        AnchorSideTop.Control = Label19
+        Left = 172
         Height = 15
-        Top = 97
+        Top = 109
         Width = 67
         BorderSpacing.Left = 4
         Caption = 'мс      Всего:'
@@ -650,10 +672,10 @@ object MainForm: TMainForm
       object TotalTime: TLabel
         AnchorSideLeft.Control = Label20
         AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = eTimeStep
-        Left = 252
+        AnchorSideTop.Control = Label19
+        Left = 247
         Height = 15
-        Top = 97
+        Top = 109
         Width = 105
         BorderSpacing.Left = 8
         Caption = '0 ч 0 м 0 с, 0 шагов'
@@ -668,9 +690,9 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 63
         Height = 23
-        Top = 97
-        Width = 110
-        BorderSpacing.Top = 12
+        Top = 105
+        Width = 105
+        BorderSpacing.Top = 16
         Enabled = False
         Increment = 10
         MaxValue = 10000
@@ -683,88 +705,56 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = eStepStopA
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eFStep
-        Left = 401
+        AnchorSideTop.Side = asrCenter
+        Left = 382
         Height = 15
-        Top = 27
+        Top = 31
         Width = 13
-        BorderSpacing.Left = 8
+        BorderSpacing.Left = 4
         Caption = 'Гц'
         ParentColor = False
       end
       object Label22: TLabel
         AnchorSideLeft.Control = Label21
         AnchorSideTop.Control = eAStep
-        Left = 401
+        AnchorSideTop.Side = asrCenter
+        Left = 382
         Height = 15
-        Top = 62
+        Top = 70
         Width = 7
         Caption = 'В'
         ParentColor = False
       end
       object cbPointPerStep: TCheckBox
+        AnchorSideLeft.Control = Label19
         AnchorSideTop.Control = TotalTime
         AnchorSideTop.Side = asrBottom
-        AnchorSideRight.Control = eStepStopA
+        AnchorSideRight.Control = Label22
         AnchorSideRight.Side = asrBottom
-        Left = 200
+        Left = 0
         Height = 19
-        Top = 132
+        Top = 140
         Width = 193
         Alignment = taLeftJustify
-        Anchors = [akTop, akRight]
-        BorderSpacing.Top = 20
+        BorderSpacing.Top = 16
         Caption = 'Снимать только 1 точку на шаг'
         Enabled = False
         OnChange = cbPointPerStepChange
         TabOrder = 7
       end
-      object eDelay: TSpinEdit
-        AnchorSideLeft.Control = eFStep
-        AnchorSideTop.Control = eTimeStep
-        AnchorSideTop.Side = asrBottom
-        Left = 63
-        Height = 23
-        Hint = 'Задержка перед первым шагом'
-        Top = 132
-        Width = 110
-        BorderSpacing.Top = 12
-        Enabled = False
-        MaxValue = 10000
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 8
-        Value = 500
-      end
-      object Label29: TLabel
-        AnchorSideTop.Control = eDelay
-        Left = 0
-        Height = 15
-        Top = 132
-        Width = 53
-        Caption = 'Задержка'
-        ParentColor = False
-      end
-      object Label30: TLabel
-        AnchorSideLeft.Control = Label20
-        AnchorSideTop.Control = eDelay
-        Left = 177
-        Height = 15
-        Top = 132
-        Width = 15
-        Caption = 'мс'
-        ParentColor = False
-      end
     end
   end
   object btStop: TButton
     AnchorSideLeft.Control = btReset
+    AnchorSideTop.Control = btCustomCommand
+    AnchorSideTop.Side = asrBottom
     AnchorSideBottom.Control = btTrigger
     AnchorSideBottom.Side = asrBottom
-    Left = 8
+    Left = 4
     Height = 55
-    Top = 493
+    Top = 388
     Width = 102
-    Anchors = [akLeft, akBottom]
+    BorderSpacing.Top = 8
     Caption = 'Остановить'
     Enabled = False
     OnClick = btStopClick
@@ -772,29 +762,32 @@ object MainForm: TMainForm
   end
   object btProgram: TSpeedButton
     AnchorSideLeft.Control = btReset
-    Left = 8
+    AnchorSideTop.Control = btStatus
+    AnchorSideTop.Side = asrBottom
+    Left = 4
     Height = 55
-    Top = 240
+    Top = 243
     Width = 102
+    BorderSpacing.Top = 8
     Caption = 'Управление'
     OnClick = btProgramClick
   end
   object btReset: TSpeedButton
     AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = Label3
-    Left = 8
+    AnchorSideTop.Control = btnConnect
+    Left = 4
     Height = 55
     Top = 8
     Width = 102
-    BorderSpacing.Left = 8
+    BorderSpacing.Left = 4
     Caption = 'Сброс'
     Enabled = False
     OnClick = btResetClick
   end
   object btQuery: TSpeedButton
     AnchorSideLeft.Control = btReset
-    AnchorSideTop.Control = pnConnection
-    Left = 8
+    AnchorSideTop.Control = pnBaseParams
+    Left = 4
     Height = 55
     Top = 117
     Width = 102
@@ -805,7 +798,7 @@ object MainForm: TMainForm
   object btCustomCommand: TSpeedButton
     AnchorSideLeft.Control = btReset
     AnchorSideTop.Control = FrequencyTab
-    Left = 8
+    Left = 4
     Height = 55
     Hint = 'Сконструировать команду,'#13#10'не поддерживаемую интерфейсом'
     Top = 325
@@ -816,29 +809,30 @@ object MainForm: TMainForm
     ShowHint = True
     ParentShowHint = False
   end
-  object pnConnection: TPanel
+  object pnBaseParams: TPanel
     AnchorSideLeft.Control = btReset
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = seRecvTimeout
     AnchorSideTop.Side = asrBottom
-    Left = 122
+    Left = 114
     Height = 184
     Top = 117
-    Width = 400
-    BorderSpacing.Left = 12
+    Width = 410
+    BorderSpacing.Left = 8
     BorderSpacing.Top = 24
     BevelOuter = bvNone
     BorderStyle = bsSingle
     ClientHeight = 180
-    ClientWidth = 396
+    ClientWidth = 406
     TabOrder = 5
     object cbACEnable: TCheckBox
       AnchorSideLeft.Control = Label5
       AnchorSideTop.Control = eAmplitude
+      AnchorSideTop.Side = asrCenter
       Left = 6
       Height = 19
       Hint = 'Вкл./выкл. переменный ток'
-      Top = 119
+      Top = 121
       Width = 81
       Alignment = taLeftJustify
       Caption = 'Амплитуда'
@@ -854,11 +848,12 @@ object MainForm: TMainForm
     end
     object cbImpedance: TComboBox
       AnchorSideLeft.Control = cbFuncSelect
-      AnchorSideTop.Control = Label9
+      AnchorSideTop.Control = pnBaseParams
       Left = 109
       Height = 23
       Top = 8
       Width = 121
+      BorderSpacing.Top = 8
       Enabled = False
       ItemHeight = 15
       ItemIndex = 0
@@ -871,14 +866,14 @@ object MainForm: TMainForm
       Text = '50 Ом'
     end
     object Label9: TLabel
-      AnchorSideLeft.Control = pnConnection
-      AnchorSideTop.Control = pnConnection
+      AnchorSideLeft.Control = pnBaseParams
+      AnchorSideTop.Control = cbImpedance
+      AnchorSideTop.Side = asrCenter
       Left = 6
       Height = 15
-      Top = 8
+      Top = 12
       Width = 87
       BorderSpacing.Left = 6
-      BorderSpacing.Top = 8
       Caption = 'Сопротивление'
       Color = clWhite
       ParentColor = False
@@ -889,7 +884,7 @@ object MainForm: TMainForm
       AnchorSideTop.Control = Label2
       Left = 246
       Height = 15
-      Top = 150
+      Top = 154
       Width = 5
       Caption = '?'
       Color = clWhite
@@ -897,26 +892,24 @@ object MainForm: TMainForm
       Transparent = False
     end
     object Label7: TLabel
-      AnchorSideLeft.Control = Label6
-      AnchorSideLeft.Side = asrBottom
+      AnchorSideLeft.Control = Label29
       AnchorSideTop.Control = Label6
       Left = 246
       Height = 15
       Top = 96
       Width = 102
-      BorderSpacing.Left = 36
       Caption = 'Текущее значение'
       ParentColor = False
     end
     object Label6: TLabel
       AnchorSideLeft.Control = cbFuncSelect
-      AnchorSideTop.Control = cbFuncSelect
-      AnchorSideTop.Side = asrBottom
+      AnchorSideBottom.Control = eAmplitude
       Left = 109
       Height = 15
       Top = 96
       Width = 101
-      BorderSpacing.Top = 34
+      Anchors = [akLeft, akBottom]
+      BorderSpacing.Bottom = 8
       Caption = 'Целевое значение'
       ParentColor = False
     end
@@ -925,7 +918,7 @@ object MainForm: TMainForm
       AnchorSideTop.Control = cbACEnable
       Left = 246
       Height = 15
-      Top = 119
+      Top = 121
       Width = 5
       Caption = '?'
       Color = clWhite
@@ -939,7 +932,6 @@ object MainForm: TMainForm
       Height = 23
       Top = 39
       Width = 121
-      Anchors = [akLeft]
       AutoComplete = True
       AutoCompleteText = [cbactEnabled, cbactEndOfLineComplete, cbactSearchAscending]
       BorderSpacing.Top = 8
@@ -958,11 +950,14 @@ object MainForm: TMainForm
       Text = 'Синусоида'
     end
     object Label5: TLabel
+      AnchorSideLeft.Control = pnBaseParams
       AnchorSideTop.Control = cbFuncSelect
+      AnchorSideTop.Side = asrCenter
       Left = 6
       Height = 15
-      Top = 39
+      Top = 43
       Width = 48
+      BorderSpacing.Left = 6
       Caption = 'Функция'
       Color = clWhite
       ParentColor = False
@@ -979,8 +974,8 @@ object MainForm: TMainForm
       BorderSpacing.Top = 8
       Enabled = False
       Increment = 0.1
-      MaxValue = 5
-      MinValue = -5
+      MaxValue = 10
+      MinValue = -10
       OnChange = eOffsetChange
       TabOrder = 3
       Value = 0
@@ -988,9 +983,10 @@ object MainForm: TMainForm
     object Label2: TLabel
       AnchorSideLeft.Control = Label5
       AnchorSideTop.Control = eOffset
+      AnchorSideTop.Side = asrCenter
       Left = 6
       Height = 15
-      Top = 150
+      Top = 154
       Width = 60
       Caption = 'Смещение'
       Color = clWhite
@@ -1005,8 +1001,8 @@ object MainForm: TMainForm
       Width = 121
       Enabled = False
       Increment = 0.1
-      MaxValue = 10
-      MinValue = 0.05
+      MaxValue = 20
+      MinValue = 0
       OnChange = eAmplitudeChange
       TabOrder = 4
       Value = 0.05
@@ -1014,24 +1010,52 @@ object MainForm: TMainForm
     object Label28: TLabel
       AnchorSideLeft.Control = cbAmplUnit
       AnchorSideTop.Control = Label2
-      Left = 338
+      Left = 348
       Height = 15
-      Top = 150
+      Top = 154
       Width = 7
       BorderSpacing.Left = 6
       Caption = 'В'
       ParentColor = False
     end
+    object Label1: TLabel
+      AnchorSideLeft.Control = cbACEnable
+      AnchorSideTop.Control = cbACEnable
+      AnchorSideRight.Control = cbACEnable
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = cbACEnable
+      AnchorSideBottom.Side = asrBottom
+      Left = 6
+      Height = 19
+      Top = 121
+      Width = 81
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      AutoSize = False
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object Label27: TLabel
+      AnchorSideLeft.Control = Label28
+      AnchorSideTop.Control = Label1
+      Left = 348
+      Height = 15
+      Top = 121
+      Width = 7
+      Caption = 'В'
+      ParentColor = False
+    end
     object cbAmplUnit: TComboBox
       AnchorSideLeft.Control = Label28
-      AnchorSideTop.Control = eAmplitude
-      AnchorSideRight.Control = pnConnection
+      AnchorSideTop.Control = pnBaseParams
+      AnchorSideRight.Control = pnBaseParams
       AnchorSideRight.Side = asrBottom
-      Left = 332
+      Left = 342
       Height = 23
-      Top = 119
+      Top = 8
       Width = 60
       Anchors = [akTop, akRight]
+      BorderSpacing.Top = 8
       BorderSpacing.Right = 4
       Enabled = False
       ItemHeight = 15
@@ -1044,19 +1068,16 @@ object MainForm: TMainForm
       TabOrder = 5
       Text = 'В(p-p)'
     end
-    object Label1: TLabel
-      AnchorSideLeft.Control = cbACEnable
-      AnchorSideTop.Control = cbACEnable
-      AnchorSideRight.Control = cbACEnable
-      AnchorSideRight.Side = asrBottom
-      AnchorSideBottom.Control = cbACEnable
-      AnchorSideBottom.Side = asrBottom
-      Left = 6
-      Height = 19
-      Top = 119
-      Width = 81
-      Anchors = [akTop, akLeft, akRight, akBottom]
-      AutoSize = False
+    object Label29: TLabel
+      AnchorSideLeft.Control = cbFuncSelect
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = cbAmplUnit
+      Left = 246
+      Height = 30
+      Top = 8
+      Width = 62
+      BorderSpacing.Left = 16
+      Caption = 'Единицы'#13#10'амплитуды'
       Color = clWhite
       ParentColor = False
       Transparent = False
@@ -1064,16 +1085,19 @@ object MainForm: TMainForm
   end
   object btStatus: TSpeedButton
     AnchorSideLeft.Control = btReset
-    Left = 8
+    AnchorSideTop.Control = btQuery
+    AnchorSideTop.Side = asrBottom
+    Left = 4
     Height = 55
-    Top = 408
+    Top = 180
     Width = 102
+    BorderSpacing.Top = 8
     Caption = 'Статус'
     Enabled = False
     OnClick = btStatusClick
   end
   object MainMenu1: TMainMenu
-    left = 480
+    left = 456
     object miFile: TMenuItem
       Caption = 'Файл'
       object NewReport: TMenuItem
@@ -1122,18 +1146,17 @@ object MainForm: TMainForm
     end
   end
   object OpenDialog: TOpenDialog
-    left = 480
-    top = 56
+    left = 456
+    top = 48
   end
   object SaveDialog: TSaveDialog
     Title = 'Сохранить файл конфигурации как'
-    left = 480
-    top = 112
+    left = 496
+    top = 48
   end
   object ReadingTimer: TTimer
     OnTimer = ReadingTimerTimer
     OnStartTimer = ReadingTimerStartTimer
-    left = 480
-    top = 168
+    left = 496
   end
 end

@@ -73,17 +73,19 @@ begin
       SerPort.RaiseExcept:= false;
       for i:= 0 to mCustomCommand.Lines.Count - 1 do
         Command+= mCustomCommand.Lines[i];
-      case cbTerminator.ItemIndex of
-        0: SerPort.SendString(Command  + CR);
-        1: SerPort.SendString(Command  + LF);
-        2: SerPort.SendString(Command  + CRLF);
-      end;
+      EnterCriticalSection(CommCS);
+        case cbTerminator.ItemIndex of
+          0: SerPort.SendString(Command  + CR);
+          1: SerPort.SendString(Command  + LF);
+          2: SerPort.SendString(Command  + CRLF);
+        end;
+        if cbAwaitResponse.Checked then
+        begin
+          s:= SerPort.Recvstring(eTimeOut.Value);
+          ShowMessage(s);
+        end;
+      LeaveCriticalSection(CommCS);
       Command:= '';
-      if cbAwaitResponse.Checked then
-      begin
-        s:= SerPort.Recvstring(eTimeOut.Value);
-        ShowMessage(s);
-      end;
       SerPort.RaiseExcept:= true;
     end;
 end;
@@ -121,7 +123,7 @@ end;
 
 procedure TCustomCommandForm.FormShow(Sender: TObject);
 begin
-  Label2.Caption:= TSerConnectForm(Form).CurrentDevice^.Manufacturer + '' +
+  Label2.Caption:= TSerConnectForm(Form).CurrentDevice^.Manufacturer + ' ' +
                    TSerConnectForm(Form).CurrentDevice^.Model;
   if Label2.Caption = '' then Label2.Caption:= 'Устройство не опознано';
   GetCommands;

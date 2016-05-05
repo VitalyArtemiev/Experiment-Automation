@@ -1,5 +1,5 @@
 object AboutForm: TAboutForm
-  Left = 971
+  Left = 536
   Height = 210
   Top = 343
   Width = 397

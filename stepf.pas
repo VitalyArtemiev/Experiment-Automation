@@ -10,6 +10,8 @@ uses
 
 type
 
+  eStepMode = (sBoth, sFrequency, sAmplitude);
+
   { TStepForm }
 
   TStepForm = class(TForm)
@@ -29,14 +31,14 @@ type
     Label8: TLabel;
     Elapsed: TLabel;
     ProgressBar: TProgressBar;
-    Timer1: TTimer;
+    Timer: TTimer;
     procedure btCancelClick(Sender: TObject);
     procedure btFinishClick(Sender: TObject);
     procedure btPauseClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormHide(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
+    procedure TimerTimer(Sender: TObject);
   private
     { private declarations }
   public
@@ -47,8 +49,9 @@ type
 var
   Frequency, Amplitude, f, a, StartF, StartA, StopF, StopA, FStep, AStep: double;
   StartTime, ElapsedTime, PauseTime, PauseLength: TDateTime;
-  StepNumber, StepMode: longword;
-  Finished: boolean = false;
+  StepNumber: longword;
+  StepMode: eStepMode;
+  Finished: boolean = true;
   StepForm: TStepForm;
 
 implementation
@@ -76,7 +79,7 @@ begin
   if (Fstep = 0) then
   begin
     StepNumber:= abs(trunc((StopA - StartA) / AStep));
-    StepMode:= 2;
+    StepMode:= sAmplitude;
     ReadingsForm.LogAmpl:= true;
     ReadingsForm.LogFreq:= false;
     MainForm.eTimeStep.MinValue:= 150;
@@ -85,14 +88,14 @@ begin
   if (AStep = 0) then
   begin
     StepNumber:= abs(trunc((StopF - StartF) / FStep));
-    StepMode:= 1;
+    StepMode:= sFrequency;
     ReadingsForm.LogAmpl:= false;
     ReadingsForm.LogFreq:= true;
     MainForm.eTimeStep.MinValue:= 150;
   end
   else
   begin
-    StepMode:= 0;
+    StepMode:= sBoth;
     ReadingsForm.LogAmpl:= true;
     ReadingsForm.LogFreq:= true;
     MainForm.eTimeStep.MinValue:= 300;
@@ -122,17 +125,14 @@ procedure TStepForm.FormShow(Sender: TObject);
 var
   s: string;
 begin
-  ReadingsForm.btStartPauseLog.Enabled:= false;
-  ReadingsForm.btStopLog.Enabled:= false;
-
   CalcSteps;
   Frequency:= StartF;
   Amplitude:= StartA;
 
   case StepMode of
-    0: Label7.Caption:= 'Проход по частоте и амплитуде';
-    1: Label7.Caption:= 'Проход по частоте';
-    2: Label7.Caption:= 'Проход по амплитуде';
+    sBoth: Label7.Caption:= 'Проход по частоте и амплитуде';
+    sFrequency: Label7.Caption:= 'Проход по частоте';
+    sAmplitude: Label7.Caption:= 'Проход по амплитуде';
   end;
 
   writeprogramlog(Label7.Caption);
@@ -142,15 +142,21 @@ begin
   str(Frequency:19:6, s);
   FrequencyReading.Caption:= s;
 
-  MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+  MainForm.AddCommand(gFrequency, false, Frequency, uNone);
   MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
   MainForm.PassCommands;
+
+  if Config.AutoReadingStep then
+  begin
+    ReadingsForm.btStartPauseLog.Enabled:= false;
+    ReadingsForm.btStopLog.Enabled:= false;
+  end;
 
   Finished:= false;
   btCancel.Enabled:= true;
   btPause.Enabled:= true;
   btFinish.Enabled:= false;
-  Timer1.Interval:= MainForm.eTimeStep.Value;
+  Timer.Interval:= MainForm.eTimeStep.Value;
 
   ProgressBar.Max:= StepNumber;
   str(ProgressBar.max, s);
@@ -159,21 +165,20 @@ begin
   ProgressBar.Position:= 0;
   PauseTime:= 0;
 
-  sleep(Params.Delay - Params.TimeStep);
-
   if Config.AutoReadingStep then
   begin
+    sleep(MainForm.MinDelay);
     Params.OnePoint:= MainForm.cbPointPerStep.Checked;
     ReadingsForm.BeginLog;
     ReadingsForm.UpdateTimer.Enabled:= false;
   end;
 
   sleep(Params.TimeStep);
-  Timer1.Enabled:= true;
+  Timer.Enabled:= true;
   StartTime:= Now;
 end;
 
-procedure TStepForm.Timer1Timer(Sender: TObject);
+procedure TStepForm.TimerTimer(Sender: TObject);
 var
   s: string;
 begin
@@ -184,8 +189,9 @@ begin
     btCancel.Enabled:= false;
     btPause.Enabled:= false;
     btFinish.Enabled:= true;
-    Timer1.Enabled:= false;
-    Sleep(Timer1.Interval);
+    Timer.Enabled:= false;
+    btPause.Caption:= 'Пауза';
+    Sleep(Timer.Interval);
     if Config.AutoReadingStep then
     begin
       ReadingsForm.ProcessBuffers;
@@ -232,18 +238,18 @@ begin
       else
       if (FStep < 0) and (Frequency < StopF) then Frequency:= StopF;
 
-      case StepMode of   { TODO 3 -cImprovement : enum }
-      0:
+      case StepMode of
+      sBoth:
         begin
-          MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+          MainForm.AddCommand(gFrequency, false, Frequency, uNone);
           MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
         end;
-      1:
+      sFrequency:
         begin
-          MainForm.AddCommand(gFrequency, false, Frequency, NOUNIT);
+          MainForm.AddCommand(gFrequency, false, Frequency, uNone);
           StopA:= Amplitude;
         end;
-      2:
+      sAmplitude:
         begin
           MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
           StopF:= Frequency;
@@ -259,25 +265,27 @@ end;
 procedure TStepForm.FormHide(Sender: TObject);
 begin
   MainForm.CommandString:= '';
-  Timer1.Enabled:= false;
-  if Config.AutoReadingStep then MainForm.EnableControls(true);
+  Timer.Enabled:= false;
+  if Config.AutoReadingStep then
+    MainForm.EnableControls(true);
   ReadingsForm.btStartPauseLog.Enabled:= true;
   ReadingsForm.btStopLog.Enabled:= true;
 end;
 
 procedure TStepForm.btPauseClick(Sender: TObject);
 begin
-  if Timer1.Enabled then
+  if Timer.Enabled then
   begin
     PauseTime:= Now;
-    Timer1.Enabled:= false;
-    if Config.AutoReadingStep then ReadingsForm.PauseLog;
+    Timer.Enabled:= false;
+    if Config.AutoReadingStep then
+      ReadingsForm.PauseLog;
     btPause.Caption:= 'Продолжить';
   end
   else
   begin
     PauseLength+= Now - PauseTime;
-    Timer1.Enabled:= true;
+    Timer.Enabled:= true;
     if Config.AutoReadingStep then ReadingsForm.ContinueLog;
     btPause.Caption:= 'Пауза';
   end;
@@ -292,8 +300,9 @@ end;
 procedure TStepForm.btCancelClick(Sender: TObject);
 begin
   Finished:= true;
-  Timer1.Enabled:= true;
-  if Config.AutoReadingStep then ReadingsForm.StopLog;
+  Timer.Enabled:= true;
+  if Config.AutoReadingStep then
+    ReadingsForm.StopLog;
 end;
 
 procedure TStepForm.btFinishClick(Sender: TObject);

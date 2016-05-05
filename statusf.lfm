@@ -1,5 +1,5 @@
 object StatusForm: TStatusForm
-  Left = 971
+  Left = 570
   Height = 254
   Top = 237
   Width = 363
@@ -290,12 +290,13 @@ object StatusForm: TStatusForm
       AnchorSideTop.Control = Panel1
       AnchorSideRight.Control = Panel1
       AnchorSideRight.Side = asrBottom
-      Left = 287
+      Left = 282
       Height = 15
       Top = 4
       Width = 53
+      Anchors = [akTop, akRight]
       BorderSpacing.Top = 4
-      BorderSpacing.Right = 4
+      BorderSpacing.Right = 8
       Caption = 'Значение'
       ParentColor = False
     end

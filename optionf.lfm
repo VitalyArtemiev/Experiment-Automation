@@ -1,5 +1,5 @@
 object OptionForm: TOptionForm
-  Left = 971
+  Left = 583
   Height = 350
   Top = 297
   Width = 350
@@ -50,9 +50,9 @@ object OptionForm: TOptionForm
     Height = 312
     Top = 0
     Width = 350
-    ActivePage = ConnectionTab
+    ActivePage = GeneralTab
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 2
     object GeneralTab: TTabSheet
       Caption = 'Общие настройки'
@@ -167,13 +167,13 @@ object OptionForm: TOptionForm
         object Label7: TLabel
           AnchorSideTop.Control = eReadingTime
           AnchorSideRight.Control = eReadingTime
-          Left = 196
+          Left = 184
           Height = 15
           Top = 12
-          Width = 77
+          Width = 89
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 8
-          Caption = 'Длительность'
+          Caption = 'Длительность, с'
           ParentColor = False
         end
         object eReadingTime: TSpinEdit

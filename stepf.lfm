@@ -1,5 +1,5 @@
 object StepForm: TStepForm
-  Left = 971
+  Left = 629
   Height = 248
   Top = 338
   Width = 304
@@ -243,9 +243,9 @@ object StepForm: TStepForm
     ParentColor = False
     Transparent = False
   end
-  object Timer1: TTimer
+  object Timer: TTimer
     Enabled = False
-    OnTimer = Timer1Timer
+    OnTimer = TimerTimer
     left = 312
     top = 16
   end

@@ -21,19 +21,28 @@ type
   { TReadingsForm }
 
   tReadingsForm = class(TSerConnectForm)
+    btAutoPhase: TButton;
+    btAutoRange: TButton;
+    btAutoReserve1: TButton;
+    btAutoReserve2: TButton;
+    btAutoSensitivity: TButton;
     btStartPauseLog: TButton;
     btStopLog: TButton;
     btClear: TButton;
+    btOffset: TButton;
 
     cbChart1Show: TComboBox;
     cbChart2Show: TComboBox;
-    cbTimeConstant: TComboBox;
-    cbSensitivity: TComboBox;
+    cbInputRange: TComboBox;
+    cbReserve1: TComboBox;
+    cbReserve2: TComboBox;
     cbSampleRate: TComboBox;
+    cbSensitivity: TComboBox;
     cbShowPoints: TCheckBox;
 
     cbCh1: TComboBox;
     cbCh2: TComboBox;
+    cbTimeConstant: TComboBox;
     cbXAxis: TComboBox;
     cbReadingsMode: TComboBox;
     cgTransfer: TCheckGroup;
@@ -44,9 +53,9 @@ type
     ChartToolset1PanDragTool1: TPanDragTool;
     ChartToolset1ZoomDragTool1: TZoomDragTool;
     ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
-    cbReserve: TComboBox;
 
     eAxisLimit: TFloatSpinEdit;
+    eDelay: TSpinEdit;
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
@@ -55,7 +64,10 @@ type
     Label14: TLabel;
     Label15: TLabel;
     Label16: TLabel;
+    Label17: TLabel;
+    Label18: TLabel;
     Label2: TLabel;
+    Label29: TLabel;
 
     Label4: TLabel;
     Label5: TLabel;
@@ -79,11 +91,17 @@ type
     pnGraphControl: TPanel;
     pnConnection: TPanel;
     sbParamScroll: TScrollBox;
+    sbSettingScroll: TScrollBox;
 
     Source1: TUserDefinedChartSource;
     Source2: TUserDefinedChartSource;
     UpdateTimer: TTimer;
 
+    procedure btAutoPhaseClick(Sender: TObject);
+    procedure btAutoRangeClick(Sender: TObject);
+    procedure btAutoReserve1Click(Sender: TObject);
+    procedure btAutoReserve2Click(Sender: TObject);
+    procedure btAutoSensitivityClick(Sender: TObject);
     procedure btClearClick(Sender: TObject);
     procedure btnConnectClick(Sender: TObject); override;
     procedure btApplyClick(Sender: TObject);
@@ -94,6 +112,7 @@ type
     procedure cbChart1ShowChange(Sender: TObject);
     procedure cbChart2ShowChange(Sender: TObject);
     procedure cbReadingsModeChange(Sender: TObject);
+    procedure ParamsChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
     procedure cbUseGenFreqChange(Sender: TObject);
     procedure cbXAxisChange(Sender: TObject);
@@ -116,14 +135,13 @@ type
 
   private
     RNCS, TimeCS, OPSCS, RTDCS: TRTLCriticalSection;
-    FOPS: boolean;
     FLogState: eLogState;
-    DrawnBuffers: longword;
+    DrawnBuffers: longword;//???
     t, SampleRate: double;
     ReadingMode: eReadMode;
     MaxSimultPars, TotalPars,
     FirstIndex, ReferenceIndex, CH1Index, CH2Index: shortint;
-    PointsInBuffer: longword;
+    PointsInBuffer, MinDelay: longword;
 
     ReadPars: array of boolean;
     ProcessedPoints: longword;
@@ -132,23 +150,19 @@ type
     CoordinateSources: array of TAxisSource;
     srcTime, srcFreq, srcAmpl, srcCH1, srcCH2: TAxisSource;
 
-    function GetOPS: boolean;
     procedure SetLogState(AValue: eLogState);
-    procedure SetOPS(AValue: boolean);
 
     function GetTime: TDateTime;
   public
     { public declarations }
     ParToRead: array of shortint;
     ThreadList: TThreadList;
-    LogTime, LogFreq, LogAmpl, UseGenFreq: boolean;
-
+    LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep: boolean;
     TimeStep: double;
 
     CurrLogFileName: string;
     ReadPoints: longint;
     property LogState: eLogState read FLogState write SetLogState;
-    property OnePointPerStep: boolean read GetOPS write SetOPS;
     property ElapsedTime: TDateTime read GetTime;
 
     procedure EnableControls(Enable: boolean); override;
@@ -170,7 +184,7 @@ var
 
 implementation
 
-uses Dateutils, math, stepf, optionf, DeviceF;
+uses Dateutils, StrUtils, math, stepf, optionf, DeviceF;
 
 procedure tReadingsForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -304,21 +318,31 @@ end;
 
 procedure tReadingsForm.EnableControls(Enable: boolean);    //+++
 begin
-  btApply.Enabled:= Enable;
-  btStartPauseLog.Enabled:= Enable;
-  btStopLog.Enabled:= Enable;
-  btCustomCommand.Enabled:= Enable;
-  btReset.Enabled:= Enable;
-  btStatus.Enabled:= Enable;
-  btQuery.Enabled:= Enable;
-  cbReadingsMode.Enabled:= Enable;
-  cbUseGenFreq.Enabled:= Enable;
-  cbSampleRate.Enabled:= Enable;
-  cbTimeConstant.Enabled:= Enable;
-  cbSensitivity.Enabled:= Enable;
-  cbUseGenFreq.Enabled:= Enable;
-  cbCh1.Enabled:= Enable;
-  cbCh2.Enabled:= Enable;
+  btOffset.Enabled:=          Enable;
+  btApply.Enabled:=           Enable;
+  btStartPauseLog.Enabled:=   Enable;
+  btStopLog.Enabled:=         Enable;
+  btCustomCommand.Enabled:=   Enable;
+  btReset.Enabled:=           Enable;
+  btStatus.Enabled:=          Enable;
+  btQuery.Enabled:=           Enable;
+  cbReadingsMode.Enabled:=    Enable;
+  cbUseGenFreq.Enabled:=      Enable;
+  cbSampleRate.Enabled:=      Enable;
+  cbTimeConstant.Enabled:=    Enable;
+  cbSensitivity.Enabled:=     Enable;
+  cbReserve1.Enabled:=        Enable;
+  cbReserve2.Enabled:=        Enable;
+  cbInputRange.Enabled:=      Enable;
+  btAutoPhase.Enabled:=       Enable;
+  btAutoSensitivity.Enabled:= Enable;
+  btAutoReserve1.Enabled:=    Enable;
+  btAutoReserve2.Enabled:=    Enable;
+  btAutoRange.Enabled:=       Enable;
+  cbUseGenFreq.Enabled:=      Enable;
+  cbCh1.Enabled:=             Enable;
+  cbCh2.Enabled:=             Enable;
+  eDelay.Enabled:=            Enable;
 end;
 
 procedure tReadingsForm.UpdateTimerTimer(Sender: TObject);
@@ -331,55 +355,50 @@ begin
   FLogState:= AValue;
   if FLogState = lActive then
   begin
-    cbCh1.Enabled:= false;
-    cbCh2.Enabled:= false;
-    cbRatio1.Enabled:= false;
-    cbRatio2.Enabled:= false;
-    cbReadingsMode.Enabled:= false;
-    cbSampleRate.Enabled:= false;
-    cbTimeConstant.Enabled:= false;
-    cbSensitivity.Enabled:= false;
-    cgTransfer.Enabled:= false;
-    cbUseGenFreq.Enabled:= false;
-    seRecvTimeout.Enabled:= false;
-    btApply.Enabled:= false;
-    btClear.Enabled:= false;
+    cbCh1.Enabled:=             false;
+    cbCh2.Enabled:=             false;
+    cbRatio1.Enabled:=          false;
+    cbRatio2.Enabled:=          false;
+    cbReadingsMode.Enabled:=    false;
+    cbSampleRate.Enabled:=      false;
+    cbTimeConstant.Enabled:=    false;
+    cbSensitivity.Enabled:=     false;
+    cbReserve1.Enabled:=        false;
+    cbReserve2.Enabled:=        false;
+    cbInputRange.Enabled:=      false;
+    btAutoPhase.Enabled:=       false;
+    btAutoSensitivity.Enabled:= false;
+    btAutoReserve1.Enabled:=    false;
+    btAutoReserve2.Enabled:=    false;
+    btAutoRange.Enabled:=       false;
+    cgTransfer.Enabled:=        false;
+    cbUseGenFreq.Enabled:=      false;
+    seRecvTimeout.Enabled:=     false;
+    btClear.Enabled:=           false;
   end
   else
   begin
-    cbCh1.Enabled:= true;
-    cbCh2.Enabled:= true;
-    cbRatio1.Enabled:= true;
-    cbRatio2.Enabled:= true;
-    cbReadingsMode.Enabled:= true;
-    cbSampleRate.Enabled:= true;
-    cbTimeConstant.Enabled:= true;
-    cbSensitivity.Enabled:= true;
-    cgTransfer.Enabled:= true;
-    cbUseGenFreq.Enabled:= true;
-    seRecvTimeout.Enabled:= true;
-    btApply.Enabled:= true;
-    if FLogState = lInActive then btClear.Enabled:= true;
-  end;
-end;
-
-function tReadingsForm.GetOPS: boolean;
-begin
-  EnterCriticalSection(OPSCS);
-  try
-    Result:= FOPS;
-  finally
-    LeaveCriticalSection(OPSCS);
-  end;
-end;
-
-procedure tReadingsForm.SetOPS(AValue: boolean);
-begin
-  EnterCriticalSection(OPSCS);
-  try
-    FOPS:= AValue;
-  finally
-    LeaveCriticalSection(OPSCS);
+    cbCh1.Enabled:=             true;
+    cbCh2.Enabled:=             true;
+    cbRatio1.Enabled:=          true;
+    cbRatio2.Enabled:=          true;
+    cbReadingsMode.Enabled:=    true;
+    cbSampleRate.Enabled:=      true;
+    cbTimeConstant.Enabled:=    true;
+    cbSensitivity.Enabled:=     true;
+    cbReserve1.Enabled:=        true;
+    cbReserve2.Enabled:=        true;
+    cbInputRange.Enabled:=      true;
+    btAutoPhase.Enabled:=       true;
+    btAutoSensitivity.Enabled:= true;
+    btAutoReserve1.Enabled:=    true;
+    btAutoReserve2.Enabled:=    true;
+    btAutoRange.Enabled:=       true;
+    cgTransfer.Enabled:=        true;
+    cbUseGenFreq.Enabled:=      true;
+    seRecvTimeout.Enabled:=     true;
+    if FLogState = lInActive then
+      btClear.Enabled:= true;
   end;
 end;
 
@@ -401,6 +420,12 @@ begin
   btStartPauseLog.Caption:= 'Приостановить';
   WriteProgramLog('Data collection start');
   btClearClick(Self);
+
+  if Finished and not ReadingsForm.ParamsApplied then
+  begin
+    ReadingsForm.btApplyClick(Self);
+    sleep(ReadingsForm.eDelay.Value);
+  end;
 
   ReadingMode:= eReadMode(cbReadingsMode.ItemIndex);
 
@@ -492,7 +517,6 @@ begin
     cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
   end;
 
-  btApplyClick(Self);
   t:= 0;
   ReadPoints:= 0;
   LogState:= lActive;
@@ -502,6 +526,7 @@ begin
     TimeStep:= 1/SampleRate
   else
     TimeStep:= 1;
+  UpdateTimer.Interval:= eUpdateInterval.Value;
   UpdateTimer.Enabled:= true;
   PauseLength:= 0;
   StartTime:= Now;
@@ -536,11 +561,16 @@ begin
 
   ReadingsThread.Terminate;
   PauseTime:= Now;
+  if assigned(ReadingsThread) then
+    ReadingsThread.WaitFor;
+  ProcessBuffers;
+  btApply.Enabled:= true;
 end;
 
 procedure tReadingsForm.ContinueLog;
 begin
   btStartPauseLog.Caption:= 'Приостановить';
+  btApply.Enabled:= false;
   WriteProgramLog('Data collection resume');
 
   LogState:= lActive;
@@ -555,6 +585,17 @@ begin
     LeaveCriticalSection(CommCS);
   end;
 
+   case ReadingMode of
+    rBuffer:
+      ReadingsThread:= tBufferThread.Create(PointsInBuffer);
+    rSimultaneous:
+    begin
+      if OnePointPerStep then
+        ReadingsThread:= nil //
+      else
+        ReadingsThread:= tSimultaneousThread.Create;
+    end;
+  end;
   PauseLength+= Now - PauseTime;
 end;
 
@@ -640,7 +681,6 @@ begin
 
   try
     ExperimentLog:= TFileStream.Create(FileName, fmCreate);
-    //showmessage(experimentlog.FileName);
     s1:= '';
     if LogTime then s1+= cbXAxis.Items.Strings[0] + HT;
     if LogFreq and UseGenFreq then s1+= 'Частота (генератор)' + HT;
@@ -683,7 +723,7 @@ var
   s: string;
   Sources: array of tAxisSource;
 begin
-  if CurrLogFileName = '' then exit(-1);
+  if IsEmptyStr(CurrLogFileName, [' ']) then exit(-1);
 
   if LogTime then
   begin
@@ -775,7 +815,7 @@ begin
   //sleep(60 + random(30));
   //s:= strf(random)+',' +strf(random)+',' + strf(random);
   //writeprogramlog(s);
-  if s = '' then
+  if IsEmptyStr(s, [' ']) then
   begin
     Result:= nil;
     exit;
@@ -939,7 +979,11 @@ end;
 procedure tReadingsForm.btStartPauseLogClick(Sender: TObject);
 begin
   case LogState of
-    lInActive: BeginLog;
+    lInActive:
+    begin
+      btApply.Enabled:= false;
+      BeginLog;
+    end;
     lActive:   PauseLog;
     lPaused:   ContinueLog;
   end;
@@ -991,6 +1035,9 @@ begin
   cbChart2Show.Items.Clear;
   cbSensitivity.Items.Clear;
   cbTimeConstant.Items.Clear;
+  cbReserve1.Items.Clear;
+  cbReserve2.Items.Clear;
+  cbInputRange.Items.Clear;
 
   with DeviceForm.sgDetCommands do
   begin
@@ -1003,6 +1050,12 @@ begin
     cbRatio2.Items.AddText(Cells[DeviceIndex, integer(hRatio2Options)]);
     cbSensitivity.Items.AddText(Cells[DeviceIndex, integer(hSensitivityOptions)]);
     cbTimeConstant.Items.AddText(Cells[DeviceIndex, integer(hTimeConstOptions)]);
+    cbReserve1.Items.AddText(Cells[DeviceIndex, integer(hCloseReserveOptions)]);
+    cbReserve2.Items.AddText(Cells[DeviceIndex, integer(hWideReserveOptions)]);
+    cbInputRange.Items.AddText(Cells[DeviceIndex, integer(hRangeOptions)]);
+
+    MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
+    eDelay.MinValue:= MinDelay;
 
     TotalPars:= cgTransfer.Items.Count;
     setlength(ReadPars, TotalPars);
@@ -1032,12 +1085,16 @@ begin
   begin
     cbSensitivity.ItemIndex:= Sensitivity;
     cbTimeConstant.ItemIndex:= TimeConstant;
+    cbReserve1.ItemIndex:= CloseReserve;
+    cbReserve2.ItemIndex:= WideReserve;
+    cbInputRange.ItemIndex:= InputRange;
     cbCh1.ItemIndex:= Display1;
     cbCh2.ItemIndex:= Display2;
     cbRatio1.ItemIndex:= Ratio1;
     cbRatio2.ItemIndex:= Ratio2;
     cbChart1Show.ItemIndex:= Show1;
     cbChart2Show.ItemIndex:= Show2;
+    eDelay.Value:= Delay;
 
     for i:= 0 to cgTransfer.Items.Count - 1 do
       cgTransfer.Checked[i]:= TransferPars[i];
@@ -1056,6 +1113,45 @@ begin
     Label14.Show;
     cbRatio2.Show;
     Label15.Show;
+  end;
+
+  if cbReserve1.ItemIndex < 0 then
+  begin
+    cbReserve1.Hide;
+    btAutoReserve1.Hide;
+    Label16.Hide;
+  end
+  else
+  begin
+    cbReserve1.Show;
+    btAutoReserve1.Show;
+    Label16.Show;
+  end;
+
+  if cbReserve2.ItemIndex < 0 then
+  begin
+    cbReserve2.Hide;
+    btAutoReserve2.Hide;
+    Label17.Hide;
+  end
+  else
+  begin
+    cbReserve2.Show;
+    btAutoReserve2.Show;
+    Label17.Show;
+  end;
+
+  if cbInputRange.ItemIndex < 0 then
+  begin
+    cbInputRange.Hide;
+    btAutoRange.Hide;
+    Label18.Hide;
+  end
+  else
+  begin
+    cbInputRange.Show;
+    btAutoRange.Show;
+    Label18.Show;
   end;
 
   c:= 0;
@@ -1094,6 +1190,55 @@ begin
   StatusBar.Panels[spStatus].Text:= '';
 end;
 
+procedure tReadingsForm.btAutoPhaseClick(Sender: TObject);
+begin
+  AddCommand(dAutoPhase, false);
+  //btQueryClick(Self);
+end;
+
+procedure tReadingsForm.btAutoSensitivityClick(Sender: TObject);
+var
+  SerPollSB: byte;
+  s: string;
+  st, l: tDateTime;
+begin
+  AddCommand(dAutoSensitivity, false);
+
+  l:= EncodeTime(0, 0, 15, 0);
+  st:= Now;
+  repeat
+    AddCommand(cSerialPoll, true);
+    PassCommands;
+    s:= Recvstring(2000);
+    val(s, SerPollSB);
+    if Now - st > l then
+    begin
+      ShowMessage('Устройство не ответило');
+      break;
+    end;
+  until ((SerPollSB div %100000) mod %10 = %1);
+
+  btQueryClick(Self);
+end;
+
+procedure tReadingsForm.btAutoRangeClick(Sender: TObject);
+begin
+  AddCommand(dAutoRange, false);
+  btQueryClick(Self);
+end;
+
+procedure tReadingsForm.btAutoReserve1Click(Sender: TObject);
+begin
+  AddCommand(dAutoCloseReserve, false);
+  btQueryClick(Self);
+end;
+
+procedure tReadingsForm.btAutoReserve2Click(Sender: TObject);
+begin
+  AddCommand(dAutoWideReserve, false);
+  btQueryClick(Self);
+end;
+
 procedure tReadingsForm.btApplyClick(Sender: TObject);
 begin
   {if cbSampleRate.ItemIndex <> cbSampleRate.Items.Count - 1 then
@@ -1113,6 +1258,9 @@ begin
     SampleRate:= cbSampleRate.ItemIndex;
     TimeConstant:= cbTimeConstant.ItemIndex;
     Sensitivity:= cbSensitivity.ItemIndex;
+    CloseReserve:= cbReserve1.ItemIndex;
+    WideReserve:= cbReserve2.ItemIndex;
+    InputRange:= cbInputRange.ItemIndex;
 
     Display1:= cbCh1.ItemIndex;
     Display2:= cbCh2.ItemIndex;
@@ -1121,34 +1269,41 @@ begin
     Show1:= cbChart1Show.ItemIndex;
     Show2:= cbChart2Show.ItemIndex;
 
+    Delay:= eDelay.Value;
     UpdateInterval:= eUpdateInterval.Value;
     AxisLimit:= eAxisLimit.Value;
     XAxis:= cbXAxis.ItemIndex;
     ReadingsMode:= cbReadingsMode.ItemIndex;
+
+
+    CurrentDevice^.Timeout:= seRecvTimeOut.Value; { TODO : sort out timeouts }
+
+    EnterCriticalSection(CommCS);
+    if cbRatio1.ItemIndex >= 0 then
+    begin
+      AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, Display1, Ratio1));
+      AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, Display2, Ratio2));
+    end
+    else
+    begin
+      AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, Display1));
+      AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, Display2));
+    end;
+
+      AddCommand(dSampleRate, false, SampleRate);
+      AddCommand(dSensitivity, false, Sensitivity);
+      AddCommand(dTimeConstant, false, TimeConstant);
+      AddCommand(dReferenceSource, false, 0);   //external ref freq
+      if cbReserve1.Visible then
+        AddCommand(dCloseReserve, false, CloseReserve);
+      if cbReserve2.Visible then
+        AddCommand(dWideReserve, false, WideReserve);
+      if cbInputRange.Visible then
+        AddCommand(dInputRange, false, InputRange);
+      PassCommands;
+    LeaveCriticalSection(CommCS);
   end;
-
-  CurrentDevice^.Timeout:= seRecvTimeOut.Value;
-
-  UpdateTimer.Interval:= eUpdateInterval.Value;
-
-  EnterCriticalSection(CommCS);
-  if cbRatio1.ItemIndex >= 0 then
-  begin
-    AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, cbCH1.ItemIndex, cbRatio1.ItemIndex));
-    AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, cbCH2.ItemIndex, cbRatio2.ItemIndex));
-  end
-  else
-  begin
-    AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, cbCH1.ItemIndex));
-    AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, cbCH2.ItemIndex));
-  end;
-
-    AddCommand(dSampleRate, false, cbSampleRate.ItemIndex);
-    AddCommand(dSensitivity, false, cbSensitivity.ItemIndex);
-    AddCommand(dTimeConstant, false, cbTimeConstant.ItemIndex);
-    AddCommand(dReferenceSource, false, 0);   //external ref freq
-    PassCommands;
-  LeaveCriticalSection(CommCS);
+  ParamsApplied:= true;
 end;
 
 procedure tReadingsForm.btQueryClick(Sender: TObject);
@@ -1162,6 +1317,12 @@ begin
     AddCommand(dSampleRate, true);
     AddCommand(dSensitivity, true);
     AddCommand(dTimeConstant, true);
+    if cbReserve1.Visible then
+      AddCommand(dCloseReserve, true);
+    if cbReserve2.Visible then
+      AddCommand(dWideReserve, true);
+    if cbInputRange.Visible then
+      AddCommand(dInputRange, true);
     PassCommands;
 
     s1:= RecvString;
@@ -1178,6 +1339,27 @@ begin
     s3:= RecvString;
     val(s3, i, e);
     if e = 0 then cbTimeConstant.ItemIndex:= i;
+
+    if cbReserve1.Visible then
+    begin
+      s3:= RecvString;
+      val(s3, i, e);
+      if e = 0 then cbReserve1.ItemIndex:= i;
+    end;
+
+    if cbReserve2.Visible then
+    begin
+      s3:= RecvString;
+      val(s3, i, e);
+      if e = 0 then cbReserve2.ItemIndex:= i;
+    end;
+
+    if cbInputRange.Visible then
+    begin
+      s3:= RecvString;
+      val(s3, i, e);
+      if e = 0 then cbInputRange.ItemIndex:= i;
+    end;
   LeaveCriticalSection(CommCS);
 
   if cbRatio1.ItemIndex >= 0 then
@@ -1250,6 +1432,11 @@ begin
     cgTransfer.Hide;
     sbParamScroll.Hide;
   end;
+end;
+
+procedure tReadingsForm.ParamsChange(Sender: TObject);
+begin
+  ParamsApplied:= false;
 end;
 
 procedure tReadingsForm.cbShowPointsChange(Sender: TObject);
