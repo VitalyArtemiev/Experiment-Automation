@@ -5,7 +5,7 @@ unit StepF;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs,
+  Classes, SysUtils, FileUtil, DividerBevel, Forms, Controls, Graphics, Dialogs,
   StdCtrls, ComCtrls, ExtCtrls;
 
 type
@@ -18,6 +18,7 @@ type
     btCancel: TButton;
     btPause: TButton;
     btFinish: TButton;
+    DividerBevel1: TDividerBevel;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;

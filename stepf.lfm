@@ -243,6 +243,21 @@ object StepForm: TStepForm
     ParentColor = False
     Transparent = False
   end
+  object DividerBevel1: TDividerBevel
+    AnchorSideLeft.Control = Label7
+    AnchorSideTop.Control = Label7
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = btFinish
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 15
+    Top = 31
+    Width = 289
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 4
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
   object Timer: TTimer
     Enabled = False
     OnTimer = TimerTimer

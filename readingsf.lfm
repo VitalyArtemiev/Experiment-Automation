@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 617
+  Left = 327
   Height = 600
-  Top = 155
+  Top = 198
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
@@ -974,6 +974,7 @@ object ReadingsForm: TReadingsForm
     BorderSpacing.Top = 8
     Caption = 'Смещение'
     Enabled = False
+    OnClick = btOffsetClick
     TabOrder = 9
   end
   object sbSettingScroll: TScrollBox

@@ -1,0 +1,142 @@
+object OffsetForm: TOffsetForm
+  Left = 487
+  Height = 149
+  Top = 452
+  Width = 311
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsToolWindow
+  Caption = 'Смещение'
+  ClientHeight = 149
+  ClientWidth = 311
+  Position = poOwnerFormCenter
+  LCLVersion = '1.6.0.4'
+  object eOffset: TFloatSpinEdit
+    AnchorSideTop.Control = cbParams
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = btAutoOffset
+    Left = 99
+    Height = 23
+    Top = 51
+    Width = 100
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 24
+    BorderSpacing.Right = 8
+    Increment = 1
+    MaxValue = 999
+    MinValue = -999
+    TabOrder = 0
+    Value = 0
+  end
+  object btAutoOffset: TButton
+    AnchorSideTop.Control = eOffset
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 207
+    Height = 23
+    Top = 51
+    Width = 100
+    Anchors = [akTop, akRight]
+    BorderSpacing.Right = 4
+    Caption = 'Авт. смещение'
+    OnClick = btAutoOffsetClick
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = eOffset
+    AnchorSideTop.Side = asrCenter
+    Left = 4
+    Height = 15
+    Top = 55
+    Width = 76
+    BorderSpacing.Left = 4
+    Caption = 'Смещение, %'
+    ParentColor = False
+  end
+  object Label2: TLabel
+    AnchorSideLeft.Control = Label1
+    AnchorSideTop.Control = cbExpand
+    AnchorSideTop.Side = asrCenter
+    Left = 4
+    Height = 15
+    Top = 86
+    Width = 65
+    Caption = 'Множитель'
+    ParentColor = False
+  end
+  object cbExpand: TComboBox
+    AnchorSideLeft.Control = eOffset
+    AnchorSideTop.Control = eOffset
+    AnchorSideTop.Side = asrBottom
+    Left = 99
+    Height = 23
+    Top = 82
+    Width = 100
+    BorderSpacing.Top = 8
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'Откл.'
+      'x10'
+      'x100'
+    )
+    TabOrder = 2
+    Text = 'Откл.'
+  end
+  object btApply: TButton
+    AnchorSideLeft.Control = eOffset
+    AnchorSideTop.Control = cbExpand
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Side = asrBottom
+    Left = 99
+    Height = 23
+    Top = 121
+    Width = 100
+    BorderSpacing.Top = 16
+    Caption = 'Применить'
+    OnClick = btApplyClick
+    TabOrder = 3
+  end
+  object cbParams: TComboBox
+    AnchorSideLeft.Control = eOffset
+    AnchorSideTop.Control = Owner
+    Left = 99
+    Height = 23
+    Top = 4
+    Width = 100
+    BorderSpacing.Top = 4
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'X'
+      'Y'
+      'R'
+    )
+    OnChange = cbParamsChange
+    TabOrder = 4
+    Text = 'X'
+  end
+  object btQuery: TButton
+    AnchorSideLeft.Control = btAutoOffset
+    AnchorSideTop.Control = cbParams
+    Left = 207
+    Height = 23
+    Top = 4
+    Width = 100
+    Caption = 'Запрос'
+    OnClick = btQueryClick
+    TabOrder = 5
+  end
+  object DividerBevel1: TDividerBevel
+    AnchorSideLeft.Control = Label1
+    AnchorSideTop.Control = cbParams
+    AnchorSideTop.Side = asrBottom
+    Left = 4
+    Height = 15
+    Top = 31
+    Width = 303
+    BorderSpacing.Top = 4
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+end

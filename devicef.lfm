@@ -1,13 +1,13 @@
 object DeviceForm: TDeviceForm
-  Left = 325
-  Height = 750
-  Top = 56
+  Left = 606
+  Height = 792
+  Top = 148
   Width = 651
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
-  ClientHeight = 750
+  ClientHeight = 792
   ClientWidth = 651
-  Constraints.MinHeight = 460
+  Constraints.MinHeight = 535
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -17,25 +17,25 @@ object DeviceForm: TDeviceForm
   object pcDevice: TPageControl
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
-    AnchorSideRight.Control = Label1
+    AnchorSideRight.Control = stInstruction
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 742
+    Height = 784
     Top = 4
     Width = 377
     ActivePage = tsDetectors
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
-    BorderSpacing.Right = 8
+    BorderSpacing.Right = 12
     BorderSpacing.Bottom = 4
     TabIndex = 1
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
       Caption = 'Генераторы'
-      ClientHeight = 714
+      ClientHeight = 756
       ClientWidth = 369
       object sgGenCommands: TStringGrid
         AnchorSideLeft.Control = tsGenerators
@@ -45,7 +45,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsGenerators
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 710
+        Height = 752
         Top = 2
         Width = 367
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -153,94 +153,94 @@ object DeviceForm: TDeviceForm
           23
           'Мин.-макс. амплитуды соотв. импедансу, В(p-p)'
           0
-          31
+          33
           'Команды:'
           0
-          32
+          34
           'Сброс'
           0
-          33
+          35
           'Перезагрузка'
           0
-          34
+          36
           'Идентификация'
           0
-          35
+          37
           'Загрузить профиль'
           0
-          36
+          38
           'Сохранить профиль'
           0
-          37
+          39
           'Проверка'
           0
-          38
+          40
           'Калибровка'
           0
-          39
+          41
           'Очистить статус'
           0
-          40
+          42
           'Байт опроса STB'
           0
-          41
+          43
           'Байт слежения за STB'
           0
-          42
+          44
           'Байт стд. событий ESR'
           0
-          43
+          45
           'Байт слежения за ESR'
           0
-          44
+          46
           'Сброс статуса при включении PSC'
           0
-          45
+          47
           'Триггер'
           0
-          46
+          48
           'Байт DDS'
           0
-          47
+          49
           'Байт слежения за DDS'
           0
-          48
+          50
           'Сопротивление'
           0
-          49
+          51
           'Функция'
           0
-          50
+          52
           'Амплитуда'
           0
-          51
+          53
           'Смещение'
           0
-          52
+          54
           'Постоянная частота'
           0
-          53
+          55
           'Источник сканирования'
           0
-          54
+          56
           'Сканирование вкл/выкл'
           0
-          55
+          57
           'Частота сканирования'
           0
-          56
+          58
           'Начальная частота'
           0
-          57
+          59
           'Конечная частота'
           0
-          58
+          60
           'Тип сканирования'
           0
-          59
+          61
           'Направление сканирования'
           0
-          60
+          62
           'Функция модуляции'
           1
           0
@@ -303,85 +303,85 @@ object DeviceForm: TDeviceForm
           23
           '0.01-10'
           1
-          32
+          34
           '*RST'
           1
-          34
+          36
           '*IDN'
           1
-          35
+          37
           '*RCL'
           1
-          36
+          38
           '*SAV'
           1
-          37
+          39
           '*TST'
           1
-          38
+          40
           '*CAL'
           1
-          39
+          41
           '*CLS'
           1
-          40
+          42
           '*STB'
           1
-          41
+          43
           '*SRE'
           1
-          42
+          44
           '*ESR'
           1
-          43
+          45
           '*ESE'
           1
-          44
+          46
           '*PSC'
           1
-          45
+          47
           '*TRG'
           1
-          46
+          48
           'STAT'
           1
-          47
+          49
           'DENA'
           1
-          49
+          51
           'FUNC'
           1
-          50
+          52
           'AMPL'
           1
-          51
+          53
           'OFFS'
           1
-          52
+          54
           'FREQ'
           1
-          53
-          'TSRC'
-          1
-          54
-          'MENA'
-          1
           55
-          'TRAT'
+          'TSRC'
           1
           56
-          'STFR'
+          'MENA'
           1
           57
-          'SPFR'
+          'TRAT'
           1
           58
-          'MTYP'
+          'STFR'
           1
           59
-          'TSRC'
+          'SPFR'
           1
           60
+          'MTYP'
+          1
+          61
+          'TSRC'
+          1
+          62
           'MDWF'
           2
           0
@@ -444,89 +444,89 @@ object DeviceForm: TDeviceForm
           23
           '0.05-10'#13#10'0.1-20'
           2
-          32
+          34
           '*RST'
           2
-          34
+          36
           '*IDN'
           2
-          35
+          37
           '*RCL'
           2
-          36
+          38
           '*SAV'
           2
-          37
+          39
           '*TST'
           2
-          39
+          41
           '*CLS'
           2
-          40
+          42
           '*STB'
           2
-          41
+          43
           '*SRE'
           2
-          42
+          44
           '*ESR'
           2
-          43
+          45
           '*ESE'
           2
-          44
+          46
           '*PSC'
           2
-          45
+          47
           '*TRG'
           2
-          46
+          48
           'STAT'
           2
-          47
+          49
           'DENA'
           2
-          48
+          50
           'TERM'
           2
-          49
+          51
           'FUNC'
           2
-          50
+          52
           'AMPL'
           2
-          51
+          53
           'OFFS'
           2
-          52
+          54
           'FREQ'
           2
-          53
+          55
           'TSRC'
           2
-          54
+          56
           'SWEN'
           2
-          55
+          57
           'SRAT'
           2
-          56
+          58
           'STFR'
           2
-          57
+          59
           'SPFR'
           2
-          58
+          60
           'STYP'
           2
-          59
+          61
           'SDIR'
         )
       end
     end
     object tsDetectors: TTabSheet
       Caption = 'Детекторы'
-      ClientHeight = 714
+      ClientHeight = 756
       ClientWidth = 369
       object sgDetCommands: TStringGrid
         AnchorSideLeft.Control = tsDetectors
@@ -536,7 +536,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsDetectors
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 710
+        Height = 752
         Top = 2
         Width = 367
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -574,7 +574,7 @@ object DeviceForm: TDeviceForm
           70
         )
         Cells = (
-          244
+          255
           0
           0
           'Модель'
@@ -670,123 +670,132 @@ object DeviceForm: TDeviceForm
           'Опции вх. диапазона'
           0
           31
-          'Команды:'
-          0
-          32
-          'Сброс'
+          'Опции смещения'
           0
           33
-          'Перезагрузка'
+          'Команды:'
           0
           34
-          'Идентификация'
+          'Сброс'
           0
           35
-          'Загрузить профиль'
+          'Перезагрузка'
           0
           36
-          'Сохранить профиль'
+          'Идентификация'
           0
           37
-          'Проверка'
+          'Загрузить профиль'
           0
           38
-          'Калибровка'
+          'Сохранить профиль'
           0
           39
-          'Очистить статус'
+          'Проверка'
           0
           40
-          'Байт опроса STB'
+          'Калибровка'
           0
           41
-          'Байт слежения за STB'
+          'Очистить статус'
           0
           42
-          'Байт стд. событий ESR'
+          'Байт опроса STB'
           0
           43
-          'Байт слежения за ESR'
+          'Байт слежения за STB'
           0
           44
-          'Сброс статуса при включении PSC'
+          'Байт стд. событий ESR'
           0
           45
-          'Триггер'
+          'Байт слежения за ESR'
           0
           46
-          'Байт неполадок ERRS'
+          'Сброс статуса при включении PSC'
           0
           47
-          'Байт слежения за ERRS'
+          'Триггер'
           0
           48
-          'Байт состояния детектора LIAS'
+          'Байт неполадок ERRS'
           0
           49
-          'Байт слежения за LIAS'
+          'Байт слежения за ERRS'
           0
           50
-          'Входная амплитуда'
+          'Байт состояния детектора LIAS'
           0
           51
-          'Чувствительность'
+          'Байт слежения за LIAS'
           0
           52
-          'Константа времени'
+          'Входная амплитуда'
           0
           53
-          'Close reserve'
+          'Чувствительность'
           0
           54
-          'Wide reserve'
+          'Константа времени'
           0
           55
-          'Автоамплитуда'
+          'Close reserve'
           0
           56
-          'Авточувствительнусть'
+          'Wide reserve'
           0
           57
-          'auto Close reserve'
+          'Смещение'
           0
           58
-          'auto wide reserve'
+          'Множитель'
           0
           59
-          'Автофаза'
+          'Автодиапазон'
           0
           60
-          'Автосмещение'
+          'Авточувствительнусть'
           0
           61
-          'Источник синх. сигнала'
+          'auto Close reserve'
           0
           62
-          'Частота вн. буфера'
+          'auto wide reserve'
           0
           63
-          'Начало снятия (вн. буфер)'
+          'Автофаза'
           0
           64
-          'Пауза снятия (вн. буфер)'
+          'Автосмещение'
           0
           65
-          'Сбросить вн. буфер'
+          'Источник синх. сигнала'
           0
           66
-          'Кол-во точек в буфере'
+          'Частота вн. буфера'
           0
           67
-          'Считать точки из буфера'
+          'Начало снятия (вн. буфер)'
           0
           68
-          'Режим записи буфера'
+          'Пауза снятия (вн. буфер)'
           0
           69
-          'Одновременная запись параметров'
+          'Сбросить вн. буфер'
           0
           70
+          'Кол-во точек в буфере'
+          0
+          71
+          'Считать точки из буфера'
+          0
+          72
+          'Режим записи буфера'
+          0
+          73
+          'Одновременная запись параметров'
+          0
+          74
           'Выбор параметров дисплея'
           1
           0
@@ -849,97 +858,106 @@ object DeviceForm: TDeviceForm
           30
           '1 В'#13#10'300 мВ'#13#10'100 мВ'#13#10'30 мВ'#13#10'10 мВ'
           1
-          32
-          '*RST'
+          31
+          '0 X'#13#10'1 Y'#13#10'2 R'
           1
           34
-          '*IDN'
-          1
-          35
-          '*RCL'
+          '*RST'
           1
           36
-          '*SAV'
+          '*IDN'
           1
           37
-          '*TST'
+          '*RCL'
           1
           38
-          '*CAL'
+          '*SAV'
           1
           39
-          '*CLS'
+          '*TST'
           1
           40
-          '*STB'
+          '*CAL'
           1
           41
-          '*SRE'
+          '*CLS'
           1
           42
-          '*ESR'
+          '*STB'
           1
           43
-          '*ESE'
+          '*SRE'
           1
           44
-          '*PSC'
+          '*ESR'
           1
           45
-          'TRIG'
+          '*ESE'
           1
           46
-          'ERRS'
+          '*PSC'
           1
           47
-          'ERRE'
+          'TRIG'
           1
           48
-          'LIAS'
+          'ERRS'
           1
           49
-          'LIAE'
+          'ERRE'
           1
           50
-          'IRNG'
+          'LIAS'
           1
           51
-          'SCAL'
+          'LIAE'
           1
           52
+          'IRNG'
+          1
+          53
+          'SCAL'
+          1
+          54
           'OFLT'
           1
-          55
-          'ARNG'
+          57
+          'COFP'
           1
-          56
-          'ASCL'
+          58
+          'CEXP'
           1
           59
-          'APHS'
+          'ARNG'
           1
-          61
-          'RSRC'
-          1
-          62
-          'CAPTURERATE'
+          60
+          'ASCL'
           1
           63
-          'CAPTURESTART'
+          'APHS'
           1
           65
-          'CAPTURESTOP'
+          'RSRC'
           1
           66
-          'CAPTUREPROG'
+          'CAPTURERATE'
           1
           67
-          'CAPTUREGET'
+          'CAPTURESTART'
           1
           69
-          'SNAP'
+          'CAPTURESTOP'
           1
           70
+          'CAPTUREPROG'
+          1
+          71
+          'CAPTUREGET'
+          1
+          73
+          'SNAP'
+          1
+          74
           'CAPTURECFG'
           2
           0
@@ -1017,115 +1035,124 @@ object DeviceForm: TDeviceForm
           29
           'Высокий'#13#10'Нормальный'#13#10'Пониж. шум'#13#10'Автоматически'
           2
-          32
-          '*RST'
-          2
-          33
-          'PRST'
+          31
+          '1,0 X'#13#10'1,1 R(В)'#13#10'1,2 R(dBm)'#13#10'2,0 Y'
           2
           34
-          '*IDN'
+          '*RST'
           2
           35
-          '*RCL'
+          'PRST'
           2
           36
-          '*SAV'
+          '*IDN'
           2
           37
-          '*TST'
+          '*RCL'
           2
           38
-          '*CAL'
+          '*SAV'
           2
           39
-          '*CLS'
+          '*TST'
           2
           40
-          '*STB'
+          '*CAL'
           2
           41
-          '*SRE'
+          '*CLS'
           2
           42
-          '*ESR'
+          '*STB'
           2
           43
-          '*ESE'
+          '*SRE'
           2
           44
-          '*PSC'
+          '*ESR'
           2
           45
-          'TRIG'
+          '*ESE'
           2
           46
-          'ERRS'
+          '*PSC'
           2
           47
-          'ERRE'
+          'TRIG'
           2
           48
-          'LIAS'
+          'ERRS'
           2
           49
-          'LIAE'
+          'ERRE'
+          2
+          50
+          'LIAS'
           2
           51
-          'SENS'
-          2
-          52
-          'OFLT'
+          'LIAE'
           2
           53
-          'CRSV'
+          'SENS'
           2
           54
-          'WRSV'
+          'OFLT'
+          2
+          55
+          'CRSV'
           2
           56
-          'AGAN'
+          'WRSV'
           2
           57
-          'ACRS'
+          'DOFF'
           2
           58
-          'AWRS'
-          2
-          59
-          'APHS'
+          'DEXP'
           2
           60
-          'AOFF'
+          'AGAN'
           2
           61
-          'FMOD'
+          'ACRS'
           2
           62
-          'SRAT'
+          'AWRS'
           2
           63
-          'STRT'
+          'APHS'
           2
           64
-          'PAUS'
+          'AOFF'
           2
           65
-          'REST'
+          'FMOD'
           2
           66
-          'SPTS'
+          'SRAT'
           2
           67
-          'TRCL'
+          'STRT'
           2
           68
-          'SEND'
+          'PAUS'
           2
           69
-          'SNAP'
+          'REST'
           2
           70
+          'SPTS'
+          2
+          71
+          'TRCL'
+          2
+          72
+          'SEND'
+          2
+          73
+          'SNAP'
+          2
+          74
           'DDEF'
           3
           0
@@ -1206,134 +1233,126 @@ object DeviceForm: TDeviceForm
           28
           'Высокий'#13#10'Нормальный'#13#10'Пониж. шум'
           3
-          32
-          '*RST'
+          31
+          '1 X'#13#10'2 Y'#13#10'3 R'
           3
           34
-          '*IDN'
-          3
-          35
-          '*RCL'
+          '*RST'
           3
           36
-          '*SAV'
+          '*IDN'
           3
           37
-          '*TST'
+          '*RCL'
           3
           38
-          '*STB'
+          '*SAV'
           3
           39
-          '*CLS'
+          '*TST'
           3
           40
           '*STB'
           3
           41
-          '*SRE'
+          '*CLS'
           3
           42
-          '*ESR'
+          '*STB'
           3
           43
-          '*ESE'
+          '*SRE'
           3
           44
-          '*PSC'
+          '*ESR'
           3
           45
-          'TRIG'
+          '*ESE'
           3
           46
-          'ERRS'
+          '*PSC'
           3
           47
-          'ERRE'
+          'TRIG'
           3
           48
-          'LIAS'
+          'ERRS'
           3
           49
-          'LIAE'
+          'ERRE'
+          3
+          50
+          'LIAS'
           3
           51
-          'SENS'
-          3
-          52
-          'OFLT'
+          'LIAE'
           3
           53
+          'SENS'
+          3
+          54
+          'OFLT'
+          3
+          55
           'RMOD'
           3
-          56
-          'AGAN'
-          3
           57
-          'ARSV'
-          3
-          59
-          'APHS'
+          'OEXP'
           3
           60
-          'AOFF'
+          'AGAN'
           3
           61
-          'FMOD'
-          3
-          62
-          'SRAT'
+          'ARSV'
           3
           63
-          'STRT'
+          'APHS'
           3
           64
-          'PAUS'
+          'AOFF'
           3
           65
-          'REST'
+          'FMOD'
           3
           66
-          'SPTS'
+          'SRAT'
           3
           67
-          'TRCL'
+          'STRT'
           3
           68
-          'SEND'
+          'PAUS'
           3
           69
-          'SNAP'
+          'REST'
           3
           70
+          'SPTS'
+          3
+          71
+          'TRCL'
+          3
+          72
+          'SEND'
+          3
+          73
+          'SNAP'
+          3
+          74
           'DDEF'
         )
       end
     end
   end
-  object Label1: TLabel
-    AnchorSideLeft.Control = btAddDevice
-    AnchorSideTop.Control = pcDevice
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    Left = 389
-    Height = 108
-    Top = 28
-    Width = 249
-    AutoSize = False
-    BorderSpacing.Top = 24
-    Caption = 'Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10#13#10'Заполните поля "Опции отношения" только '#13#10'если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
-    ParentColor = False
-  end
   object btSaveToFile: TButton
     AnchorSideLeft.Control = btAddDevice
     AnchorSideBottom.Control = btDone
-    Left = 389
+    Left = 393
     Height = 25
-    Top = 675
+    Top = 709
     Width = 125
     Anchors = [akLeft, akBottom]
-    BorderSpacing.Bottom = 16
+    BorderSpacing.Bottom = 24
     Caption = 'Сохранить в файл'
     OnClick = btSaveToFileClick
     TabOrder = 1
@@ -1342,7 +1361,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label5
     AnchorSideTop.Side = asrBottom
-    Left = 389
+    Left = 393
     Height = 15
     Top = 333
     Width = 68
@@ -1355,7 +1374,7 @@ object DeviceForm: TDeviceForm
   object cbTerminator: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label6
-    Left = 518
+    Left = 522
     Height = 23
     Top = 333
     Width = 125
@@ -1374,7 +1393,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbTerminator
     AnchorSideRight.Side = asrBottom
-    Left = 518
+    Left = 522
     Height = 25
     Top = 372
     Width = 125
@@ -1390,12 +1409,12 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btAddDevice
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 518
+    Left = 522
     Height = 25
     Top = 152
     Width = 125
     Anchors = [akTop, akRight]
-    BorderSpacing.Right = 8
+    BorderSpacing.Right = 4
     Caption = 'Удалить устройство'
     OnClick = btDeleteDeviceClick
     TabOrder = 4
@@ -1405,7 +1424,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
-    Left = 518
+    Left = 522
     Height = 23
     Top = 228
     Width = 125
@@ -1424,7 +1443,7 @@ object DeviceForm: TDeviceForm
   object cbParity: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label4
-    Left = 518
+    Left = 522
     Height = 23
     Top = 263
     Width = 125
@@ -1443,7 +1462,7 @@ object DeviceForm: TDeviceForm
   object cbHandshake: TComboBox
     AnchorSideLeft.Control = cbStopBits
     AnchorSideTop.Control = Label5
-    Left = 518
+    Left = 522
     Height = 23
     Top = 298
     Width = 125
@@ -1459,11 +1478,11 @@ object DeviceForm: TDeviceForm
     Text = 'Отсутствует'
   end
   object Label3: TLabel
-    AnchorSideLeft.Control = Label1
+    AnchorSideLeft.Control = Label2
     AnchorSideTop.Control = Label2
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbStopBits
-    Left = 389
+    Left = 393
     Height = 15
     Top = 228
     Width = 60
@@ -1477,7 +1496,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label3
     AnchorSideTop.Side = asrBottom
-    Left = 389
+    Left = 393
     Height = 15
     Top = 263
     Width = 53
@@ -1491,7 +1510,7 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = Label3
     AnchorSideTop.Control = Label4
     AnchorSideTop.Side = asrBottom
-    Left = 389
+    Left = 393
     Height = 15
     Top = 298
     Width = 59
@@ -1502,10 +1521,9 @@ object DeviceForm: TDeviceForm
     Transparent = False
   end
   object btAddDevice: TButton
-    AnchorSideTop.Control = Label1
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
-    Left = 389
+    Left = 393
     Height = 25
     Top = 152
     Width = 125
@@ -1519,9 +1537,9 @@ object DeviceForm: TDeviceForm
   object btLoadFromFile: TButton
     AnchorSideLeft.Control = btSaveToFile
     AnchorSideBottom.Control = btSaveToFile
-    Left = 389
+    Left = 393
     Height = 25
-    Top = 642
+    Top = 676
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 8
@@ -1533,9 +1551,9 @@ object DeviceForm: TDeviceForm
     AnchorSideLeft.Control = btLoadFromFile
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btLoadFromFile
-    Left = 518
+    Left = 522
     Height = 25
-    Top = 642
+    Top = 676
     Width = 125
     BorderSpacing.Left = 4
     Caption = 'Уст. по умолчанию'
@@ -1547,9 +1565,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = pcDevice
     AnchorSideBottom.Control = pcDevice
     AnchorSideBottom.Side = asrBottom
-    Left = 389
+    Left = 393
     Height = 25
-    Top = 716
+    Top = 758
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 5
@@ -1559,9 +1577,9 @@ object DeviceForm: TDeviceForm
     TabOrder = 11
   end
   object Label2: TLabel
-    AnchorSideLeft.Control = Label1
+    AnchorSideLeft.Control = btAddDevice
     AnchorSideTop.Control = cbInterface
-    Left = 389
+    Left = 393
     Height = 15
     Top = 193
     Width = 62
@@ -1575,7 +1593,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
-    Left = 518
+    Left = 522
     Height = 23
     Top = 193
     Width = 125
@@ -1595,20 +1613,61 @@ object DeviceForm: TDeviceForm
   object btResetDefaultFile: TButton
     AnchorSideLeft.Control = btSetDefaultFile
     AnchorSideTop.Control = btSaveToFile
-    Left = 518
+    Left = 522
     Height = 25
-    Top = 675
+    Top = 709
     Width = 125
     Caption = 'Сбросить'
     OnClick = btResetDefaultFileClick
     TabOrder = 13
   end
+  object stInstruction: TStaticText
+    AnchorSideLeft.Control = btAddDevice
+    AnchorSideTop.Control = pcDevice
+    AnchorSideRight.Control = btDeleteDevice
+    AnchorSideRight.Side = asrBottom
+    Left = 393
+    Height = 108
+    Top = 28
+    Width = 254
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 24
+    BorderStyle = sbsSingle
+    Caption = 'Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10#13#10'Заполните поля "Опции отношения" только '#13#10'если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
+    Color = clDefault
+    ParentColor = False
+    TabOrder = 14
+  end
+  object DividerBevel1: TDividerBevel
+    AnchorSideLeft.Control = btAddDevice
+    AnchorSideTop.Control = btApply
+    AnchorSideTop.Side = asrBottom
+    Left = 393
+    Height = 15
+    Top = 401
+    Width = 254
+    BorderSpacing.Top = 4
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object DividerBevel2: TDividerBevel
+    AnchorSideLeft.Control = btAddDevice
+    AnchorSideTop.Control = btResetDefaultFile
+    AnchorSideTop.Side = asrBottom
+    Left = 393
+    Height = 15
+    Top = 738
+    Width = 254
+    BorderSpacing.Top = 4
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
   object OpenDialog: TOpenDialog
-    left = 392
-    top = 328
+    left = 416
+    top = 488
   end
   object SaveDialog: TSaveDialog
-    left = 456
-    top = 328
+    left = 480
+    top = 488
   end
 end

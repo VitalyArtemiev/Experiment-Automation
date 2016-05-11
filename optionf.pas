@@ -5,8 +5,8 @@ unit OptionF;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls, ComCtrls, Spin;
+  Classes, SysUtils, FileUtil, DividerBevel, Forms, Controls, Graphics, Dialogs,
+  ExtCtrls, StdCtrls, ComCtrls, Spin;
 
 type
 
@@ -24,6 +24,10 @@ type
     cbParity: TComboBox;
     cbHandshake: TComboBox;
     cgReadings: TCheckGroup;
+    DividerBevel1: TDividerBevel;
+    DividerBevel2: TDividerBevel;
+    DividerBevel3: TDividerBevel;
+    DividerBevel4: TDividerBevel;
     eBaudRate: TSpinEdit;
     eBaudRate1: TSpinEdit;
     eDevice: TComboBox;

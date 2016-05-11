@@ -5,11 +5,13 @@ unit serconf;
 interface
 
 uses
-  Classes, SysUtils, Forms, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons,
-  Dialogs, Grids, synaser, tlntsend, visa, session, {libusboop, libusb,} StatusF, CustomCommandF;
+  Classes, SysUtils, variants, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
+  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, visa, session,
+  {libusboop, libusb,} StatusF, CustomCommandF;
 
 type
   tIntegerArray = array of integer;
+  tVariantArray = array of variant;
 
   ConnectAction = (ANo, AQuery, AReset);
 
@@ -115,10 +117,13 @@ type
     function ConnectUSB: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
     function GetCommandName(c: variant): string;
+    function CommandSupported(c: variant): boolean;
     procedure AddCommand(c: variant{tCommand}; Query: boolean = false);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; s: string);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tIntegerArray);
-    procedure AddCommand(c: variant{tCommand}; Query: boolean; x: real; Units: eUnits = uNone);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tVariantArray);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; x: double; Units: eUnits = uNone);
     procedure PassCommands;
     function RecvString: string;
     function RecvString(TimeOut: longword): string;
@@ -374,7 +379,7 @@ begin
           Commands[j]:= Cells[i, j + SGHeaderLength];
 
         {for j:= 0 to high(Commands) do
-          writeProgramLog(getcommandname(j) + '  ' + Commands[j]);  }
+          writeProgramLog(getcommandname(j) + '  ' + Commands[j]); }
       end;
 
 
@@ -685,6 +690,15 @@ begin
   end;
 end;
 
+function tSerConnectForm.CommandSupported(c: variant): boolean;
+begin
+  if (c > high(CurrentDevice^.Commands)) or
+     (CurrentDevice^.Commands[c] = '') then
+    Result:= false
+  else
+    Result:= true;
+end;
+
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
 begin
   if (c > high(CurrentDevice^.Commands)) or
@@ -699,6 +713,24 @@ begin
   CommandString+= CurrentDevice^.Commands[c];
 
   if Query then CommandString+= '?';
+end;
+
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; s: string);
+begin
+  if (c > high(CurrentDevice^.Commands)) or
+    (CurrentDevice^.Commands[c] = '') then  //time critical so no complicated checks???
+  begin
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
+    exit
+  end;
+
+  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
+
+  CommandString+= CurrentDevice^.Commands[c];
+
+  if Query then CommandString+= '?';
+
+  CommandString+= s;
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; i: longint);
@@ -744,13 +776,47 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: real;
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
+  var a: tVariantArray);
+var
+  i: longint;
+  s: string;
+begin
+  if (c > high(CurrentDevice^.Commands)) or
+    (CurrentDevice^.Commands[c] = '') then
+  begin
+    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
+    exit
+  end;
+
+  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
+
+  CommandString+= CurrentDevice^.Commands[c];
+
+  if Query then CommandString+= '?';
+
+  for i:= 0 to high(a) do
+  begin
+    if i <> 0 then CommandString+= CurrentDevice^.ParSeparator;
+
+    if VarIsOrdinal(a[i]) then
+      CommandString+= strf(integer(a[i]))
+    else
+    if VarIsFloat(a[i]) then
+      CommandString+= strf(double(a[i]))
+    else
+    if VarIsStr(a[i]) then
+      CommandString+= a[i];
+  end;
+
+end;
+
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: double;
   Units: eUnits = uNone);
 begin
   if (c > high(CurrentDevice^.Commands)) or
     (CurrentDevice^.Commands[c] = '') then
   begin
-
     WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Currentdevice^.Model);
     exit
   end;

@@ -5,8 +5,8 @@ unit DeviceF;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Grids,
-  Buttons, StdCtrls, ComCtrls, ExtCtrls;
+  Classes, SysUtils, FileUtil, DividerBevel, Forms, Controls, Graphics, Dialogs,
+  Grids, Buttons, StdCtrls, ComCtrls, ExtCtrls;
 
 type
   eHeaderRow = (
@@ -16,7 +16,7 @@ type
     hTimeConstOptions, hSensitivityOptions, hTransferParams, hFirstIndex,
     hIndices, hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options,
     hRatio1Options, hRatio2Options, hBufferRateOptions, hCloseReserveOptions,
-    hWideReserveOptions, hRangeOptions,
+    hWideReserveOptions, hRangeOptions, hOffsetParams,
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
     hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions,
     hAmplitudeUnits, hMaxFrequencies, hMinMaxAmplitudes
@@ -38,10 +38,10 @@ type
   eDetCommand = (
     dError = integer(cTrigger) + 1, dErrorEnable, dLIA, dLIAEnable,
     dInputRange, dSensitivity, dTimeConstant, dCloseReserve, dWideReserve,
-    dAutoRange, dAutoSensitivity, dAutoCloseReserve, dAutoWideReserve,
-    dAutoPhase, dAutoOffset, dReferenceSource,  dSampleRate, dStartStorage,
-    dPauseStorage, dResetStorage, dStoredPoints, dReadPointsNative,
-    dStorageMode, dReadSimultaneous, dDisplaySelect
+    dOffset, dExpand, dAutoRange, dAutoSensitivity, dAutoCloseReserve,
+    dAutoWideReserve, dAutoPhase, dAutoOffset, dReferenceSource,  dSampleRate,
+    dStartStorage, dPauseStorage, dResetStorage, dStoredPoints,
+    dReadPointsNative, dStorageMode, dReadSimultaneous, dDisplaySelect
                  );
 
   {type
@@ -148,7 +148,9 @@ const
     cbStopBits: TComboBox;
     cbTerminator: TComboBox;
     cbInterface: TComboBox;
-    Label1: TLabel;
+    DividerBevel1: TDividerBevel;
+    DividerBevel2: TDividerBevel;
+    stInstruction: TStaticText;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -196,7 +198,7 @@ const
   end;
 
 const
-  SGHeaderLength = integer(high(eHeaderRow)) + 2; //кол-во строк в tStringGrid, не относящ. к командам
+  SGHeaderLength = integer(high(eHeaderRow)) + 3; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
 
@@ -508,7 +510,8 @@ begin
      integer(hBufferRateOptions),
      integer(hCloseReserveOptions),
      integer(hWideReserveOptions),
-     integer(hRangeOptions):
+     integer(hRangeOptions),
+     integer(hOffsetParams):
        EditOptionString(Col, Row);
     end;
 end;
@@ -528,7 +531,8 @@ begin
      integer(hBufferRateOptions),
      integer(hCloseReserveOptions),
      integer(hWideReserveOptions),
-     integer(hRangeOptions):
+     integer(hRangeOptions),
+     integer(hOffsetParams):
        key:= 0;
     end;
 
@@ -668,7 +672,8 @@ begin
         integer(hBufferRateOptions),
         integer(hCloseReserveOptions),
         integer(hWideReserveOptions),
-        integer(hRangeOptions):
+        integer(hRangeOptions),
+        integer(hOffsetParams):
           AutoEdit:= false;
         else
           begin
@@ -1143,6 +1148,39 @@ begin
         Col:= i;
         ShowMessage('Ошибка в поле "Число точек во внутр. буфере"');
         exit(-$24);
+      end;
+
+      s:= sgDetCommands.Cells[i, integer(hOffsetParams)];
+      if s <> '' then
+      with MemoForm do
+      begin
+        mComment.Text:= s;
+        n:= mComment.Lines.Count;
+
+        for j:= 0 to n - 1 do
+        begin
+          s:= mComment.Lines[j];
+          s:= AnsiReplaceStr(s, ',', '.');
+          val(Copy2SymbDel(s, ' '), m, e);
+          if e <> 0 then
+          begin
+            pcDevice.TabIndex:= 1;
+            Row:= integer(hOffsetParams);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Опции смещения"');
+            exit(-$b);
+          end;
+
+          if IsEmptyStr(s, [' ']) then
+          begin
+            pcDevice.TabIndex:= 1;
+            Row:= integer(hOffsetParams);
+            Col:= i;
+            ShowMessage('Ошибка в поле "Опции смещения"');
+            exit(-$b);
+          end;
+        end;
+        mComment.Lines.Clear;
       end;
     end;
 end;

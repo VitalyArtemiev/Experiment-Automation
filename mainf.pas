@@ -5,9 +5,9 @@ unit MainF;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, StrUtils, Forms, Controls, Graphics, Dialogs, Menus,
-  StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls, Buttons, Synaser, SerConF,
-  DeviceF;
+  Classes, SysUtils, FileUtil, DividerBevel, StrUtils, Forms, Controls,
+  Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls,
+  Buttons, Synaser, SerConF, DeviceF;
 
 type
   { TMainForm }
@@ -25,6 +25,7 @@ type
     cbSweepDirection: TComboBox;
     cbPointPerStep: TCheckBox;
     cbAmplUnit: TComboBox;
+    DividerBevel1: TDividerBevel;
     eAmplitude: TFloatSpinEdit;
     eSweepStartF: TFloatSpinEdit;
     eSweepStopF: TFloatSpinEdit;
@@ -325,6 +326,7 @@ begin
         Ratio2              := cbRatio2.ItemIndex;
         Show1               := cbChart1Show.ItemIndex;
         Show2               := cbChart2Show.ItemIndex;
+        Delay               := eDelay.Value;
         UpdateInterval      := eUpdateInterval.Value;
         AxisLimit           := eAxisLimit.Value;
         XAxis               := cbXAxis.ItemIndex;
@@ -348,30 +350,34 @@ begin
   if not FileExists(FileName) then
   with Params do
   begin
-    GeneratorPort       := cbPortSelect.Text;
-    LastGenerator       := PresumedDevice;
-    Impedance           := cbImpedance.ItemIndex;
-    CurrFunc            := cbFuncSelect.ItemIndex;
-    AmplUnit            := cbAmplUnit.ItemIndex;
-    Amplitude           := eAmplitude.Value;
-    Offset              := eOffset.Value;
-    ACOn                := cbACEnable.Checked;
-    Frequency           := eFrequency.Value;
-    SweepStartF         := eSweepStartF.Value;
-    SweepStopF          := eSweepStopF.Value;
-    SweepRate           := eSweepRate.Value;
-    AutoSweep           := cbSweepRate.Checked;
-    SweepType           := cbSweepType.ItemIndex;
-    SweepDir            := cbSweepDirection.ItemIndex;
-    StepF               := eFStep.Value;
-    StepStartF          := eStepStartF.Value;
-    StepStopF           := eStepStopF.Value;
-    StepA               := eAStep.Value;
-    StepStartA          := eStepStartA.Value;
-    StepStopA           := eStepStopA.Value;
-    TimeStep            := eTimeStep.Value;
+    if not ParamsApplied then
+    begin
+      GeneratorPort       := cbPortSelect.Text;
+      LastGenerator       := PresumedDevice;
+      Impedance           := cbImpedance.ItemIndex;
+      CurrFunc            := cbFuncSelect.ItemIndex;
+      AmplUnit            := cbAmplUnit.ItemIndex;
+      Amplitude           := eAmplitude.Value;
+      Offset              := eOffset.Value;
+      ACOn                := cbACEnable.Checked;
+      Frequency           := eFrequency.Value;
+      SweepStartF         := eSweepStartF.Value;
+      SweepStopF          := eSweepStopF.Value;
+      SweepRate           := eSweepRate.Value;
+      AutoSweep           := cbSweepRate.Checked;
+      SweepType           := cbSweepType.ItemIndex;
+      SweepDir            := cbSweepDirection.ItemIndex;
+      StepF               := eFStep.Value;
+      StepStartF          := eStepStartF.Value;
+      StepStopF           := eStepStopF.Value;
+      StepA               := eAStep.Value;
+      StepStartA          := eStepStartA.Value;
+      StepStopA           := eStepStopA.Value;
+      TimeStep            := eTimeStep.Value;
+    end;
 
     with ReadingsForm do
+    if not ParamsApplied then
     begin
       DetectorPort        := cbPortSelect.Text;
       LastDetector        := PresumedDevice;
@@ -389,6 +395,7 @@ begin
       Ratio2              := cbRatio2.ItemIndex;
       Show1               := cbChart1Show.ItemIndex;
       Show2               := cbChart2Show.ItemIndex;
+      Delay               := eDelay.Value;
       UpdateInterval      := eUpdateInterval.Value;
       AxisLimit           := eAxisLimit.Value;
       XAxis               := cbXAxis.ItemIndex;
@@ -445,7 +452,8 @@ begin
     {$I+}
     LoadConfig:= IOResult;
   end
-  else LoadConfig:= 2;
+  else
+    LoadConfig:= 2;
   str(LoadConfig, s);
   if LoadConfig <> 0 then ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
   if (LoadConfig <> 0) or IsEmptyStr(Config.DefaultGens, [' ']) or
@@ -628,9 +636,9 @@ begin
 
   if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
 
-  LoadConfig(DefaultConfig);
-  if Config.WorkConfig <> DefaultConfig then
-    LoadConfig(Config.WorkConfig);
+  if LoadConfig(DefaultConfig) = 0 then
+    if Config.WorkConfig <> DefaultConfig then
+      LoadConfig(Config.WorkConfig);
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -663,13 +671,14 @@ begin
 end;
 
 procedure TMainForm.eAmplitudeChange(Sender: TObject);
-begin                                        { TODO 2 -cFeature : voltage limits }
+begin                                       { TODO 2 -cBug : wtf does this do }
   if eAmplitude.Value > 0 then
   begin
     eAmplitude.MinValue:= 0.05 + cbImpedance.ItemIndex * 0.05;
     cbACEnable.Checked:= true;
   end;
-  if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then eOffset.Value:= (eOffset.MaxValue - eAmplitude.Value/2) * sign(eOffset.Value);
+  if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then
+    eOffset.Value:= (eOffset.MaxValue - eAmplitude.Value/2) * sign(eOffset.Value);
 end;
 
 procedure TMainForm.cbAmplUnitChange(Sender: TObject);
@@ -1052,7 +1061,7 @@ begin
     s:= RecvString;
   LeaveCriticalSection(CommCS);
   StatusBar.Panels[spStatus].Text:= s;
-                                            { TODO 2 -cBug : if multiple symbols in commsep }
+
   cs:= CurrentDevice^.CommSeparator;
   l:= length(cs) - 1;
 
@@ -1290,7 +1299,6 @@ begin
     Label9.Show;
     cbImpedance.Show;
   end;
-
 
   with Params do
   begin

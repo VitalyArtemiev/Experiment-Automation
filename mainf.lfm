@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 405
+  Left = 419
   Height = 600
-  Top = 124
+  Top = 344
   Width = 528
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -1081,6 +1081,18 @@ object MainForm: TMainForm
       Color = clWhite
       ParentColor = False
       Transparent = False
+    end
+    object DividerBevel1: TDividerBevel
+      AnchorSideLeft.Control = Label5
+      AnchorSideTop.Control = cbFuncSelect
+      AnchorSideTop.Side = asrBottom
+      Left = 6
+      Height = 15
+      Top = 70
+      Width = 396
+      BorderSpacing.Top = 8
+      Font.Style = [fsBold]
+      ParentFont = False
     end
   end
   object btStatus: TSpeedButton

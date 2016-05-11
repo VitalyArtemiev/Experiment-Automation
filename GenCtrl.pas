@@ -28,7 +28,8 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
-  serconf, AxisSource, AboutF, DeviceF, dialogs, ReadingThreads;
+  serconf, AxisSource, AboutF, DeviceF, dialogs, lazcontrols, ReadingThreads,
+  OffsetF;
 
 {$R *.res}
 
@@ -47,6 +48,7 @@ begin
   Application.CreateForm(TCustomCommandForm, CustomCommandForm);
   Application.CreateForm(TStatusForm, StatusForm);
   Application.CreateForm(TAboutForm, AboutForm);
+  Application.CreateForm(TOffsetForm, OffsetForm);
   Application.Run;
 end.
 

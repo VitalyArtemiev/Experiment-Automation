@@ -105,6 +105,7 @@ type
     procedure btClearClick(Sender: TObject);
     procedure btnConnectClick(Sender: TObject); override;
     procedure btApplyClick(Sender: TObject);
+    procedure btOffsetClick(Sender: TObject);
     procedure btQueryClick(Sender: TObject); override;
     procedure btStartPauseLogClick(Sender: TObject);
     procedure btStatusClick(Sender: TObject);
@@ -184,7 +185,7 @@ var
 
 implementation
 
-uses Dateutils, StrUtils, math, stepf, optionf, DeviceF;
+uses Dateutils, StrUtils, math, stepf, optionf, DeviceF, OffsetF;
 
 procedure tReadingsForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -308,6 +309,11 @@ end;
 procedure tReadingsForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
+  {deviceindex:=2;
+  AddCommand(dOffset, false,
+          tVariantArray.Create('kapec', 1, 0.01)
+                   );
+  showmessage(CommandString);}
 end;
 
 procedure tReadingsForm.PairSplitter1Resize(Sender: TObject);
@@ -1081,6 +1087,11 @@ begin
     end;
   end;
 
+  if OffsetForm.GetParams > 0 then
+    btOffset.Show
+  else
+    btOffset.Hide;
+
   with Params do
   begin
     cbSensitivity.ItemIndex:= Sensitivity;
@@ -1192,7 +1203,10 @@ end;
 
 procedure tReadingsForm.btAutoPhaseClick(Sender: TObject);
 begin
-  AddCommand(dAutoPhase, false);
+  EnterCriticalSection(CommCS);
+    AddCommand(dAutoPhase, false);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
   //btQueryClick(Self);
 end;
 
@@ -1202,7 +1216,10 @@ var
   s: string;
   st, l: tDateTime;
 begin
-  AddCommand(dAutoSensitivity, false);
+  EnterCriticalSection(CommCS);
+    AddCommand(dAutoSensitivity, false);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
 
   l:= EncodeTime(0, 0, 15, 0);
   st:= Now;
@@ -1223,19 +1240,28 @@ end;
 
 procedure tReadingsForm.btAutoRangeClick(Sender: TObject);
 begin
-  AddCommand(dAutoRange, false);
+  EnterCriticalSection(CommCS);
+    AddCommand(dAutoRange, false);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
   btQueryClick(Self);
 end;
 
 procedure tReadingsForm.btAutoReserve1Click(Sender: TObject);
 begin
-  AddCommand(dAutoCloseReserve, false);
+  EnterCriticalSection(CommCS);
+    AddCommand(dAutoCloseReserve, false);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
   btQueryClick(Self);
 end;
 
 procedure tReadingsForm.btAutoReserve2Click(Sender: TObject);
 begin
-  AddCommand(dAutoWideReserve, false);
+   EnterCriticalSection(CommCS);
+    AddCommand(dAutoWideReserve, false);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
   btQueryClick(Self);
 end;
 
@@ -1251,7 +1277,6 @@ begin
     rSimultaneous:
       cbXAxis.Items.Strings[0]:= 'Время, с';
   end;
-   { TODO 2 -cFeature : Autosens }
   with Params do
   begin
     GenFreq:= UseGenFreq;
@@ -1274,7 +1299,6 @@ begin
     AxisLimit:= eAxisLimit.Value;
     XAxis:= cbXAxis.ItemIndex;
     ReadingsMode:= cbReadingsMode.ItemIndex;
-
 
     CurrentDevice^.Timeout:= seRecvTimeOut.Value; { TODO : sort out timeouts }
 
@@ -1304,6 +1328,11 @@ begin
     LeaveCriticalSection(CommCS);
   end;
   ParamsApplied:= true;
+end;
+
+procedure tReadingsForm.btOffsetClick(Sender: TObject);
+begin
+  OffsetForm.Show;
 end;
 
 procedure tReadingsForm.btQueryClick(Sender: TObject);
