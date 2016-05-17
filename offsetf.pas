@@ -28,10 +28,11 @@ type
     procedure cbParamsChange(Sender: TObject);
   private
     { private declarations }
-    Offsets: array of double;
-    Expands: array of byte;
+
     ParamIndices: array of string;
   public
+    Offsets: array of double;
+    Expands: array of byte;
     { public declarations }
     function GetParams: integer;
   end;

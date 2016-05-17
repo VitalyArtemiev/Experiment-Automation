@@ -132,9 +132,6 @@ type
   private
     { private declarations }
     ReportHeader: boolean;
-
-
-  private
     RNCS, TimeCS, OPSCS, RTDCS: TRTLCriticalSection;
     FLogState: eLogState;
     DrawnBuffers: longword;//???
@@ -158,7 +155,7 @@ type
     { public declarations }
     ParToRead: array of shortint;
     ThreadList: TThreadList;
-    LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep: boolean;
+    LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep, OffsetTracked: boolean;
     TimeStep: double;
 
     CurrLogFileName: string;
@@ -185,7 +182,7 @@ var
 
 implementation
 
-uses Dateutils, StrUtils, math, stepf, optionf, DeviceF, OffsetF;
+uses Dateutils, StrUtils, stepf, optionf, DeviceF, OffsetF;
 
 procedure tReadingsForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -309,11 +306,10 @@ end;
 procedure tReadingsForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
-  {deviceindex:=2;
-  AddCommand(dOffset, false,
-          tVariantArray.Create('kapec', 1, 0.01)
-                   );
-  showmessage(CommandString);}
+  if cbCH1.ItemIndex < 0 then
+    cbCH1.ItemIndex:= 0;
+  if cbCH2.ItemIndex < 0 then
+    cbCH2.ItemIndex:= 0;
 end;
 
 procedure tReadingsForm.PairSplitter1Resize(Sender: TObject);
@@ -381,6 +377,7 @@ begin
     cbUseGenFreq.Enabled:=      false;
     seRecvTimeout.Enabled:=     false;
     btClear.Enabled:=           false;
+    btApply.Enabled:=           false;
   end
   else
   begin
@@ -403,6 +400,7 @@ begin
     cgTransfer.Enabled:=        true;
     cbUseGenFreq.Enabled:=      true;
     seRecvTimeout.Enabled:=     true;
+    btApply.Enabled:=           true;
     if FLogState = lInActive then
       btClear.Enabled:= true;
   end;
@@ -427,7 +425,7 @@ begin
   WriteProgramLog('Data collection start');
   btClearClick(Self);
 
-  if Finished and not ReadingsForm.ParamsApplied then
+  if Finished or not ReadingsForm.ParamsApplied then  //skip if stepf is already going
   begin
     ReadingsForm.btApplyClick(Self);
     sleep(ReadingsForm.eDelay.Value);
@@ -570,13 +568,13 @@ begin
   if assigned(ReadingsThread) then
     ReadingsThread.WaitFor;
   ProcessBuffers;
-  btApply.Enabled:= true;
+ // btApply.Enabled:= true;
 end;
 
 procedure tReadingsForm.ContinueLog;
 begin
   btStartPauseLog.Caption:= 'Приостановить';
-  btApply.Enabled:= false;
+ // btApply.Enabled:= false;
   WriteProgramLog('Data collection resume');
 
   LogState:= lActive;
@@ -638,6 +636,7 @@ begin
    inc(ExperimentNumber);
   end;
   btStartPauseLog.Caption:= 'Начать снятие';
+  //btApply.Enabled:= true;
 end;
 
 function tReadingsForm.CreateLog: string;
@@ -985,11 +984,7 @@ end;
 procedure tReadingsForm.btStartPauseLogClick(Sender: TObject);
 begin
   case LogState of
-    lInActive:
-    begin
-      btApply.Enabled:= false;
-      BeginLog;
-    end;
+    lInActive: BeginLog;
     lActive:   PauseLog;
     lPaused:   ContinueLog;
   end;
@@ -1270,13 +1265,7 @@ begin
   {if cbSampleRate.ItemIndex <> cbSampleRate.Items.Count - 1 then
     SampleRate:= (intpower(2, cbSampleRate.ItemIndex)) * 0.0625
   else SampleRate:= 0; }
-  SampleRate:= 1;
-  case ReadingMode of
-    rBuffer:
-      cbXAxis.Items.Strings[0]:= 'Номер точки';
-    rSimultaneous:
-      cbXAxis.Items.Strings[0]:= 'Время, с';
-  end;
+  SampleRate:= 1; //no way to get real sample rate in a compatible way; SR865 needs to be polled
   with Params do
   begin
     GenFreq:= UseGenFreq;
@@ -1303,7 +1292,7 @@ begin
     CurrentDevice^.Timeout:= seRecvTimeOut.Value; { TODO : sort out timeouts }
 
     EnterCriticalSection(CommCS);
-    if cbRatio1.ItemIndex >= 0 then
+    if cbRatio1.Visible then
     begin
       AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, Display1, Ratio1));
       AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, Display2, Ratio2));
@@ -1332,6 +1321,7 @@ end;
 
 procedure tReadingsForm.btOffsetClick(Sender: TObject);
 begin
+  OffsetTracked:= true;
   OffsetForm.Show;
 end;
 
@@ -1391,7 +1381,7 @@ begin
     end;
   LeaveCriticalSection(CommCS);
 
-  if cbRatio1.ItemIndex >= 0 then
+  if cbRatio1.Visible then
   begin
     s3:= CurrentDevice^.ParSeparator;
 
@@ -1429,7 +1419,11 @@ end;
 procedure tReadingsForm.cbChart1ShowChange(Sender: TObject);
 begin
   if (LogState = lActive) and (ReadingMode = rBuffer) then
+  begin
     cbChart1Show.ItemIndex:= cbChart1Show.Items.IndexOf(cbCH1.Text);
+    if cbChart1Show.ItemIndex < 0 then
+      cbChart1Show.ItemIndex:= CH1Index;
+  end;
   Source1.PointsNumber:= ProcessedPoints;
   Source1.Reset;
 end;
@@ -1437,29 +1431,37 @@ end;
 procedure tReadingsForm.cbChart2ShowChange(Sender: TObject);
 begin
   if (LogState = lActive) and (ReadingMode = rBuffer) then
+  begin
     cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
+    if cbChart2Show.ItemIndex < 0 then
+      cbChart2Show.ItemIndex:= CH2Index;
+  end;
   Source2.PointsNumber:= ProcessedPoints;
   Source2.Reset;
 end;
 
 procedure tReadingsForm.cbReadingsModeChange(Sender: TObject);
 begin
-  if CbReadingsMode.ItemIndex = integer(rSimultaneous) then
-  begin
-   cgTransfer.Enabled:= true;
-   Label13.Hide;
-   cbSampleRate.Hide;
-   sbParamScroll.Show;
-   cgTransfer.Show;
-  end
-  else
-  begin
-    MainForm.cbPointPerStep.Checked:= false;
-    cgTransfer.Enabled:= false;
-    Label13.Show;
-    cbSampleRate.Show;
-    cgTransfer.Hide;
-    sbParamScroll.Hide;
+  case CbReadingsMode.ItemIndex of
+    integer(rSimultaneous):
+    begin
+     cgTransfer.Enabled:= true;
+     Label13.Hide;
+     cbSampleRate.Hide;
+     sbParamScroll.Show;
+     cgTransfer.Show;
+     cbXAxis.Items.Strings[0]:= 'Время, с';
+     end;
+    else
+    begin
+      MainForm.cbPointPerStep.Checked:= false;
+      cgTransfer.Enabled:= false;
+      Label13.Show;
+      cbSampleRate.Show;
+      cgTransfer.Hide;
+      sbParamScroll.Hide;
+      cbXAxis.Items.Strings[0]:= 'Номер точки';
+    end;
   end;
 end;
 

@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 327
+  Left = 334
   Height = 600
-  Top = 198
+  Top = 80
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
@@ -55,7 +55,7 @@ object ReadingsForm: TReadingsForm
     Default = True
     Enabled = False
     OnClick = btApplyClick
-    TabOrder = 6
+    TabOrder = 9
   end
   object cbSampleRate: TComboBox
     AnchorSideLeft.Control = cbReadingsMode
@@ -86,7 +86,7 @@ object ReadingsForm: TReadingsForm
       '512 Гц'
       'По триггеру'
     )
-    TabOrder = 4
+    TabOrder = 5
     Text = '512 Гц'
   end
   object PairSplitter1: TPairSplitter
@@ -191,7 +191,7 @@ object ReadingsForm: TReadingsForm
         OnChange = cbChart1ShowChange
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 1
+        TabOrder = 3
         Text = 'X'
       end
       object Label11: TLabel
@@ -228,7 +228,7 @@ object ReadingsForm: TReadingsForm
         OnChange = ParamsChange
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 2
+        TabOrder = 0
         Text = 'X'
       end
       object Label9: TLabel
@@ -272,7 +272,7 @@ object ReadingsForm: TReadingsForm
           'AUX IN 2'
         )
         OnChange = ParamsChange
-        TabOrder = 3
+        TabOrder = 1
         Text = 'Нет'
       end
     end
@@ -363,7 +363,7 @@ object ReadingsForm: TReadingsForm
         OnChange = cbChart2ShowChange
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 1
+        TabOrder = 3
         Text = 'Y'
       end
       object Label12: TLabel
@@ -411,7 +411,7 @@ object ReadingsForm: TReadingsForm
         OnChange = ParamsChange
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 2
+        TabOrder = 0
         Text = 'Y'
       end
       object cbRatio2: TComboBox
@@ -431,7 +431,7 @@ object ReadingsForm: TReadingsForm
           'AUX IN 4'
         )
         OnChange = ParamsChange
-        TabOrder = 3
+        TabOrder = 1
         Text = 'Нет'
       end
       object Label15: TLabel
@@ -693,7 +693,7 @@ object ReadingsForm: TReadingsForm
     BorderStyle = bsSingle
     ClientHeight = 122
     ClientWidth = 315
-    TabOrder = 5
+    TabOrder = 6
     object Label5: TLabel
       AnchorSideLeft.Control = Label29
       AnchorSideTop.Control = cbXAxis
@@ -744,15 +744,15 @@ object ReadingsForm: TReadingsForm
       Width = 104
       BorderSpacing.Top = 8
       ItemHeight = 15
-      ItemIndex = 2
+      ItemIndex = 0
       Items.Strings = (
         'Время, с'
         'Частота, Гц'
         'Амплитуда, В'
       )
       OnChange = cbXAxisChange
-      TabOrder = 0
-      Text = 'Амплитуда, В'
+      TabOrder = 4
+      Text = 'Время, с'
     end
     object eAxisLimit: TFloatSpinEdit
       AnchorSideLeft.Control = eDelay
@@ -771,7 +771,7 @@ object ReadingsForm: TReadingsForm
       MinValue = 0
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 1
+      TabOrder = 6
       Value = 0
     end
     object btClear: TButton
@@ -785,7 +785,7 @@ object ReadingsForm: TReadingsForm
       BorderSpacing.Bottom = 9
       Caption = 'Очистить'
       OnClick = btClearClick
-      TabOrder = 2
+      TabOrder = 7
     end
     object eUpdateInterval: TSpinEdit
       AnchorSideLeft.Control = eDelay
@@ -800,7 +800,7 @@ object ReadingsForm: TReadingsForm
       MaxValue = 90000
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 3
+      TabOrder = 2
       Value = 500
     end
     object cbShowPoints: TCheckBox
@@ -821,7 +821,7 @@ object ReadingsForm: TReadingsForm
       Color = clWhite
       OnChange = cbShowPointsChange
       ParentColor = False
-      TabOrder = 4
+      TabOrder = 1
     end
     object btStopLog: TButton
       AnchorSideLeft.Control = btStartPauseLog
@@ -854,7 +854,7 @@ object ReadingsForm: TReadingsForm
       OnClick = btStartPauseLogClick
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 6
+      TabOrder = 3
     end
     object eDelay: TSpinEdit
       AnchorSideLeft.Control = Label29
@@ -871,8 +871,8 @@ object ReadingsForm: TReadingsForm
       MaxValue = 10000
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 7
-      Value = 500
+      TabOrder = 0
+      Value = 1500
     end
     object Label29: TLabel
       AnchorSideLeft.Control = pnGraphControl
@@ -903,8 +903,8 @@ object ReadingsForm: TReadingsForm
     Height = 262
     Top = 177
     Width = 136
-    HorzScrollBar.Increment = 11
-    HorzScrollBar.Page = 119
+    HorzScrollBar.Increment = 13
+    HorzScrollBar.Page = 130
     HorzScrollBar.Smooth = True
     HorzScrollBar.Tracking = True
     VertScrollBar.Increment = 22
@@ -914,9 +914,9 @@ object ReadingsForm: TReadingsForm
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Top = 4
     BorderStyle = bsNone
-    ClientHeight = 245
+    ClientHeight = 262
     ClientWidth = 136
-    TabOrder = 8
+    TabOrder = 4
     object cgTransfer: TCheckGroup
       AnchorSideLeft.Control = sbParamScroll
       AnchorSideTop.Control = sbParamScroll
@@ -975,7 +975,7 @@ object ReadingsForm: TReadingsForm
     Caption = 'Смещение'
     Enabled = False
     OnClick = btOffsetClick
-    TabOrder = 9
+    TabOrder = 8
   end
   object sbSettingScroll: TScrollBox
     AnchorSideLeft.Control = pnGraphControl
@@ -998,7 +998,7 @@ object ReadingsForm: TReadingsForm
     BorderStyle = bsNone
     ClientHeight = 130
     ClientWidth = 357
-    TabOrder = 10
+    TabOrder = 7
     object cbSensitivity: TComboBox
       AnchorSideLeft.Control = cbTimeConstant
       AnchorSideTop.Control = btAutoSensitivity
@@ -1027,7 +1027,7 @@ object ReadingsForm: TReadingsForm
         '1 В'
       )
       OnChange = ParamsChange
-      TabOrder = 0
+      TabOrder = 2
       Text = '1 В'
     end
     object cbTimeConstant: TComboBox
@@ -1064,7 +1064,7 @@ object ReadingsForm: TReadingsForm
         '30 кс'
       )
       OnChange = ParamsChange
-      TabOrder = 1
+      TabOrder = 0
       Text = '100 мс'
     end
     object Label6: TLabel
@@ -1123,7 +1123,7 @@ object ReadingsForm: TReadingsForm
         'Пониж. шум'
       )
       OnChange = ParamsChange
-      TabOrder = 2
+      TabOrder = 4
       Text = 'Нормальный'
     end
     object Label17: TLabel
@@ -1155,7 +1155,7 @@ object ReadingsForm: TReadingsForm
         'Автоматически'
       )
       OnChange = ParamsChange
-      TabOrder = 3
+      TabOrder = 6
       Text = 'Нормальный'
     end
     object btAutoSensitivity: TButton
@@ -1170,7 +1170,7 @@ object ReadingsForm: TReadingsForm
       Caption = 'Авт. чувствит.'
       Enabled = False
       OnClick = btAutoSensitivityClick
-      TabOrder = 4
+      TabOrder = 3
     end
     object btAutoReserve1: TButton
       AnchorSideLeft.Control = btAutoPhase
@@ -1198,7 +1198,7 @@ object ReadingsForm: TReadingsForm
       Caption = 'Авт. резерв'
       Enabled = False
       OnClick = btAutoReserve2Click
-      TabOrder = 6
+      TabOrder = 7
     end
     object btAutoPhase: TButton
       AnchorSideTop.Control = sbSettingScroll
@@ -1213,7 +1213,7 @@ object ReadingsForm: TReadingsForm
       Caption = 'Авт. фаза'
       Enabled = False
       OnClick = btAutoPhaseClick
-      TabOrder = 7
+      TabOrder = 1
     end
     object Label18: TLabel
       AnchorSideLeft.Control = Label6

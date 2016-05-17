@@ -39,7 +39,6 @@ type
     procedure btAddClick(Sender: TObject);
     procedure btClearClick(Sender: TObject);
     procedure btSendClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
     procedure GetCommands;
@@ -88,11 +87,6 @@ begin
       Command:= '';
       SerPort.RaiseExcept:= true;
     end;
-end;
-
-procedure TCustomCommandForm.FormCreate(Sender: TObject);
-begin
-
 end;
 
 procedure TCustomCommandForm.btAddClick(Sender: TObject);

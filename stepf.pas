@@ -153,7 +153,6 @@ begin
     ReadingsForm.btStopLog.Enabled:= false;
   end;
 
-  Finished:= false;
   btCancel.Enabled:= true;
   btPause.Enabled:= true;
   btFinish.Enabled:= false;
@@ -171,8 +170,11 @@ begin
     sleep(MainForm.MinDelay);
     Params.OnePoint:= MainForm.cbPointPerStep.Checked;
     ReadingsForm.BeginLog;
-    ReadingsForm.UpdateTimer.Enabled:= false;
+    if MainForm.cbPointPerStep.Checked then
+      ReadingsForm.UpdateTimer.Enabled:= false;
   end;
+
+  Finished:= false;
 
   sleep(Params.TimeStep);
   Timer.Enabled:= true;
@@ -258,7 +260,8 @@ begin
       end;
     end;
 
-    ReadingsForm.ProcessBuffers;
+    if MainForm.cbPointPerStep.Checked then
+      ReadingsForm.ProcessBuffers;
     MainForm.PassCommands;
   end;
 end;
@@ -287,14 +290,16 @@ begin
   begin
     PauseLength+= Now - PauseTime;
     Timer.Enabled:= true;
-    if Config.AutoReadingStep then ReadingsForm.ContinueLog;
+    if Config.AutoReadingStep then
+      ReadingsForm.ContinueLog;
     btPause.Caption:= 'Пауза';
   end;
 end;
 
 procedure TStepForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
-  if ReadingsForm.LogState <> lInActive then CanClose:= false
+  if ReadingsForm.LogState <> lInActive then
+    CanClose:= false
   else CanClose:= true;
 end;
 

@@ -3,12 +3,13 @@
   <ProjectSession>
     <PathDelim Value="\"/>
     <Version Value="9"/>
-    <BuildModes Active="Debug"/>
-    <Units Count="29">
+    <BuildModes Active="Release"/>
+    <Units Count="39">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="28" Y="12"/>
+        <TopLine Value="4"/>
+        <CursorPos X="41" Y="39"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -19,10 +20,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainF"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="461"/>
-        <CursorPos X="27" Y="398"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="1234"/>
+        <CursorPos X="37" Y="1252"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -34,8 +34,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MemoF"/>
-        <EditorIndex Value="6"/>
-        <TopLine Value="4"/>
+        <EditorIndex Value="12"/>
         <CursorPos X="78" Y="23"/>
         <UsageCount Value="300"/>
         <Loaded Value="True"/>
@@ -48,9 +47,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="StepF"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="147"/>
-        <CursorPos X="24" Y="153"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="139"/>
+        <CursorPos X="26" Y="177"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -62,9 +61,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="OptionF"/>
-        <EditorIndex Value="16"/>
-        <TopLine Value="221"/>
-        <CursorPos X="17" Y="228"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="318"/>
+        <CursorPos X="23" Y="334"/>
         <UsageCount Value="251"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -76,15 +75,15 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ReadingsF"/>
-        <EditorIndex Value="7"/>
-        <TopLine Value="1070"/>
-        <CursorPos X="62" Y="1084"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="104"/>
+        <CursorPos X="39" Y="128"/>
         <UsageCount Value="208"/>
         <Bookmarks Count="4">
-          <Item0 Y="820"/>
-          <Item1 X="6" Y="847" ID="1"/>
-          <Item2 X="5" Y="252" ID="2"/>
-          <Item3 X="3" Y="1008" ID="3"/>
+          <Item0 Y="819"/>
+          <Item1 X="6" Y="846" ID="1"/>
+          <Item2 X="5" Y="249" ID="2"/>
+          <Item3 X="3" Y="1003" ID="3"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -96,9 +95,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="CustomCommandF"/>
-        <EditorIndex Value="17"/>
-        <TopLine Value="102"/>
-        <CursorPos X="74" Y="126"/>
+        <EditorIndex Value="10"/>
+        <TopLine Value="58"/>
+        <CursorPos X="26" Y="80"/>
         <UsageCount Value="292"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -110,8 +109,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="StatusF"/>
-        <EditorIndex Value="15"/>
-        <TopLine Value="219"/>
+        <EditorIndex Value="11"/>
         <CursorPos X="5" Y="45"/>
         <UsageCount Value="210"/>
         <Loaded Value="True"/>
@@ -135,9 +133,10 @@
       <Unit10>
         <Filename Value="serconf.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="12"/>
-        <TopLine Value="341"/>
-        <CursorPos X="68" Y="360"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="957"/>
+        <CursorPos X="11" Y="987"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
       </Unit10>
@@ -145,8 +144,8 @@
         <Filename Value="axissource.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="AxisSource"/>
-        <EditorIndex Value="18"/>
-        <TopLine Value="34"/>
+        <EditorIndex Value="8"/>
+        <TopLine Value="35"/>
         <CursorPos X="33" Y="26"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -158,7 +157,7 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="AboutF"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="13"/>
         <TopLine Value="40"/>
         <CursorPos X="44" Y="63"/>
         <UsageCount Value="281"/>
@@ -173,8 +172,8 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="DeviceF"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="1140"/>
-        <CursorPos X="36" Y="1146"/>
+        <TopLine Value="910"/>
+        <CursorPos X="12" Y="728"/>
         <UsageCount Value="260"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -207,8 +206,7 @@
       <Unit17>
         <Filename Value="ReadingThreads.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="8"/>
-        <TopLine Value="150"/>
+        <EditorIndex Value="7"/>
         <CursorPos X="14" Y="24"/>
         <UsageCount Value="207"/>
         <Loaded Value="True"/>
@@ -221,210 +219,278 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="OffsetF"/>
         <EditorIndex Value="9"/>
-        <TopLine Value="73"/>
-        <CursorPos X="48" Y="93"/>
-        <UsageCount Value="88"/>
+        <CursorPos X="5" Y="34"/>
+        <UsageCount Value="316"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit18>
       <Unit19>
-        <Filename Value="synapse\source\lib\tlntsend.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="60"/>
-        <CursorPos X="96" Y="95"/>
-        <UsageCount Value="14"/>
+        <Filename Value="DevSession.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="16"/>
+        <CursorPos X="22" Y="8"/>
+        <UsageCount Value="207"/>
+        <Loaded Value="True"/>
       </Unit19>
       <Unit20>
-        <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\objpas\classes\classesh.inc"/>
-        <EditorIndex Value="11"/>
-        <TopLine Value="660"/>
-        <CursorPos X="3" Y="603"/>
-        <UsageCount Value="75"/>
-        <Loaded Value="True"/>
+        <Filename Value="visapreload.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="74"/>
       </Unit20>
       <Unit21>
+        <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\objpas\classes\classesh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1779"/>
+        <CursorPos X="17" Y="1810"/>
+        <UsageCount Value="155"/>
+      </Unit21>
+      <Unit22>
         <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\objpas\math.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="64"/>
         <CursorPos X="7" Y="89"/>
-        <UsageCount Value="63"/>
-      </Unit21>
-      <Unit22>
+        <UsageCount Value="35"/>
+      </Unit22>
+      <Unit23>
         <Filename Value="..\..\1.6\lcl\grids.pas"/>
         <UnitName Value="Grids"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1617"/>
         <CursorPos X="16" Y="1641"/>
-        <UsageCount Value="75"/>
-      </Unit22>
-      <Unit23>
-        <Filename Value="..\..\1.6\fpc\3.0.0\source\packages\rtl-objpas\src\inc\strutils.pp"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="332"/>
-        <CursorPos Y="334"/>
-        <UsageCount Value="101"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="47"/>
       </Unit23>
       <Unit24>
-        <Filename Value="..\..\1.6\lcl\stdctrls.pp"/>
-        <UnitName Value="StdCtrls"/>
-        <EditorIndex Value="10"/>
-        <TopLine Value="247"/>
-        <CursorPos X="5" Y="273"/>
-        <UsageCount Value="104"/>
-        <Loaded Value="True"/>
+        <Filename Value="..\..\1.6\fpc\3.0.0\source\packages\rtl-objpas\src\inc\strutils.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="332"/>
+        <CursorPos Y="334"/>
+        <UsageCount Value="77"/>
       </Unit24>
       <Unit25>
-        <Filename Value="..\..\1.6\fpc\3.0.0\source\packages\rtl-objpas\src\inc\variants.pp"/>
-        <EditorIndex Value="13"/>
-        <TopLine Value="55"/>
-        <CursorPos X="10" Y="80"/>
-        <UsageCount Value="43"/>
-        <Loaded Value="True"/>
+        <Filename Value="..\..\1.6\lcl\stdctrls.pp"/>
+        <UnitName Value="StdCtrls"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="247"/>
+        <CursorPos X="5" Y="273"/>
+        <UsageCount Value="80"/>
       </Unit25>
       <Unit26>
-        <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\inc\varianth.inc"/>
-        <EditorIndex Value="14"/>
-        <TopLine Value="43"/>
-        <CursorPos X="4" Y="68"/>
-        <UsageCount Value="43"/>
-        <Loaded Value="True"/>
+        <Filename Value="..\..\1.6\fpc\3.0.0\source\packages\rtl-objpas\src\inc\variants.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="55"/>
+        <CursorPos X="10" Y="80"/>
+        <UsageCount Value="39"/>
       </Unit26>
       <Unit27>
-        <Filename Value="..\..\1.6\lcl\include\customcombobox.inc"/>
+        <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\inc\varianth.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="812"/>
-        <CursorPos X="3" Y="819"/>
-        <UsageCount Value="5"/>
+        <TopLine Value="43"/>
+        <CursorPos X="4" Y="68"/>
+        <UsageCount Value="39"/>
       </Unit27>
       <Unit28>
-        <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\objpas\classes\stringl.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="205"/>
-        <CursorPos X="3" Y="210"/>
-        <UsageCount Value="5"/>
+        <Filename Value="FP-VISA-master\session.pas"/>
+        <EditorIndex Value="17"/>
+        <TopLine Value="250"/>
+        <CursorPos X="4" Y="277"/>
+        <UsageCount Value="103"/>
+        <Loaded Value="True"/>
       </Unit28>
+      <Unit29>
+        <Filename Value="FP-VISA-master\visa.pas"/>
+        <EditorIndex Value="14"/>
+        <CursorPos X="21" Y="10"/>
+        <UsageCount Value="103"/>
+        <Loaded Value="True"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="..\..\1.6\fpc\3.0.0\source\packages\fcl-base\src\syncobjs.pp"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="98"/>
+      </Unit30>
+      <Unit31>
+        <Filename Value="..\..\1.6\fpc\3.0.0\source\rtl\inc\systemh.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="171"/>
+        <CursorPos X="9" Y="110"/>
+        <UsageCount Value="98"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="FP-VISA-master\visatype.pas"/>
+        <EditorIndex Value="15"/>
+        <TopLine Value="113"/>
+        <CursorPos X="40" Y="114"/>
+        <UsageCount Value="103"/>
+        <Loaded Value="True"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="..\..\1.6\lcl\forms.pp"/>
+        <UnitName Value="Forms"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1737"/>
+        <CursorPos X="3" Y="1762"/>
+        <UsageCount Value="28"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="..\..\1.6\lcl\include\application.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="421"/>
+        <CursorPos X="3" Y="430"/>
+        <UsageCount Value="6"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="..\..\1.6\lcl\lclproc.pas"/>
+        <UnitName Value="LCLProc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1502"/>
+        <CursorPos X="17" Y="1507"/>
+        <UsageCount Value="5"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="..\..\1.6\components\lazutils\lazloggerbase.pas"/>
+        <UnitName Value="LazLoggerBase"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="588"/>
+        <CursorPos X="3" Y="590"/>
+        <UsageCount Value="5"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="synapse\source\lib\synaser.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="1061"/>
+        <CursorPos X="3" Y="1063"/>
+        <UsageCount Value="5"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="..\..\1.6\lcl\dialogs.pp"/>
+        <UnitName Value="Dialogs"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="507"/>
+        <CursorPos X="11" Y="532"/>
+        <UsageCount Value="5"/>
+      </Unit38>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="readingsf.pas"/>
-        <Caret Line="316" Column="31" TopLine="303"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="306" Column="72" TopLine="280"/>
       </Position1>
       <Position2>
         <Filename Value="mainf.pas"/>
-        <Caret Line="590" Column="6" TopLine="566"/>
+        <Caret Line="782" Column="30" TopLine="771"/>
       </Position2>
       <Position3>
         <Filename Value="mainf.pas"/>
-        <Caret Line="1044" Column="7" TopLine="1043"/>
+        <Caret Line="725" Column="29" TopLine="721"/>
       </Position3>
       <Position4>
-        <Filename Value="readingsf.pas"/>
-        <Caret Line="1340" Column="3" TopLine="1335"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="778" Column="5" TopLine="774"/>
       </Position4>
       <Position5>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="128" Column="39" TopLine="88"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1341" Column="19" TopLine="1278"/>
       </Position5>
       <Position6>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="135" Column="30" TopLine="102"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="893" Column="6" TopLine="883"/>
       </Position6>
       <Position7>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="82" Column="10" TopLine="74"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1210" Column="3" TopLine="1208"/>
       </Position7>
       <Position8>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="106" Column="25" TopLine="99"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="10" Column="28"/>
       </Position8>
       <Position9>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="91" Column="58" TopLine="42"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="898" Column="21" TopLine="883"/>
       </Position9>
       <Position10>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="141" Column="30" TopLine="136"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="138" Column="38" TopLine="111"/>
       </Position10>
       <Position11>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="144" Column="61" TopLine="120"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="208" Column="25" TopLine="179"/>
       </Position11>
       <Position12>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="129" Column="15" TopLine="87"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="901" Column="26" TopLine="883"/>
       </Position12>
       <Position13>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="98" Column="2" TopLine="87"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="105" TopLine="81"/>
       </Position13>
       <Position14>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="155" TopLine="42"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="707" Column="29" TopLine="729"/>
       </Position14>
       <Position15>
         <Filename Value="mainf.pas"/>
-        <Caret Line="1072" Column="14" TopLine="1049"/>
+        <Caret Line="1302" TopLine="1275"/>
       </Position15>
       <Position16>
-        <Filename Value="readingsf.pas"/>
-        <Caret Line="873" Column="63" TopLine="859"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1299" TopLine="1275"/>
       </Position16>
       <Position17>
-        <Filename Value="readingsf.pas"/>
-        <Caret Line="1093" Column="18" TopLine="1070"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="144" Column="78" TopLine="121"/>
       </Position17>
       <Position18>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="19" Column="34"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1299" TopLine="1265"/>
       </Position18>
       <Position19>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="513" Column="22" TopLine="471"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1298" Column="35" TopLine="1275"/>
       </Position19>
       <Position20>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="534" Column="22" TopLine="492"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1297" TopLine="1275"/>
       </Position20>
       <Position21>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="1163" Column="26" TopLine="1139"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1300" TopLine="1275"/>
       </Position21>
       <Position22>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="1156" Column="9" TopLine="1139"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1297" TopLine="1275"/>
       </Position22>
       <Position23>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="1154" Column="9" TopLine="1136"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1300" TopLine="1275"/>
       </Position23>
       <Position24>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="1174" Column="29" TopLine="1139"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1237" Column="7" TopLine="1268"/>
       </Position24>
       <Position25>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="1176" Column="35" TopLine="1140"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="143" Column="35" TopLine="117"/>
       </Position25>
       <Position26>
-        <Filename Value="devicef.pas"/>
-        <Caret Line="1153" Column="14" TopLine="1140"/>
+        <Filename Value="mainf.pas"/>
+        <Caret Line="1301" TopLine="1286"/>
       </Position26>
       <Position27>
         <Filename Value="mainf.pas"/>
-        <Caret Line="1188" Column="3" TopLine="1177"/>
+        <Caret Line="1300" Column="37" TopLine="1286"/>
       </Position27>
       <Position28>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="61" Column="3" TopLine="45"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="924" Column="12" TopLine="901"/>
       </Position28>
       <Position29>
-        <Filename Value="offsetf.pas"/>
-        <Caret Line="137" Column="11" TopLine="75"/>
+        <Filename Value="devicef.pas"/>
+        <Caret Line="716" Column="4" TopLine="700"/>
       </Position29>
       <Position30>
-        <Filename Value="mainf.pas"/>
-        <Caret Line="194" Column="25" TopLine="182"/>
+        <Filename Value="serconf.pas"/>
+        <Caret Line="146" Column="6" TopLine="130"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>

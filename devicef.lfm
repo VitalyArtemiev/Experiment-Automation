@@ -1,5 +1,5 @@
 object DeviceForm: TDeviceForm
-  Left = 606
+  Left = 282
   Height = 792
   Top = 148
   Width = 651
@@ -24,13 +24,13 @@ object DeviceForm: TDeviceForm
     Height = 784
     Top = 4
     Width = 377
-    ActivePage = tsDetectors
+    ActivePage = tsGenerators
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 12
     BorderSpacing.Bottom = 4
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
@@ -145,7 +145,7 @@ object DeviceForm: TDeviceForm
           'Функции модуляции'
           0
           21
-          'Обозначения ед. амплитуды - Vp-p, Vrms'
+          'Обозначения ед. амплитуды - Vp-p, Vrms, dBm'
           0
           22
           'Максимальные частоты соотв. функциям'
@@ -295,7 +295,7 @@ object DeviceForm: TDeviceForm
           'Одиночная развертка'#13#10'Пилообразная'#13#10'Треугольная'#13#10'Синусоида'#13#10'Квадратная'#13#10'ARB'#13#10'Нет'
           1
           21
-          'VP'#13#10'VR'
+          'VP'#13#10'VR'#13#10'DB'
           1
           22
           '30200000'#13#10'30200000'#13#10'100000'#13#10'100000'#13#10'10000000'#13#10'10000000'
@@ -1033,7 +1033,7 @@ object DeviceForm: TDeviceForm
           'Высокий'#13#10'Нормальный'#13#10'Пониж. шум'
           2
           29
-          'Высокий'#13#10'Нормальный'#13#10'Пониж. шум'#13#10'Автоматически'
+          'Высокий'#13#10'Нормальный'#13#10'Пониж. шум'
           2
           31
           '1,0 X'#13#10'1,1 R(В)'#13#10'1,2 R(dBm)'#13#10'2,0 Y'

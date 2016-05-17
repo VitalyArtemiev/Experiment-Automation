@@ -945,6 +945,21 @@ begin
         end;
         mComment.Lines.Clear;
       end;
+
+      with MemoForm do
+      begin
+        mComment.Text:= sgGenCommands.Cells[i, integer(hAmplitudeUnits)];
+        o:= mComment.Lines.Count;
+        if o > 3 then
+        begin
+          pcDevice.TabIndex:= 0;
+          Row:= integer(hAmplitudeUnits);
+          Col:= i;
+          ShowMessage('Ошибка в поле "Обозначения ед. амплитуды"' + LineEnding +     { TODO 3 -cImprovement : What if no units has its own designation???? }
+                      'Не может быть больше трёх обозначений - Vp-p, Vrms, dBm');
+          exit(-$c);
+        end;
+      end;
     end;
 
   with sgDetCommands do

@@ -115,7 +115,6 @@ type
     procedure btProgramClick(Sender: TObject);
     procedure btStopClick(Sender: TObject);
     procedure btTriggerClick(Sender: TObject);
-    procedure cbACEnableChange(Sender: TObject);
     procedure cbFuncSelectChange(Sender: TObject);
     procedure cbImpedanceChange(Sender: TObject);
     procedure cbSweepTypeChange(Sender: TObject);
@@ -142,12 +141,10 @@ type
     //procedure ListBox1Click(Sender: TObject);
   private
     { private declarations }
-    FrequencyLimits: array of double;
-    MaxAmplitudeLimits: array of double;
-    MinAmplitudeLimits: array of double;
-    AmplitudeUnits: array [-1..1] of string;
+    FrequencyLimits, MinAmplitudeLimits, MaxAmplitudeLimits: array of double;
   public
     { public declarations }
+    FileResult: integer;
     MinDelay: longword;
 
     function SaveParams(FileName: ansistring): word;
@@ -187,7 +184,7 @@ var
 implementation
 
 uses
-  Math, Variants, MemoF, StepF, OptionF, ReadingsF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, ReadingsF, OffsetF, AboutF;
 
 {$R *.lfm}
 
@@ -476,8 +473,7 @@ begin
   begin
     inc(ReportNumber);
     str(ReportNumber, s);
-    while FileExists(FileName + '_' + s + '.txt') {or
-          FileExists(FileName + '_' + s + '_1' + '.log')} do        //to cfg?
+    while FileExists(FileName + '_' + s + '.txt') do        //to cfg?
     begin
       inc(ReportNumber);
       str(ReportNumber, s);
@@ -563,6 +559,32 @@ begin
     writeln(f, 'Шаг:                  ' + s + ' В');
     writeln(f, 'Данные в файле: ', ReadingsForm.CurrLogFileName);
   end;
+
+  with ReadingsForm do
+  if ConnectionKind <> cNone then
+  begin
+    writeln(f);
+    writeln(f, Label6.Caption, cbTimeConstant.Text);
+    writeln(f, Label7.Caption, cbSensitivity.Text);
+    if cbReserve1.Visible then
+      writeln(f, Label16.Caption, cbReserve1.Text);
+    if cbReserve2.Visible then
+      writeln(f, Label17.Caption, cbReserve2.Text);
+    if cbInputRange.Visible then
+      writeln(f, Label18.Caption, cbInputRange.Text);
+    if cbRatio1.Visible then
+      writeln(f, Label14.Caption, cbRatio1.Text);
+    if cbRatio2.Visible then
+      writeln(f, Label15.Caption, cbRatio2.Text);
+    if OffsetTracked then
+    with OffsetForm do
+    begin              { TODO 3 -cImprovement : total query???? }
+      writeln(f, 'Смещения:');
+      for i:= 0 to cbParams.Items.Count - 1 do
+        writeln(f, cbParams.Items[i],' Смещение: ', Offsets[i],' Множитель: ', Expands[i]);
+    end;
+    writeln(f);
+  end;
   writeln(f, '======================================================================');
   writeln(f, '               Комментарий:');
 
@@ -591,6 +613,9 @@ var
   p: integer;
 begin
   WriteProgramLog('Создание главного окна');
+  {$IFOPT D+}
+  btProgram.Visible:= true;
+  {$ENDIF}
 
   Top:= Screen.Height div 2 - Height div 2;
   Left:= Screen.Width div 2 - Width - 8;
@@ -622,7 +647,7 @@ begin
         begin
           while p <> 0 do
           begin
-            cbPortSelect.AddItem(copy(PortList, 1, p-1), nil);
+            cbPortSelect.AddItem(copy(PortList, 1, p - 1), nil);
             delete(PortList, 1, p);
             inc(PortCount);
             p:= pos(',', PortList);
@@ -636,9 +661,14 @@ begin
 
   if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
 
-  if LoadConfig(DefaultConfig) = 0 then
+  FileResult:= LoadConfig(DefaultConfig);
+  if FileResult = 0 then
+  begin
     if Config.WorkConfig <> DefaultConfig then
-      LoadConfig(Config.WorkConfig);
+      FileResult:= LoadConfig(Config.WorkConfig);
+    if FileResult <> 0 then
+      FileResult:= LoadConfig(DefaultConfig);
+  end;
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
@@ -660,7 +690,7 @@ end;
 
 procedure TMainForm.NewReportClick(Sender: TObject);
 begin
-  ReportNumber:= 0;
+  ReportNumber:= 0; //so that it checks for existing file internally?
   ExperimentNumber:= 1;
   ExportParams(true);
 end;
@@ -671,27 +701,23 @@ begin
 end;
 
 procedure TMainForm.eAmplitudeChange(Sender: TObject);
-begin                                       { TODO 2 -cBug : wtf does this do }
-  if eAmplitude.Value > 0 then
-  begin
-    eAmplitude.MinValue:= 0.05 + cbImpedance.ItemIndex * 0.05;
-    cbACEnable.Checked:= true;
-  end;
+begin                                       { TODO 2 -cBug : might be bugged, might need to extend}
   if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then
     eOffset.Value:= (eOffset.MaxValue - eAmplitude.Value/2) * sign(eOffset.Value);
 end;
 
 procedure TMainForm.cbAmplUnitChange(Sender: TObject);
 begin
-  if cbAmplUnit.ItemIndex = 0 then
-    AmplitudeUnit:= uVPeak
+  if AmplitudeUnits[cbAmplUnit.ItemIndex] <> '' then
+    AmplitudeUnit:= eUnits(cbAmplUnit.ItemIndex)
   else
-    AmplitudeUnit:= uVRms;
+    if ConnectionKind <> cNone then
+      ShowMessage('Единица ' + cbAmplUnit.Text + ' не поддерживается прибором');
 end;
 
 procedure TMainForm.eOffsetChange(Sender: TObject);
 begin
-  if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then
+  if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then   { TODO 2 -cImprovement : same }
     eOffset.Value:= 2 * eAmplitude.Value * sign(eOffset.Value);
   if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then
     eAmplitude.Value:= 2 * (eOffset.MaxValue - abs(eOffset.Value));
@@ -702,19 +728,22 @@ begin
   if ((eStepStartF.Value <> eStepStopF.Value) and (eFStep.Value <> 0)) or
     ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
     StepForm.CalcSteps
-    else TotalTime.Caption:= '0 ч 0 м 0 с, 0 шагов';
-  if eFStep.Value = 0 then eStepStopF.Value:= eStepStartF.Value;
-  if eAStep.Value = 0 then eStepStopA.Value:= eStepStartA.Value;
+  else
+    TotalTime.Caption:= '0 ч 0 м 0 с, 0 шагов';
+  if eFStep.Value = 0 then
+    eStepStopF.Value:= eStepStartF.Value;
+  if eAStep.Value = 0 then
+    eStepStopA.Value:= eStepStartA.Value;
 end;
 
 procedure TMainForm.eSweepStartFChange(Sender: TObject);
 begin
   if cbSweepType.ItemIndex = 1 then
   begin
-      if (eSweepStartF.Value < eSweepStopF.Value) and (eSweepStartF.Value * 1000000 < eSweepStopF.Value) then
-      eSweepStartF.Value:= eSweepStopF.Value / 1000000;
-      if (eSweepStartF.Value > eSweepStopF.Value) and (eSweepStartF.Value  > eSweepStopF.Value * 1000000) then
-      eSweepStartF.Value:= eSweepStopF.Value * 1000000;
+    if (eSweepStartF.Value < eSweepStopF.Value) and (eSweepStartF.Value * 1000000 < eSweepStopF.Value) then
+    eSweepStartF.Value:= eSweepStopF.Value / 1000000;                                                           { TODO 2 -cImprovement : Check this out }
+    if (eSweepStartF.Value > eSweepStopF.Value) and (eSweepStartF.Value  > eSweepStopF.Value * 1000000) then
+    eSweepStartF.Value:= eSweepStopF.Value * 1000000;
   end
 end;
 
@@ -722,10 +751,10 @@ procedure TMainForm.eSweepStopFChange(Sender: TObject);
 begin
   if cbSweepType.ItemIndex = 1 then
   begin
-      if (eSweepStartF.Value < eSweepStopF.Value) and (eSweepStartF.Value * 1000000 < eSweepStopF.Value) then
-      eSweepStopF.Value:= eSweepStartF.Value * 1000000;
-      if (eSweepStartF.Value > eSweepStopF.Value) and (eSweepStartF.Value  > eSweepStopF.Value * 1000000) then
-      eSweepStopF.Value:= eSweepStartF.Value / 1000000;
+    if (eSweepStartF.Value < eSweepStopF.Value) and (eSweepStartF.Value * 1000000 < eSweepStopF.Value) then
+    eSweepStopF.Value:= eSweepStartF.Value * 1000000;
+    if (eSweepStartF.Value > eSweepStopF.Value) and (eSweepStartF.Value  > eSweepStopF.Value * 1000000) then
+    eSweepStopF.Value:= eSweepStartF.Value / 1000000;
   end
 end;
 
@@ -786,7 +815,8 @@ end;
 
 procedure TMainForm.ReadingTimerTimer(Sender: TObject);
 begin
-  ReadingsForm.StopLog;
+  if ReadingsForm.LogState = lActive then
+    ReadingsForm.StopLog;
   ReadingTimer.Enabled:= false;
 end;
 
@@ -859,12 +889,29 @@ begin
     eStepStartA.MinValue:= MinAmplitudeLimits[ItemIndex];
     eStepStopA.MinValue:=  MinAmplitudeLimits[ItemIndex];
     eOffset.MaxValue:=     MaxAmplitudeLimits[ItemIndex] / 2;
-    eOffset.MinValue:= eOffset.MaxValue
-  end
+    eOffset.MinValue:=   - eOffset.MaxValue
+  end;
+
+  writeprogramlog(eAmplitude.MaxValue);
+  writeprogramlog(eAmplitude.MinValue);
+  writeprogramlog(eOffset.MaxValue);
+  writeprogramlog(eOffset.MinValue);
+
+  if length(MinAmplitudeLimits) = 1 then
+  begin
+    eAmplitude.MaxValue:=  MaxAmplitudeLimits[0];
+    eStepStartA.MaxValue:= MaxAmplitudeLimits[0];
+    eStepStopA.MaxValue:=  MaxAmplitudeLimits[0];
+    eAmplitude.MinValue:=  MinAmplitudeLimits[0];
+    eStepStartA.MinValue:= MinAmplitudeLimits[0];
+    eStepStopA.MinValue:=  MinAmplitudeLimits[0];
+    eOffset.MaxValue:=     MaxAmplitudeLimits[0] / 2;
+    eOffset.MinValue:=   - eOffset.MaxValue
+  end;
 end;
 
 procedure TMainForm.cbSweepTypeChange(Sender: TObject);
-begin
+begin                                                  { TODO 2 -cImprovement : Also questionable }
   if cbSweepType.ItemIndex = 1 then
   begin
     eSweepStartF.MinValue:= 0.000001;
@@ -894,8 +941,9 @@ begin
     Offset:= eOffset.Value;
     ACOn:= cbACEnable.Checked;
     AmplUnit:= cbAmplUnit.ItemIndex;
+    if not cbAmplUnit.Visible then AmplitudeUnit:= uNone;
 
-    if cbImpedance.ItemIndex >= 0 then AddCommand(gResistance, false, Impedance);
+    if cbImpedance.Visible then AddCommand(gResistance, false, Impedance);
     AddCommand(gFunction, false, CurrFunc);
     AddCommand(gOffset, false, Offset, uNone);
 
@@ -934,10 +982,10 @@ begin
     end
     else
     begin
-      if cbAmplUnit.Visible then
+      if ACOn then
         AddCommand(gAmplitude, false, eAmplitude.Value, AmplitudeUnit)
       else
-        AddCommand(gAmplitude, false, eAmplitude.Value, uNone);
+        AddCommand(gAmplitude, false, '0' + AmplitudeUnits[integer(AmplitudeUnit)]);
 
       if FrequencyTab.TabIndex = 1 then
       begin
@@ -957,7 +1005,10 @@ begin
           sleep(MinDelay);
           ReadingsForm.BeginLog;
           if Params.ReadingTime > 0 then
+          begin
+            ReadingTimer.Interval:= Params.ReadingTime;
             ReadingTimer.Enabled:= true;
+          end;
         end;
 
         AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
@@ -997,7 +1048,10 @@ begin
           sleep(MinDelay);
           ReadingsForm.BeginLog;
           if Params.ReadingTime > 0 then
+          begin
+            ReadingTimer.Interval:= Params.ReadingTime;
             ReadingTimer.Enabled:= true;
+          end;
         end;
         Frequency:= eFrequency.Value;
 
@@ -1042,7 +1096,7 @@ var
   d: double;
 begin
   EnterCriticalSection(CommCS);
-    if cbImpedance.ItemIndex >= 0 then
+    if cbImpedance.Visible then
       AddCommand(gResistance, true);
     AddCommand(gFunction, true);
     AddCommand(gAmplitude, true);
@@ -1065,7 +1119,7 @@ begin
   cs:= CurrentDevice^.CommSeparator;
   l:= length(cs) - 1;
 
-  if cbImpedance.ItemIndex >= 0 then
+  if cbImpedance.Visible then
   begin
     val(copy(s, 1, pos(cs, s) - 1), i, e);
     if e <> 0 then exit;
@@ -1145,27 +1199,20 @@ end;
 
 procedure TMainForm.btStopClick(Sender: TObject);
 begin
-  AddCommand(gSweepEnable, false, 0);
-  AddCommand(gFrequency, false, 0, uNone);
-  AddCommand(gAmplitude, false, 0, uVPeak);
-  PassCommands;
+  EnterCriticalSection(CommCS);
+    AddCommand(gSweepEnable, false, 0);
+    AddCommand(gFrequency, false, 0, uNone);
+    AddCommand(gAmplitude, false, 0, uVPeak);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
 end;
 
 procedure TMainForm.btTriggerClick(Sender: TObject);
 begin
-  AddCommand(cTrigger);
-  PassCommands;
-end;
-
-procedure TMainForm.cbACEnableChange(Sender: TObject);
-begin
-  if not cbACEnable.Checked then
-  begin
-    eAmplitude.MinValue:= 0;
-    eAmplitude.Value:= 0;
-  end
-  else
-  eAmplitude.MinValue:= 0.05 + cbImpedance.ItemIndex * 0.05;
+  EnterCriticalSection(CommCS);
+    AddCommand(cTrigger);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -1178,6 +1225,8 @@ begin
     LoadParams(Config.DefaultParams);
 
   cbImpedanceChange(Self);
+  if cbImpedance.ItemIndex < 0 then
+    cbImpedance.ItemIndex:= 0;
   eStepChange(Self);
   ReadingsForm.cbReadingsModeChange(ReadingsForm);
 end;
@@ -1185,7 +1234,7 @@ end;
 procedure TMainForm.btnConnectClick(Sender: TObject);
 var
   s: string;
-  i, a: integer;
+  i: integer;
 begin
   if ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
   begin
@@ -1244,8 +1293,9 @@ begin
       for i:= 0 to mComment.Lines.Count - 1 do
       begin
         s:= mComment.Lines[i];
-        MinAmplitudeLimits[i]:= valf(Copy2SymbDel(s, '-'));
-        MaxAmplitudeLimits[i]:= valf(s);
+
+        MinAmplitudeLimits[i]:= vald(Copy2SymbDel(s, '-'));
+        MaxAmplitudeLimits[i]:= vald(s);
       end;
       mComment.Clear;
     end
@@ -1255,28 +1305,16 @@ begin
       setlength(MaxAmplitudeLimits, 1);
       MinAmplitudeLimits[0]:= 0;
       MaxAmplitudeLimits[0]:= 20;
-
-      with cbImpedance do
-      begin
-        eAmplitude.MaxValue:=  MaxAmplitudeLimits[0];
-        eStepStartA.MaxValue:= MaxAmplitudeLimits[0];
-        eStepStopA.MaxValue:=  MaxAmplitudeLimits[0];
-        eAmplitude.MinValue:=  MinAmplitudeLimits[0];
-        eStepStartA.MinValue:= MinAmplitudeLimits[0];
-        eStepStopA.MinValue:=  MinAmplitudeLimits[0];
-        eOffset.MaxValue:=     MaxAmplitudeLimits[0] / 2;
-        eOffset.MinValue:= eOffset.MaxValue
-      end
     end;
 
     s:= Cells[DeviceIndex, integer(hAmplitudeUnits)];
     if s <> '' then
-    with MemoForm do
+    with MemoForm.mComment do
     begin
-      mComment.Text:= s;
-      for i:= 0 to 1 do
-        AmplitudeUnits[i]:= mComment.Lines[i];
-      mComment.Clear;
+      Text:= s;
+      for i:= 0 to Lines.Count - 1 do
+        AmplitudeUnits[i]:= Lines[i];
+      Clear;
       cbAmplUnit.Show;
       Label29.Show;
     end
@@ -1289,7 +1327,7 @@ begin
     cbFuncSelectChange(Self);
   end;
 
-  if cbImpedance.ItemIndex < 0 then
+  if cbImpedance.Items.Count = 0 then
   begin
     Label9.Hide;
     cbImpedance.Hide;

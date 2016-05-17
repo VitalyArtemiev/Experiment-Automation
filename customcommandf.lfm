@@ -8,7 +8,6 @@ object CustomCommandForm: TCustomCommandForm
   Caption = 'Пользовательские команды'
   ClientHeight = 264
   ClientWidth = 386
-  OnCreate = FormCreate
   OnShow = FormShow
   Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'

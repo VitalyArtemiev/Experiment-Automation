@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 419
+  Left = 478
   Height = 600
-  Top = 344
+  Top = 160
   Width = 528
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -180,7 +180,7 @@ object MainForm: TMainForm
     BorderSpacing.Top = 24
     BorderSpacing.Right = 4
     TabIndex = 2
-    TabOrder = 6
+    TabOrder = 7
     object tsConstantFrequency: TTabSheet
       Caption = 'Постоянная частота'
       ClientHeight = 164
@@ -288,7 +288,7 @@ object MainForm: TMainForm
           'Вверх-вниз'
           'FSK'
         )
-        TabOrder = 0
+        TabOrder = 5
         Text = 'Вверх'
       end
       object cbSweepType: TComboBox
@@ -308,7 +308,7 @@ object MainForm: TMainForm
           'Логарифмическое'
         )
         OnChange = cbSweepTypeChange
-        TabOrder = 1
+        TabOrder = 4
         Text = 'Линейное'
       end
       object cbSweepRate: TCheckBox
@@ -414,7 +414,7 @@ object MainForm: TMainForm
         MaxValue = 30000000
         MinValue = 1E-6
         OnChange = eSweepStopFChange
-        TabOrder = 4
+        TabOrder = 1
         Value = 1E-6
       end
       object eSweepStartF: TFloatSpinEdit
@@ -432,7 +432,7 @@ object MainForm: TMainForm
         MaxValue = 30000000
         MinValue = 1E-6
         OnChange = eSweepStartFChange
-        TabOrder = 5
+        TabOrder = 0
         Value = 1E-6
       end
       object Label11: TLabel
@@ -453,9 +453,10 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = cbSweepDirection
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = eSweepStartF
+        AnchorSideTop.Side = asrCenter
         Left = 365
         Height = 15
-        Top = 8
+        Top = 12
         Width = 13
         Caption = 'Гц'
         ParentColor = False
@@ -758,7 +759,7 @@ object MainForm: TMainForm
     Caption = 'Остановить'
     Enabled = False
     OnClick = btStopClick
-    TabOrder = 7
+    TabOrder = 6
   end
   object btProgram: TSpeedButton
     AnchorSideLeft.Control = btReset
@@ -770,6 +771,7 @@ object MainForm: TMainForm
     Width = 102
     BorderSpacing.Top = 8
     Caption = 'Управление'
+    Visible = False
     OnClick = btProgramClick
   end
   object btReset: TSpeedButton
@@ -839,12 +841,11 @@ object MainForm: TMainForm
       Checked = True
       Color = clWhite
       Enabled = False
-      OnChange = cbACEnableChange
       ParentColor = False
       ParentShowHint = False
       ShowHint = True
       State = cbChecked
-      TabOrder = 2
+      TabOrder = 3
     end
     object cbImpedance: TComboBox
       AnchorSideLeft.Control = cbFuncSelect
@@ -872,9 +873,9 @@ object MainForm: TMainForm
       Left = 6
       Height = 15
       Top = 12
-      Width = 87
+      Width = 56
       BorderSpacing.Left = 6
-      Caption = 'Сопротивление'
+      Caption = 'Импеданс'
       Color = clWhite
       ParentColor = False
       Transparent = False
@@ -977,7 +978,7 @@ object MainForm: TMainForm
       MaxValue = 10
       MinValue = -10
       OnChange = eOffsetChange
-      TabOrder = 3
+      TabOrder = 5
       Value = 0
     end
     object Label2: TLabel
@@ -1002,46 +1003,31 @@ object MainForm: TMainForm
       Enabled = False
       Increment = 0.1
       MaxValue = 20
-      MinValue = 0
+      MinValue = 0.01
       OnChange = eAmplitudeChange
       TabOrder = 4
-      Value = 0.05
+      Value = 0.1
     end
     object Label28: TLabel
-      AnchorSideLeft.Control = cbAmplUnit
+      AnchorSideLeft.Control = Label27
       AnchorSideTop.Control = Label2
-      Left = 348
+      Left = 367
       Height = 15
       Top = 154
       Width = 7
-      BorderSpacing.Left = 6
       Caption = 'В'
       ParentColor = False
     end
-    object Label1: TLabel
-      AnchorSideLeft.Control = cbACEnable
-      AnchorSideTop.Control = cbACEnable
-      AnchorSideRight.Control = cbACEnable
-      AnchorSideRight.Side = asrBottom
-      AnchorSideBottom.Control = cbACEnable
-      AnchorSideBottom.Side = asrBottom
-      Left = 6
-      Height = 19
-      Top = 121
-      Width = 81
-      Anchors = [akTop, akLeft, akRight, akBottom]
-      AutoSize = False
-      Color = clWhite
-      ParentColor = False
-      Transparent = False
-    end
     object Label27: TLabel
-      AnchorSideLeft.Control = Label28
       AnchorSideTop.Control = Label1
-      Left = 348
+      AnchorSideRight.Control = pnBaseParams
+      AnchorSideRight.Side = asrBottom
+      Left = 367
       Height = 15
       Top = 121
       Width = 7
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 32
       Caption = 'В'
       ParentColor = False
     end
@@ -1063,9 +1049,10 @@ object MainForm: TMainForm
       Items.Strings = (
         'В(p-p)'
         'В(rms)'
+        'dBm'
       )
       OnChange = cbAmplUnitChange
-      TabOrder = 5
+      TabOrder = 2
       Text = 'В(p-p)'
     end
     object Label29: TLabel
@@ -1093,6 +1080,23 @@ object MainForm: TMainForm
       BorderSpacing.Top = 8
       Font.Style = [fsBold]
       ParentFont = False
+    end
+    object Label1: TLabel
+      AnchorSideLeft.Control = cbACEnable
+      AnchorSideTop.Control = cbACEnable
+      AnchorSideRight.Control = cbACEnable
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = cbACEnable
+      AnchorSideBottom.Side = asrBottom
+      Left = 6
+      Height = 19
+      Top = 121
+      Width = 81
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      AutoSize = False
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
     end
   end
   object btStatus: TSpeedButton

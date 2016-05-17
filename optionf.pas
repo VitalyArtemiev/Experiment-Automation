@@ -232,20 +232,21 @@ end;
 
 procedure TOptionForm.GetOptions;
 begin
-  with Config do
-  begin
-    cgFiles.Checked[0]:= LoadParamsOnStart;
-    cgFiles.Checked[1]:= SaveParamsOnExit;
-    cgFiles.Checked[2]:= AutoExportParams;
-    cgFiles.Checked[3]:= AutoComment;
-    cgFiles.Checked[4]:= KeepLog;
-    cgReadings.Checked[0]:= AutoReadingConst;
-    cgReadings.Checked[1]:= AutoReadingSweep;
-    cgReadings.Checked[2]:= AutoReadingStep;
-    eReadingTime.Value:= Params.ReadingTime;
+  if MainForm.FileResult = 0 then
+    with Config do
+    begin
+      cgFiles.Checked[0]:= LoadParamsOnStart;
+      cgFiles.Checked[1]:= SaveParamsOnExit;
+      cgFiles.Checked[2]:= AutoExportParams;
+      cgFiles.Checked[3]:= AutoComment;
+      cgFiles.Checked[4]:= KeepLog;
+      cgReadings.Checked[0]:= AutoReadingConst;
+      cgReadings.Checked[1]:= AutoReadingSweep;
+      cgReadings.Checked[2]:= AutoReadingStep;
+      eReadingTime.Value:= Params.ReadingTime;
 
-    NewDefaultParams:= DefaultParams;
-  end;
+      NewDefaultParams:= DefaultParams;
+    end;
 
   ReloadDeviceList;
 
