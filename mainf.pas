@@ -25,6 +25,7 @@ type
     cbSweepDirection: TComboBox;
     cbPointPerStep: TCheckBox;
     cbAmplUnit: TComboBox;
+    cbModulation: TComboBox;
     DividerBevel1: TDividerBevel;
     eAmplitude: TFloatSpinEdit;
     eSweepStartF: TFloatSpinEdit;
@@ -226,6 +227,7 @@ begin
       cbSweepRate.Checked:= AutoSweep;
       cbSweepType.ItemIndex:= SweepType;
       cbSweepDirection.ItemIndex:= SweepDir;
+      cbModulation.ItemIndex:= Modulation;
 
       eFStep.Value:= StepF;
       eStepStartF.Value:= StepStartF;
@@ -234,6 +236,8 @@ begin
       eStepStartA.Value:= StepStartA;
       eStepStopA.Value:= StepStopA;
       eTimeStep.Value:= TimeStep;
+
+      ReadingTimer.Interval:= ReadingTime;
 
       with ReadingsForm do
       begin
@@ -297,6 +301,7 @@ begin
       AutoSweep           := cbSweepRate.Checked;
       SweepType           := cbSweepType.ItemIndex;
       SweepDir            := cbSweepDirection.ItemIndex;
+      Modulation          := cbModulation.ItemIndex;
       StepF               := eFStep.Value;
       StepStartF          := eStepStartF.Value;
       StepStopF           := eStepStopF.Value;
@@ -304,6 +309,7 @@ begin
       StepStartA          := eStepStartA.Value;
       StepStopA           := eStepStopA.Value;
       TimeStep            := eTimeStep.Value;
+      ReadingTime         := ReadingTimer.Interval;
 
       with ReadingsForm do
       begin
@@ -364,6 +370,7 @@ begin
       AutoSweep           := cbSweepRate.Checked;
       SweepType           := cbSweepType.ItemIndex;
       SweepDir            := cbSweepDirection.ItemIndex;
+      Modulation          := cbModulation.ItemIndex;
       StepF               := eFStep.Value;
       StepStartF          := eStepStartF.Value;
       StepStopF           := eStepStopF.Value;
@@ -371,6 +378,7 @@ begin
       StepStartA          := eStepStartA.Value;
       StepStopA           := eStepStopA.Value;
       TimeStep            := eTimeStep.Value;
+      ReadingTime         := ReadingTimer.Interval;
     end;
 
     with ReadingsForm do
@@ -514,7 +522,8 @@ begin
   writeln(f, 'Эксперимент №' + s);
   writeln(f, '======================================================================');
   writeln(f, '               Параметры:');
-  writeln(f, 'Сопротивление:        ' + cbImpedance.Text);
+  if cbImpedance.Visible then
+    writeln(f, 'Сопротивление:        ' + cbImpedance.Text);
   writeln(f, 'Функция:              ' + cbFuncSelect.Text);
   writeln(f, 'Амплитуда:            ' + AmplitudeReading.Caption + ' В');
   writeln(f, 'Смещение:             ' + OffsetReading.Caption + ' В');
@@ -537,6 +546,10 @@ begin
       writeln(f, 'Частота сканирования: ' + SweepRateReading.Caption + ' Гц');
     end
     else writeln(f, 'Сканирование по триггеру');
+    writeln(f, 'Тип сканирования:     ' + cbSweepType.Caption);
+    writeln(f, 'Направление:          ' + cbSweepDirection.Caption);
+    if cbModulation.Visible then
+      writeln(f, 'Модуляция:            ' + cbModulation.Caption);
   end
   else
   begin
@@ -717,8 +730,8 @@ end;
 
 procedure TMainForm.eOffsetChange(Sender: TObject);
 begin
-  if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then   { TODO 2 -cImprovement : same }
-    eOffset.Value:= 2 * eAmplitude.Value * sign(eOffset.Value);
+  {if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then   { TODO 2 -cImprovement : same }
+    eOffset.Value:= 2 * eAmplitude.Value * sign(eOffset.Value);}
   if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then
     eAmplitude.Value:= 2 * (eOffset.MaxValue - abs(eOffset.Value));
 end;
@@ -941,11 +954,15 @@ begin
     Offset:= eOffset.Value;
     ACOn:= cbACEnable.Checked;
     AmplUnit:= cbAmplUnit.ItemIndex;
+    ReadingTime:= ReadingTimer.Interval;
     if not cbAmplUnit.Visible then AmplitudeUnit:= uNone;
 
-    if cbImpedance.Visible then AddCommand(gResistance, false, Impedance);
-    AddCommand(gFunction, false, CurrFunc);
-    AddCommand(gOffset, false, Offset, uNone);
+    EnterCriticalSection(CommCS);
+      if cbImpedance.Visible then
+        AddCommand(gResistance, false, Impedance);
+      AddCommand(gFunction, false, CurrFunc);
+      PassCommands;
+    LeaveCriticalSection(CommCS);
 
     if FrequencyTab.TabIndex = 2 then
     begin
@@ -960,8 +977,7 @@ begin
       if ((eStepStartF.Value <> eStepStopF.Value) and (eFStep.Value <> 0)) or
       ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
       begin
-        AddCommand(gSweepEnable, false, 0);
-
+        //assignments in stepf
         ReadingsForm.OnePointPerStep:= cbPointPerStep.Checked;
         AutoSweep:= false;
         StepStartF:= eStepStartF.Value;
@@ -982,10 +998,14 @@ begin
     end
     else
     begin
-      if ACOn then
-        AddCommand(gAmplitude, false, eAmplitude.Value, AmplitudeUnit)
-      else
-        AddCommand(gAmplitude, false, '0' + AmplitudeUnits[integer(AmplitudeUnit)]);
+      EnterCriticalSection(CommCS);
+        if ACOn then
+          AddCommand(gAmplitude, false, eAmplitude.Value, AmplitudeUnit)
+        else
+          AddCommand(gAmplitude, false, '0' + AmplitudeUnits[integer(AmplitudeUnit)]);
+        AddCommand(gOffset, false, Offset, uNone);
+        PassCommands;
+      LeaveCriticalSection(CommCS);
 
       if FrequencyTab.TabIndex = 1 then
       begin
@@ -1002,22 +1022,28 @@ begin
         ReadingsForm.LogAmpl:= false;
         if Config.AutoReadingSweep then
         begin
+          Cursor:= crHourGlass;
           sleep(MinDelay);
+          Cursor:= crDefault;
           ReadingsForm.BeginLog;
-          if Params.ReadingTime > 0 then
+          if ReadingTime > 0 then
           begin
-            ReadingTimer.Interval:= Params.ReadingTime;
+            ReadingTimer.Interval:= ReadingTime;
             ReadingTimer.Enabled:= true;
           end;
         end;
 
-        AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
-        AddCommand(gSweepType, false, cbSweepType.ItemIndex);
-        AddCommand(gSweepDirection, false, cbSweepDirection.ItemIndex);
-        AddCommand(gSweepRate, false, eSweepRate.Value, uNone);
-        AddCommand(gSweepStartFrequency, false, eSweepStartF.Value, uNone);
-        AddCommand(gSweepStopFrequency, false, eSweepStopF.Value, uNone);
-        AddCommand(gSweepEnable, false, 1);
+        EnterCriticalSection(CommCS);
+          AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
+          AddCommand(gSweepType, false, cbSweepType.ItemIndex);
+          AddCommand(gSweepDirection, false, cbSweepDirection.ItemIndex);
+          AddCommand(gModulationWaveform , false, cbModulation.ItemIndex);
+          AddCommand(gSweepRate, false, eSweepRate.Value, uNone);
+          AddCommand(gSweepStartFrequency, false, eSweepStartF.Value, uNone);
+          AddCommand(gSweepStopFrequency, false, eSweepStopF.Value, uNone);
+          AddCommand(gSweepEnable, false, 1);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
 
         AutoSweep:= cbSweepRate.Checked;
         SweepStartF:= eSweepStartF.Value;
@@ -1045,18 +1071,24 @@ begin
         ReadingsForm.LogAmpl:= false;
         if Config.AutoReadingConst then
         begin
+          Cursor:= crHourGlass;
           sleep(MinDelay);
+          Cursor:= crDefault;
           ReadingsForm.BeginLog;
-          if Params.ReadingTime > 0 then
+          if ReadingTime > 0 then
           begin
-            ReadingTimer.Interval:= Params.ReadingTime;
+            ReadingTimer.Interval:= ReadingTime;
             ReadingTimer.Enabled:= true;
           end;
         end;
         Frequency:= eFrequency.Value;
 
-        AddCommand(gFrequency, false, Frequency, uNone);
-        AddCommand(gSweepEnable, false, 0);
+        EnterCriticalSection(CommCS);
+          AddCommand(gFrequency, false, Frequency, uNone);
+          AddCommand(gSweepEnable, false, 0);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+
         if Config.AutoExportParams and not Config.AutoReadingConst then
         begin
           ExportParams(false);
@@ -1064,7 +1096,6 @@ begin
         end;
       end;
     end;
-    PassCommands;
     ParamsApplied:= true;
   end;
 
@@ -1095,6 +1126,7 @@ var
   i, e, l: integer;
   d: double;
 begin
+  Purge;
   EnterCriticalSection(CommCS);
     if cbImpedance.Visible then
       AddCommand(gResistance, true);
@@ -1102,10 +1134,11 @@ begin
     AddCommand(gAmplitude, true);
     AddCommand(gOffset, true);
     AddCommand(gFrequency, true);
-
     AddCommand(gSweepSource, true);
     AddCommand(gSweepType, true);
     AddCommand(gSweepDirection, true);
+    if cbModulation.Visible then
+      AddCommand(gModulationWaveform, true);
     AddCommand(gSweepRate, true);
     AddCommand(gSweepStartFrequency, true);
     AddCommand(gSweepStopFrequency, true);
@@ -1179,6 +1212,13 @@ begin
   cbSweepDirection.ItemIndex:= i;
   delete(s, 1, pos(cs, s) + l);
 
+  if cbModulation.Visible then
+  begin
+    val(copy(s, 1, pos(cs, s) - 1), i);
+    cbModulation.ItemIndex:= i;
+    delete(s, 1, pos(cs, s) + l);
+  end;
+
   os:= copy(s, 1, pos(cs, s) - 1);
   val(os, d);
   str(d:0:6, os);
@@ -1227,6 +1267,8 @@ begin
   cbImpedanceChange(Self);
   if cbImpedance.ItemIndex < 0 then
     cbImpedance.ItemIndex:= 0;
+  if cbModulation.ItemIndex < 0 then
+    cbModulation.ItemIndex:= 0;
   eStepChange(Self);
   ReadingsForm.cbReadingsModeChange(ReadingsForm);
 end;
@@ -1251,6 +1293,8 @@ begin
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 
+  deviceindex:= 2;
+
   if DeviceIndex = iDefaultDevice then Exit;
 
   Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
@@ -1261,6 +1305,7 @@ begin
   cbFuncSelect.Items.Clear;
   cbSweepType.Items.Clear;
   cbSweepDirection.Items.Clear;
+  cbModulation.Items.Clear;
 
   with DeviceForm.sgGenCommands do
   begin
@@ -1268,6 +1313,7 @@ begin
     cbFuncSelect.Items.AddText(Cells[DeviceIndex, integer(hFunctionOptions)]);
     cbSweepType.Items.AddText(Cells[DeviceIndex, integer(hSweepTypeOptions)]);
     cbSweepDirection.Items.AddText(Cells[DeviceIndex, integer(hSweepDirectionOptions)]);
+    cbModulation.Items.AddText(Cells[DeviceIndex, integer(hModulationOptions)]);
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eTimeStep.MinValue:= MinDelay;
@@ -1336,6 +1382,19 @@ begin
   begin
     Label9.Show;
     cbImpedance.Show;
+  end;
+
+  if cbModulation.Items.Count = 0 then
+  begin
+    cbModulation.Hide;
+    cbSweepType.Width:= eSweepStartF.Width;
+    cbSweepDirection.Width:= eSweepStartF.Width;
+  end
+  else
+  begin
+    cbModulation.Show;
+    cbSweepType.Width:= cbModulation.Width;
+    cbSweepDirection.Width:= cbModulation.Width;
   end;
 
   with Params do

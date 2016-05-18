@@ -20,7 +20,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="2"/>
       <MinorVersionNr Value="3"/>
-      <RevisionNr Value="2"/>
+      <RevisionNr Value="3"/>
       <Language Value="0419"/>
       <StringTable LegalCopyright="Виталий Артемьев, кафедра Фотоники МФТИ" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>
     </VersionInfo>

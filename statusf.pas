@@ -173,6 +173,7 @@ var
 begin
   with TSerConnectForm(Form) do
   begin
+    Purge;
     pSerPollSB:= SerPollSB;
     pStdEventSB:= StdEventSB;
     pLiaSB:= LiaSB;

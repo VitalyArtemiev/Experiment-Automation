@@ -86,6 +86,7 @@ var
 begin
   with ReadingsForm, cbParams do
   begin
+    Purge;
     if CommandSupported(dExpand) then
     begin
       EnterCriticalSection(CommCS);

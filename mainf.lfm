@@ -11,6 +11,7 @@ object MainForm: TMainForm
   ClientWidth = 528
   Constraints.MinHeight = 600
   Constraints.MinWidth = 524
+  KeyPreview = True
   Menu = MainMenu1
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -76,7 +77,7 @@ object MainForm: TMainForm
     Left = 362
     Height = 23
     Top = 8
-    Width = 91
+    Width = 90
     BorderSpacing.Left = 16
     Caption = 'Подключение'
     OnClick = btnConnectClick
@@ -89,7 +90,7 @@ object MainForm: TMainForm
     Left = 362
     Height = 23
     Top = 39
-    Width = 91
+    Width = 90
     BorderSpacing.Top = 8
     Caption = 'Отключение'
     OnClick = btnDisconnectClick
@@ -102,7 +103,7 @@ object MainForm: TMainForm
     Left = 362
     Height = 23
     Top = 70
-    Width = 91
+    Width = 90
     BorderSpacing.Top = 8
     Caption = 'Тест'
     OnClick = btnTestClick
@@ -142,7 +143,7 @@ object MainForm: TMainForm
     Left = 362
     Height = 23
     Top = 525
-    Width = 91
+    Width = 90
     Caption = 'Применить'
     Default = True
     Enabled = False
@@ -156,7 +157,7 @@ object MainForm: TMainForm
     Left = 225
     Height = 23
     Top = 525
-    Width = 91
+    Width = 90
     BorderSpacing.Top = 8
     Caption = 'Триггер'
     Enabled = False
@@ -174,12 +175,12 @@ object MainForm: TMainForm
     Height = 192
     Top = 325
     Width = 410
-    ActivePage = tsStep
+    ActivePage = tsSweep
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 24
     BorderSpacing.Right = 4
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 7
     object tsConstantFrequency: TTabSheet
       Caption = 'Постоянная частота'
@@ -247,6 +248,28 @@ object MainForm: TMainForm
       Caption = 'Сканирование'
       ClientHeight = 164
       ClientWidth = 402
+      object cbSweepRate: TCheckBox
+        AnchorSideLeft.Control = Label13
+        AnchorSideTop.Control = eSweepRate
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = eSweepRate
+        Left = 81
+        Height = 19
+        Hint = 'Вкл./выкл. автоматическое сканирование/по триггеру'
+        Top = 88
+        Width = 20
+        Alignment = taLeftJustify
+        Anchors = [akTop, akRight]
+        BorderSpacing.Right = 6
+        Checked = True
+        Color = clWhite
+        Enabled = False
+        ParentColor = False
+        ParentShowHint = False
+        ShowHint = True
+        State = cbChecked
+        TabOrder = 2
+      end
       object SweepRateReading: TLabel
         AnchorSideLeft.Control = SweepStartFReading
         AnchorSideTop.Control = eSweepRate
@@ -274,12 +297,15 @@ object MainForm: TMainForm
         Transparent = False
       end
       object cbSweepDirection: TComboBox
-        AnchorSideLeft.Control = SweepStartFReading
+        AnchorSideLeft.Control = cbSweepType
+        AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbSweepType
-        Left = 244
+        Left = 201
         Height = 23
+        Hint = 'Направление'
         Top = 125
-        Width = 121
+        Width = 90
+        BorderSpacing.Left = 4
         Enabled = False
         ItemHeight = 15
         ItemIndex = 0
@@ -288,6 +314,8 @@ object MainForm: TMainForm
           'Вверх-вниз'
           'FSK'
         )
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 5
         Text = 'Вверх'
       end
@@ -297,8 +325,9 @@ object MainForm: TMainForm
         AnchorSideTop.Side = asrBottom
         Left = 107
         Height = 23
+        Hint = 'Тип сканирования'
         Top = 125
-        Width = 121
+        Width = 90
         BorderSpacing.Top = 16
         Enabled = False
         ItemHeight = 15
@@ -308,39 +337,10 @@ object MainForm: TMainForm
           'Логарифмическое'
         )
         OnChange = cbSweepTypeChange
-        TabOrder = 4
-        Text = 'Линейное'
-      end
-      object cbSweepRate: TCheckBox
-        AnchorSideLeft.Control = Label13
-        AnchorSideLeft.Side = asrBottom
-        AnchorSideTop.Control = Label13
-        Left = 86
-        Height = 19
-        Hint = 'Вкл./выкл. автоматическое сканирование/по триггеру'
-        Top = 86
-        Width = 20
-        Anchors = [akLeft]
-        BorderSpacing.Left = 4
-        Checked = True
-        Enabled = False
         ParentShowHint = False
         ShowHint = True
-        State = cbChecked
-        TabOrder = 2
-      end
-      object Label13: TLabel
-        AnchorSideLeft.Control = Label11
-        AnchorSideTop.Control = eSweepRate
-        AnchorSideTop.Side = asrCenter
-        Left = 4
-        Height = 30
-        Top = 82
-        Width = 78
-        Caption = 'Частота'#13#10'сканирования'
-        Color = clWhite
-        ParentColor = False
-        Transparent = False
+        TabOrder = 4
+        Text = 'Линейное'
       end
       object eSweepRate: TFloatSpinEdit
         AnchorSideLeft.Control = eSweepStartF
@@ -450,21 +450,21 @@ object MainForm: TMainForm
         Transparent = False
       end
       object Label23: TLabel
-        AnchorSideLeft.Control = cbSweepDirection
-        AnchorSideLeft.Side = asrBottom
+        AnchorSideLeft.Control = SweepStartFReading
         AnchorSideTop.Control = eSweepStartF
         AnchorSideTop.Side = asrCenter
-        Left = 365
+        Left = 364
         Height = 15
         Top = 12
         Width = 13
+        BorderSpacing.Left = 120
         Caption = 'Гц'
         ParentColor = False
       end
       object Label24: TLabel
         AnchorSideLeft.Control = Label23
         AnchorSideTop.Control = SweepStopFReading
-        Left = 365
+        Left = 364
         Height = 15
         Top = 51
         Width = 13
@@ -474,12 +474,57 @@ object MainForm: TMainForm
       object Label25: TLabel
         AnchorSideLeft.Control = Label23
         AnchorSideTop.Control = SweepRateReading
-        Left = 365
+        Left = 364
         Height = 15
         Top = 90
         Width = 13
         Caption = 'Гц'
         ParentColor = False
+      end
+      object cbModulation: TComboBox
+        AnchorSideLeft.Control = cbSweepDirection
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = cbSweepType
+        Left = 295
+        Height = 23
+        Hint = 'Модуляция'
+        Top = 125
+        Width = 90
+        BorderSpacing.Left = 4
+        Enabled = False
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Одиночная развертка'
+          'Пилообразная'
+          'Треугольная'
+          'Синусоида'
+          'Квадратная'
+          'ARB'
+          'Нет'
+        )
+        OnChange = cbSweepTypeChange
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 6
+        Text = 'Одиночная развертка'
+      end
+      object Label13: TLabel
+        AnchorSideLeft.Control = Label11
+        AnchorSideTop.Control = eSweepRate
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = cbSweepRate
+        AnchorSideRight.Side = asrBottom
+        Left = 4
+        Height = 30
+        Top = 82
+        Width = 97
+        Anchors = [akTop, akLeft, akRight]
+        AutoSize = False
+        Caption = 'Частота'#13#10'сканирования'
+        Color = clWhite
+        ParentColor = False
+        Transparent = False
       end
     end
     object tsStep: TTabSheet
@@ -1011,7 +1056,7 @@ object MainForm: TMainForm
     object Label28: TLabel
       AnchorSideLeft.Control = Label27
       AnchorSideTop.Control = Label2
-      Left = 367
+      Left = 366
       Height = 15
       Top = 154
       Width = 7
@@ -1019,14 +1064,16 @@ object MainForm: TMainForm
       ParentColor = False
     end
     object Label27: TLabel
+      AnchorSideLeft.Control = AmplitudeReading
       AnchorSideTop.Control = Label1
       AnchorSideRight.Control = pnBaseParams
       AnchorSideRight.Side = asrBottom
-      Left = 367
+      Left = 366
       Height = 15
       Top = 121
-      Width = 7
-      Anchors = [akTop, akRight]
+      Width = 8
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Left = 120
       BorderSpacing.Right = 32
       Caption = 'В'
       ParentColor = False

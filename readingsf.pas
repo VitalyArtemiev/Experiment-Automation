@@ -76,7 +76,7 @@ type
 
     Label9: TLabel;
 
-    PairSplitter1: TPairSplitter;
+    GraphSplitter: TPairSplitter;
     PairSplitterSide1: TPairSplitterSide;
     PairSplitterSide2: TPairSplitterSide;
     eUpdateInterval: TSpinEdit;
@@ -122,7 +122,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure PairSplitter1Resize(Sender: TObject);
+    procedure GraphSplitterResize(Sender: TObject);
     procedure Source1GetChartDataItem(ASource: TUserDefinedChartSource;
       AIndex: Integer; var AItem: TChartDataItem);
     procedure Source2GetChartDataItem(ASource: TUserDefinedChartSource;
@@ -306,15 +306,15 @@ end;
 procedure tReadingsForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
-  if cbCH1.ItemIndex < 0 then
-    cbCH1.ItemIndex:= 0;
-  if cbCH2.ItemIndex < 0 then
-    cbCH2.ItemIndex:= 0;
+  if cbRatio1.ItemIndex < 0 then
+    cbRatio1.ItemIndex:= 0;
+  if cbRatio2.ItemIndex < 0 then
+    cbRatio2.ItemIndex:= 0;
 end;
 
-procedure tReadingsForm.PairSplitter1Resize(Sender: TObject);
+procedure tReadingsForm.GraphSplitterResize(Sender: TObject);
 begin
-  with PairSplitter1 do
+  with GraphSplitter do
     Position:= Width div 2;
 end;
 
@@ -427,9 +427,11 @@ begin
 
   if Finished or not ReadingsForm.ParamsApplied then  //skip if stepf is already going
   begin
+    Cursor:= crHourGlass;
     ReadingsForm.btApplyClick(Self);
     sleep(ReadingsForm.eDelay.Value);
   end;
+  Cursor:= crDefault;
 
   ReadingMode:= eReadMode(cbReadingsMode.ItemIndex);
 
@@ -541,7 +543,7 @@ begin
     rSimultaneous:
     begin
       if OnePointPerStep then
-        ReadingsThread:= nil //
+        ReadingsThread:= nil //Assigned in stepform
       else
         ReadingsThread:= tSimultaneousThread.Create;
     end;
@@ -1211,26 +1213,35 @@ var
   s: string;
   st, l: tDateTime;
 begin
+  EnableControls(false);
+  Cursor:= crHourGlass;
   EnterCriticalSection(CommCS);
     AddCommand(dAutoSensitivity, false);
     PassCommands;
   LeaveCriticalSection(CommCS);
 
-  l:= EncodeTime(0, 0, 15, 0);
+  Sleep(MinDelay);
+
+  l:= EncodeTime(0, 0, 20, 0);
   st:= Now;
   repeat
     AddCommand(cSerialPoll, true);
     PassCommands;
-    s:= Recvstring(2000);
+    s:= Recvstring(5000);
     val(s, SerPollSB);
+    StatusBar.Panels[spStatus].Text:= BinStr(SerPollSB, 8);
+    StatusBar.Update;
     if Now - st > l then
     begin
       ShowMessage('Устройство не ответило');
       break;
     end;
-  until ((SerPollSB div %100000) mod %10 = %1);
+  until ((SerPollSB div %10) mod %10 = %1);  //interface ready bit
 
   btQueryClick(Self);
+  EnableControls(true);
+  Cursor:= crDefault;
+  StatusBar.Panels[spStatus].Text:= '';
 end;
 
 procedure tReadingsForm.btAutoRangeClick(Sender: TObject);
@@ -1330,6 +1341,7 @@ var
   s1, s2, s3: string;
   i, e: integer;
 begin
+  Purge;
   EnterCriticalSection(CommCS);
     AddCommand(dDisplaySelect, true, 1);
     AddCommand(dDisplaySelect, true, 2);

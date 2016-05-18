@@ -143,9 +143,22 @@ begin
   str(Frequency:19:6, s);
   FrequencyReading.Caption:= s;
 
-  MainForm.AddCommand(gFrequency, false, Frequency, uNone);
-  MainForm.AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
-  MainForm.PassCommands;
+  with MainForm do
+  begin
+    EnableControls(false);
+    btQuery.Enabled:= true;
+    btStatus.Enabled:= true;
+    btCustomCommand.Enabled:= true;
+    btStop.Enabled:= true;
+    Cursor:= crAppStart;
+    EnterCriticalSection(CommCS);
+      AddCommand(gSweepEnable, false, 0);
+      AddCommand(gFrequency, false, Frequency, uNone);
+      AddCommand(gAmplitude, false, Amplitude, AmplitudeUnit);
+      AddCommand(gOffset, false, Params.Offset, uNone);
+      PassCommands;
+    LeaveCriticalSection(CommCS);
+  end;
 
   if Config.AutoReadingStep then
   begin
@@ -165,9 +178,11 @@ begin
   ProgressBar.Position:= 0;
   PauseTime:= 0;
 
+  Cursor:= crHourGlass;
   if Config.AutoReadingStep then
   begin
     sleep(MainForm.MinDelay);
+
     Params.OnePoint:= MainForm.cbPointPerStep.Checked;
     ReadingsForm.BeginLog;
     if MainForm.cbPointPerStep.Checked then
@@ -177,6 +192,8 @@ begin
   Finished:= false;
 
   sleep(Params.TimeStep);
+  Cursor:= crDefault;
+
   Timer.Enabled:= true;
   StartTime:= Now;
 end;
@@ -270,8 +287,8 @@ procedure TStepForm.FormHide(Sender: TObject);
 begin
   MainForm.CommandString:= '';
   Timer.Enabled:= false;
-  if Config.AutoReadingStep then
-    MainForm.EnableControls(true);
+  MainForm.EnableControls(true);
+  MainForm.Cursor:= crDefault;
   ReadingsForm.btStartPauseLog.Enabled:= true;
   ReadingsForm.btStopLog.Enabled:= true;
 end;

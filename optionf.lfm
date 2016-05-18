@@ -122,7 +122,9 @@ object OptionForm: TOptionForm
           050000000303020202
         }
         object btConfDir: TButton
-          Left = 288
+          AnchorSideRight.Control = cgFiles
+          AnchorSideRight.Side = asrBottom
+          Left = 289
           Height = 34
           Top = 4
           Width = 43
@@ -167,10 +169,11 @@ object OptionForm: TOptionForm
         }
         object Label7: TLabel
           AnchorSideTop.Control = eReadingTime
+          AnchorSideTop.Side = asrCenter
           AnchorSideRight.Control = eReadingTime
-          Left = 184
+          Left = 185
           Height = 15
-          Top = 18
+          Top = 16
           Width = 89
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 8
@@ -180,11 +183,13 @@ object OptionForm: TOptionForm
         object eReadingTime: TSpinEdit
           AnchorSideLeft.Control = Label7
           AnchorSideLeft.Side = asrBottom
-          Left = 281
+          AnchorSideRight.Control = cgReadings
+          AnchorSideRight.Side = asrBottom
+          Left = 282
           Height = 23
-          Top = 18
+          Top = 12
           Width = 50
-          Anchors = []
+          Anchors = [akTop, akRight]
           BorderSpacing.Left = 4
           Increment = 10
           MaxValue = 3600000

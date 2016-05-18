@@ -32,7 +32,7 @@ type
   rParams = record
     Amplitude, Offset, Frequency, SweepStartF, SweepStopF, SweepRate, StepStartF,
       StepStopF, StepF, StepStartA, StepStopA, StepA, AxisLimit: double;
-    Impedance, CurrFunc, AmplUnit, SweepType, SweepDir, SampleRate, TimeConstant,
+    Impedance, CurrFunc, AmplUnit, SweepType, SweepDir, Modulation, SampleRate, TimeConstant,
       Sensitivity, CloseReserve, WideReserve, InputRange,
       XAxis, ReadingsMode, Display1, Display2, Ratio1, Ratio2, Show1, Show2: shortint;
     ACOn, AutoSweep, GenFreq, OnePoint: boolean;
@@ -129,6 +129,7 @@ type
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tVariantArray);  //supports ordinal, float, string
     procedure AddCommand(c: variant{tCommand}; Query: boolean; x: double; Units: eUnits = uNone);
     procedure PassCommands;
+    procedure Purge;
     function RecvString: string;
     function RecvString(TimeOut: longword): string;
   end;
@@ -156,7 +157,7 @@ var
 implementation
 
 uses
-  StrUtils, DeviceF, MainF, OptionF;
+  Controls, StrUtils, DeviceF, MainF, OptionF;
 
 function strf(x: double): string;
 begin
@@ -215,6 +216,7 @@ end;
 
 procedure tSerConnectForm.btnConnectClick(Sender: TObject);
 begin
+  Cursor:= crHourGlass;
   btnDisconnectClick(Sender);
   if cbPortSelect.ItemIndex >= 0 then
   begin
@@ -228,6 +230,7 @@ begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
   end;
+  Cursor:= crDefault;
 end;
 
 procedure tSerConnectForm.btnDisconnectClick(Sender: TObject);
@@ -282,6 +285,7 @@ end;
 
 procedure tSerConnectForm.btResetClick(Sender: TObject);
 begin
+  Purge;
   EnterCriticalSection(CommCS);
     AddCommand(cReset);
     PassCommands;
@@ -416,6 +420,7 @@ end;
 
 function tSerConnectForm.RecvestIdentity(TimeOut: longword): string;
 begin
+  Purge;
   case ConnectionKind of
     cNone: Result:= '';
     cSerial:
@@ -946,6 +951,30 @@ begin
   CommandString:= '';
 end;
 
+procedure tSerConnectForm.Purge;
+begin
+  case ConnectionKind of
+    //cNone: ;
+    cSerial:
+      begin
+        if (serport.instanceactive) and (serport.CTS) then
+        begin
+          SerPort.Purge;
+
+        end;
+      end;
+    cTelNet:
+      begin
+
+      end;
+
+    cVXI:
+      begin
+
+      end
+  end
+end;
+
 function tSerConnectForm.RecvString: string;
 begin
   case ConnectionKind of
@@ -964,7 +993,7 @@ begin
         end;
       end;
     cTelNet:
-      begin;
+      begin
         Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
 
         writeprogramlog('Получена строка ' + Result);
