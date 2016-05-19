@@ -50,9 +50,9 @@ object OptionForm: TOptionForm
     Height = 328
     Top = 0
     Width = 350
-    ActivePage = GeneralTab
+    ActivePage = ConnectionTab
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 2
     object GeneralTab: TTabSheet
       Caption = 'Общие настройки'
@@ -126,11 +126,14 @@ object OptionForm: TOptionForm
           AnchorSideRight.Side = asrBottom
           Left = 289
           Height = 34
+          Hint = 'Выбрать файл параметров по умолчанию'
           Top = 4
           Width = 43
           Anchors = [akTop, akRight]
           Caption = '...'
           OnClick = btConfDirClick
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
         end
       end
@@ -173,7 +176,7 @@ object OptionForm: TOptionForm
           AnchorSideRight.Control = eReadingTime
           Left = 185
           Height = 15
-          Top = 16
+          Top = 14
           Width = 89
           Anchors = [akTop, akRight]
           BorderSpacing.Right = 8
@@ -187,12 +190,15 @@ object OptionForm: TOptionForm
           AnchorSideRight.Side = asrBottom
           Left = 282
           Height = 23
-          Top = 12
+          Hint = 'Длительность автоматического снятия'#13#10'показаний при включении пост. частоты'#13#10'или сканирования. 0 - не  ограничено.'
+          Top = 10
           Width = 50
           Anchors = [akTop, akRight]
           BorderSpacing.Left = 4
           Increment = 10
           MaxValue = 3600000
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
         end
       end

@@ -1,13 +1,13 @@
 object DeviceForm: TDeviceForm
-  Left = 282
+  Left = 411
   Height = 792
-  Top = 148
+  Top = 41
   Width = 651
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
   ClientHeight = 792
   ClientWidth = 651
-  Constraints.MinHeight = 535
+  Constraints.MinHeight = 584
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -24,13 +24,13 @@ object DeviceForm: TDeviceForm
     Height = 784
     Top = 4
     Width = 377
-    ActivePage = tsGenerators
+    ActivePage = tsDetectors
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 12
     BorderSpacing.Bottom = 4
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
@@ -66,8 +66,10 @@ object DeviceForm: TDeviceForm
           end>
         FixedRows = 0
         MouseWheelOption = mwGrid
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goEditing, goSmoothScroll, goSelectionActive]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goEditing, goSmoothScroll, goSelectionActive, goTruncCellHints]
+        ParentShowHint = False
         RowCount = 128
+        ShowHint = True
         TabOrder = 0
         OnClick = sgGenCommandsClick
         OnKeyDown = sgGenCommandsKeyDown
@@ -560,8 +562,10 @@ object DeviceForm: TDeviceForm
           end>
         FixedRows = 0
         MouseWheelOption = mwGrid
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goColSizing, goEditing, goSmoothScroll, goSelectionActive, goFixedColSizing]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goEditing, goSmoothScroll, goSelectionActive, goTruncCellHints]
+        ParentShowHint = False
         RowCount = 128
+        ShowHint = True
         TabOrder = 0
         OnClick = sgDetCommandsClick
         OnKeyDown = sgDetCommandsKeyDown
@@ -1363,7 +1367,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 333
+    Top = 381
     Width = 68
     BorderSpacing.Top = 20
     Caption = 'Терминатор'
@@ -1376,7 +1380,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label6
     Left = 522
     Height = 23
-    Top = 333
+    Top = 381
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1395,7 +1399,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 372
+    Top = 420
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1411,7 +1415,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 152
+    Top = 200
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 4
@@ -1426,7 +1430,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 228
+    Top = 276
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 12
@@ -1445,7 +1449,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label4
     Left = 522
     Height = 23
-    Top = 263
+    Top = 311
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1464,7 +1468,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = Label5
     Left = 522
     Height = 23
-    Top = 298
+    Top = 346
     Width = 125
     ItemHeight = 15
     ItemIndex = 0
@@ -1484,7 +1488,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = cbStopBits
     Left = 393
     Height = 15
-    Top = 228
+    Top = 276
     Width = 60
     BorderSpacing.Top = 20
     Caption = 'Стоп-биты'
@@ -1498,7 +1502,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 263
+    Top = 311
     Width = 53
     BorderSpacing.Top = 20
     Caption = 'Парность'
@@ -1512,7 +1516,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 298
+    Top = 346
     Width = 59
     BorderSpacing.Top = 20
     Caption = 'Handshake'
@@ -1521,11 +1525,12 @@ object DeviceForm: TDeviceForm
     Transparent = False
   end
   object btAddDevice: TButton
+    AnchorSideTop.Control = stInstruction
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = btDeleteDevice
     Left = 393
     Height = 25
-    Top = 152
+    Top = 200
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1581,7 +1586,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbInterface
     Left = 393
     Height = 15
-    Top = 193
+    Top = 241
     Width = 62
     Caption = 'Интерфейс'
     Color = clWhite
@@ -1595,7 +1600,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 193
+    Top = 241
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1627,16 +1632,17 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
     Left = 393
-    Height = 108
+    Height = 156
     Top = 28
     Width = 254
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Top = 24
     BorderStyle = sbsSingle
-    Caption = 'Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10#13#10'Заполните поля "Опции отношения" только '#13#10'если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
-    Color = clDefault
+    Caption = ' Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10' Если функция не поддерживается прибором, оставьте поле пустым.'#13#10#13#10'Детекторы:'#13#10' Заполните поля "Опции отношения" только если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
+    Color = clWhite
     ParentColor = False
     TabOrder = 14
+    Transparent = False
   end
   object DividerBevel1: TDividerBevel
     AnchorSideLeft.Control = btAddDevice
@@ -1644,7 +1650,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 401
+    Top = 449
     Width = 254
     BorderSpacing.Top = 4
     Font.Style = [fsBold]

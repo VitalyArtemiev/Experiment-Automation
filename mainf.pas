@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, DividerBevel, StrUtils, Forms, Controls,
   Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls,
-  Buttons, Synaser, SerConF, DeviceF;
+  Buttons, ActnList, Synaser, SerConF, DeviceF;
 
 type
   { TMainForm }
@@ -62,6 +62,9 @@ type
 
     About: TMenuItem;
     Label29: TLabel;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
 
     miShowReadingsF: TMenuItem;
 
@@ -74,7 +77,7 @@ type
     ReadingTimer: TTimer;
 
     TotalTime: TLabel;
-    NewReport: TMenuItem;
+    miNewReport: TMenuItem;
     miExportParams: TMenuItem;
     SweepStartFReading: TLabel;
     SweepStopFReading: TLabel;
@@ -94,7 +97,7 @@ type
     FrequencyReading: TLabel;
     AmplitudeReading: TLabel;
 
-    MainMenu1: TMainMenu;
+    MainMenu: TMainMenu;
     miFile: TMenuItem;
     miAbout: TMenuItem;
     miView: TMenuItem;
@@ -119,7 +122,6 @@ type
     procedure cbFuncSelectChange(Sender: TObject);
     procedure cbImpedanceChange(Sender: TObject);
     procedure cbSweepTypeChange(Sender: TObject);
-   // procedure DebugBoxClick(Sender: TObject);
     procedure eOffsetChange(Sender: TObject);
     procedure eAmplitudeChange(Sender: TObject);
     procedure eStepChange(Sender: TObject);
@@ -132,17 +134,16 @@ type
     procedure miOptionsClick(Sender: TObject);
     procedure miSaveParClick(Sender: TObject);
     procedure miShowReadingsFClick(Sender: TObject);
-    procedure NewReportClick(Sender: TObject);
+    procedure miNewReportClick(Sender: TObject);
     procedure miExportParamsClick(Sender: TObject);
     procedure miLoadCfgClick(Sender: TObject);
     procedure miSaveCfgClick(Sender: TObject);
     procedure ReadingTimerStartTimer(Sender: TObject);
     procedure ReadingTimerTimer(Sender: TObject);
-
-    //procedure ListBox1Click(Sender: TObject);
   private
     { private declarations }
     FrequencyLimits, MinAmplitudeLimits, MaxAmplitudeLimits: array of double;
+   // procedure RestoreStatusBar;
   public
     { public declarations }
     FileResult: integer;
@@ -191,7 +192,7 @@ uses
 
 { TMainForm }
 
-function TMainForm.LoadParams(FileName: ansistring): word;
+function tMainForm.LoadParams(FileName: ansistring): word;
 var
   f: file;
   i: longint;
@@ -346,7 +347,7 @@ begin
   {$I+}
 end;
 
-function TMainForm.SaveParams(FileName: ansistring): word;
+function tMainForm.SaveParams(FileName: ansistring): word;
 var
   f: file;
 begin
@@ -420,7 +421,7 @@ begin
   end;
 end;
 
-function TMainForm.SaveConfig(FileName: ansistring): word;
+function tMainForm.SaveConfig(FileName: ansistring): word;
 var
   f: file;
   s: string;
@@ -440,7 +441,7 @@ begin
   if SaveConfig <> 0 then ShowMessage('Ошибка сохранения конфигурации. Код ошибки ' + s);
 end;
 
-function TMainForm.LoadConfig(FileName: ansistring): word;
+function tMainForm.LoadConfig(FileName: ansistring): word;
 var
   f: file;
   s: string;
@@ -469,7 +470,7 @@ begin
   end;
 end;
 
-function TMainForm.ExportParams(Manual: boolean; Header: boolean = false): word;
+function tMainForm.ExportParams(Manual: boolean; Header: boolean): word;
 var
   i: integer;
   f: system.text;
@@ -621,7 +622,7 @@ begin
 
 end;}
 
-procedure TMainForm.FormCreate(Sender: TObject);
+procedure tMainForm.FormCreate(Sender: TObject);
 var
   p: integer;
 begin
@@ -684,7 +685,7 @@ begin
   end;
 end;
 
-procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+procedure tMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
   if Config.SaveParamsOnExit then
     SaveParams(Config.DefaultParams);
@@ -692,7 +693,7 @@ begin
   if Assigned(SerPort) then SerPort.CloseSocket;
 end;
 
-procedure TMainForm.FormDestroy(Sender: TObject);
+procedure tMainForm.FormDestroy(Sender: TObject);
 begin
   SerPort.Free;
   TelNetClient.Free;
@@ -701,25 +702,27 @@ begin
   DoneCriticalSection(CommCS);
 end;
 
-procedure TMainForm.NewReportClick(Sender: TObject);
+procedure tMainForm.miNewReportClick(Sender: TObject);
 begin
   ReportNumber:= 0; //so that it checks for existing file internally?
   ExperimentNumber:= 1;
   ExportParams(true);
+  //RestoreStatusBar;
 end;
 
-procedure TMainForm.miExportParamsClick(Sender: TObject);
+procedure tMainForm.miExportParamsClick(Sender: TObject);
 begin
   ExportParams(true);
+  //RestoreStatusBar;
 end;
 
-procedure TMainForm.eAmplitudeChange(Sender: TObject);
+procedure tMainForm.eAmplitudeChange(Sender: TObject);
 begin                                       { TODO 2 -cBug : might be bugged, might need to extend}
   if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then
     eOffset.Value:= (eOffset.MaxValue - eAmplitude.Value/2) * sign(eOffset.Value);
 end;
 
-procedure TMainForm.cbAmplUnitChange(Sender: TObject);
+procedure tMainForm.cbAmplUnitChange(Sender: TObject);
 begin
   if AmplitudeUnits[cbAmplUnit.ItemIndex] <> '' then
     AmplitudeUnit:= eUnits(cbAmplUnit.ItemIndex)
@@ -728,15 +731,16 @@ begin
       ShowMessage('Единица ' + cbAmplUnit.Text + ' не поддерживается прибором');
 end;
 
-procedure TMainForm.eOffsetChange(Sender: TObject);
+procedure tMainForm.eOffsetChange(Sender: TObject);
 begin
-  {if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then   { TODO 2 -cImprovement : same }
+  {if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then
     eOffset.Value:= 2 * eAmplitude.Value * sign(eOffset.Value);}
+  { TODO 2 -cImprovement : same }
   if cbACEnable.Checked and (eAmplitude.Value / 2 + abs(eOffset.Value) > eOffset.MaxValue) then
     eAmplitude.Value:= 2 * (eOffset.MaxValue - abs(eOffset.Value));
 end;
 
-procedure TMainForm.eStepChange(Sender: TObject);
+procedure tMainForm.eStepChange(Sender: TObject);
 begin
   if ((eStepStartF.Value <> eStepStopF.Value) and (eFStep.Value <> 0)) or
     ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
@@ -749,7 +753,7 @@ begin
     eStepStopA.Value:= eStepStartA.Value;
 end;
 
-procedure TMainForm.eSweepStartFChange(Sender: TObject);
+procedure tMainForm.eSweepStartFChange(Sender: TObject);
 begin
   if cbSweepType.ItemIndex = 1 then
   begin
@@ -760,7 +764,7 @@ begin
   end
 end;
 
-procedure TMainForm.eSweepStopFChange(Sender: TObject);
+procedure tMainForm.eSweepStopFChange(Sender: TObject);
 begin
   if cbSweepType.ItemIndex = 1 then
   begin
@@ -771,7 +775,7 @@ begin
   end
 end;
 
-procedure TMainForm.cbPointPerStepChange(Sender: TObject);
+procedure tMainForm.cbPointPerStepChange(Sender: TObject);
 begin
   if cbPointPerStep.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = 0) then
   begin
@@ -782,17 +786,18 @@ begin
   end;
 end;
 
-procedure TMainForm.AboutClick(Sender: TObject);
+procedure tMainForm.AboutClick(Sender: TObject);
 begin
   AboutForm.ShowModal;
 end;
 
-procedure TMainForm.miOptionsClick(Sender: TObject);
+procedure tMainForm.miOptionsClick(Sender: TObject);
 begin
   OptionForm.ShowModal;
+ // RestoreStatusBar;
 end;
 
-procedure TMainForm.miLoadCfgClick(Sender: TObject);
+procedure tMainForm.miLoadCfgClick(Sender: TObject);
 var
   s: ansistring;
 begin
@@ -804,9 +809,10 @@ begin
     s:= UTF8toANSI(OpenDialog.FileName); //  проверить на доп символы
     LoadConfig(s);
   end;
+  //RestoreStatusBar;
 end;
 
-procedure TMainForm.miSaveCfgClick(Sender: TObject);
+procedure tMainForm.miSaveCfgClick(Sender: TObject);
 var
   s: ansistring;
 begin
@@ -819,21 +825,27 @@ begin
     SaveConfig(s);
   end;
   Config.WorkConfig:= s;
+  //RestoreStatusBar;
 end;
 
-procedure TMainForm.ReadingTimerStartTimer(Sender: TObject);
+procedure tMainForm.ReadingTimerStartTimer(Sender: TObject);
 begin
   ReadingTimer.Interval:= Params.ReadingTime * 1000;
 end;
 
-procedure TMainForm.ReadingTimerTimer(Sender: TObject);
+procedure tMainForm.ReadingTimerTimer(Sender: TObject);
 begin
   if ReadingsForm.LogState = lActive then
     ReadingsForm.StopLog;
   ReadingTimer.Enabled:= false;
 end;
 
-procedure TMainForm.miLoadParClick(Sender: TObject);
+{procedure tMainForm.RestoreStatusBar;
+begin
+  StatusBar.SimplePanel:= false;
+end;  }
+
+procedure tMainForm.miLoadParClick(Sender: TObject);
 var
   s: ansistring;
 begin
@@ -845,9 +857,10 @@ begin
     s:= UTF8toANSI(OpenDialog.FileName);
     LoadParams(s);
   end;
+  //RestoreStatusBar;
 end;
 
-procedure TMainForm.miSaveParClick(Sender: TObject);
+procedure tMainForm.miSaveParClick(Sender: TObject);
 var
   s: ansistring;
 begin
@@ -859,9 +872,10 @@ begin
     s:= UTF8toANSI(SaveDialog.FileName);
     SaveParams(s);
   end;
+  //RestoreStatusBar;
 end;
 
-procedure TMainForm.miShowReadingsFClick(Sender: TObject);
+procedure tMainForm.miShowReadingsFClick(Sender: TObject);
 begin
   if not miShowReadingsF.Checked then
   begin
@@ -875,7 +889,7 @@ begin
   end;
 end;
 
-procedure TMainForm.cbFuncSelectChange(Sender: TObject);
+procedure tMainForm.cbFuncSelectChange(Sender: TObject);
 var
   max: double;
 begin
@@ -890,7 +904,7 @@ begin
   eStepStopF.MaxValue:= max;
 end;
 
-procedure TMainForm.cbImpedanceChange(Sender: TObject);
+procedure tMainForm.cbImpedanceChange(Sender: TObject);
 begin
   with cbImpedance do
   if (ItemIndex >= 0) and (length(MaxAmplitudeLimits) > 0) then
@@ -923,7 +937,7 @@ begin
   end;
 end;
 
-procedure TMainForm.cbSweepTypeChange(Sender: TObject);
+procedure tMainForm.cbSweepTypeChange(Sender: TObject);
 begin                                                  { TODO 2 -cImprovement : Also questionable }
   if cbSweepType.ItemIndex = 1 then
   begin
@@ -943,7 +957,7 @@ begin                                                  { TODO 2 -cImprovement : 
   end;
 end;
 
-procedure TMainForm.btApplyClick(Sender: TObject);
+procedure tMainForm.btApplyClick(Sender: TObject);
 var
   s: string;
 begin
@@ -1113,14 +1127,14 @@ begin
   SweepRateReading.Caption:= s;
 end;
 
-procedure TMainForm.btProgramClick(Sender: TObject);
+procedure tMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
   readingsform.enablecontrols(true);
   //readingsform.btnConnectClick(self);
 end;
 
-procedure TMainForm.btQueryClick(Sender: TObject);
+procedure tMainForm.btQueryClick(Sender: TObject);
 var
   s, os, cs: string;
   i, e, l: integer;
@@ -1237,7 +1251,7 @@ begin
   SweepStopFReading.Caption:= os;
 end;
 
-procedure TMainForm.btStopClick(Sender: TObject);
+procedure tMainForm.btStopClick(Sender: TObject);
 begin
   EnterCriticalSection(CommCS);
     AddCommand(gSweepEnable, false, 0);
@@ -1247,7 +1261,7 @@ begin
   LeaveCriticalSection(CommCS);
 end;
 
-procedure TMainForm.btTriggerClick(Sender: TObject);
+procedure tMainForm.btTriggerClick(Sender: TObject);
 begin
   EnterCriticalSection(CommCS);
     AddCommand(cTrigger);
@@ -1255,7 +1269,7 @@ begin
   LeaveCriticalSection(CommCS);
 end;
 
-procedure TMainForm.FormShow(Sender: TObject);
+procedure tMainForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
 
@@ -1273,7 +1287,7 @@ begin
   ReadingsForm.cbReadingsModeChange(ReadingsForm);
 end;
 
-procedure TMainForm.btnConnectClick(Sender: TObject);
+procedure tMainForm.btnConnectClick(Sender: TObject);
 var
   s: string;
   i: integer;
@@ -1293,7 +1307,9 @@ begin
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 
-  deviceindex:= 2;
+  {$IFOPT D+}
+  if DeviceIndex = 0 then deviceindex:= 1;
+  {$ENDIF}
 
   if DeviceIndex = iDefaultDevice then Exit;
 
@@ -1389,12 +1405,14 @@ begin
     cbModulation.Hide;
     cbSweepType.Width:= eSweepStartF.Width;
     cbSweepDirection.Width:= eSweepStartF.Width;
+    cbSweepDirection.BorderSpacing.Left:= 16;
   end
   else
   begin
     cbModulation.Show;
     cbSweepType.Width:= cbModulation.Width;
     cbSweepDirection.Width:= cbModulation.Width;
+    cbSweepDirection.BorderSpacing.Left:= 4;
   end;
 
   with Params do
@@ -1412,7 +1430,7 @@ begin
   end;
 end;
 
-procedure TMainForm.EnableControls(Enable: boolean);
+procedure tMainForm.EnableControls(Enable: boolean);
 begin
   cbImpedance.Enabled:=      Enable;
   cbFuncSelect.Enabled:=     Enable;
@@ -1443,7 +1461,7 @@ begin
   eAStep.Enabled:=           Enable;
   eTimeStep.Enabled:=        Enable;
   cbPointPerStep.Enabled:=   Enable;
-  NewReport.Enabled:=        Enable;
+  miNewReport.Enabled:=        Enable;
   miExportParams.Enabled:=   Enable;
 end;
 

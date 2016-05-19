@@ -8,6 +8,7 @@ object StatusForm: TStatusForm
   ClientHeight = 254
   ClientWidth = 363
   OnShow = FormShow
+  Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
   object btPoll: TButton
     AnchorSideTop.Control = Label5

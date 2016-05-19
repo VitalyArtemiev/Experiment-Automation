@@ -965,7 +965,7 @@ begin
       end;
     cTelNet:
       begin
-
+        TelNetClient.RecvString //??????
       end;
 
     cVXI:

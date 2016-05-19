@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  LCLintf, Clipbrd
+  LCLintf, Clipbrd, ExtCtrls
   // FPC trunk fileinfo reads exe resources as long as you register the appropriate units
   , fileinfo
   , winpeimagereader {need this for reading exe info}
@@ -22,8 +22,11 @@ type
     btCopyEmail: TButton;
     btOpenGitHub: TButton;
     btReportIssue: TButton;
-    Label1: TLabel;
-    lProgramInfo: TLabel;
+    InfoPanel: TPanel;
+    lCompany: TLabel;
+    lContactInfo: TLabel;
+    lCopyRight: TLabel;
+    lProgramVersion: TLabel;
     procedure btCopyEmailClick(Sender: TObject);
     procedure btOpenGitHubClick(Sender: TObject);
     procedure btReportIssueClick(Sender: TObject);
@@ -39,8 +42,6 @@ var
 
 implementation
 
-var
-  FileVerInfo: TFileVersionInfo;
 {$R *.lfm}
 
 { TAboutForm }
@@ -50,26 +51,21 @@ begin
   OpenURL('https://github.com/VitalyArtemiev/Generator-Amplifier-Control/issues');
 end;
 
-procedure TAboutForm.FormCreate(Sender: TObject);   { TODO 1 -cBug : Program version
-http://wiki.freepascal.org/Show_Application_Title,_Version,_and_Company }
+procedure TAboutForm.FormCreate(Sender: TObject);
+var
+  FileVerInfo: TFileVersionInfo;
 begin
-  if Paramcount=0 then
-  begin
-    writeln('Missing executable filename parameters. Aborting.');
-    halt(1);
-  end;
   FileVerInfo:= TFileVersionInfo.Create(nil);
   try
-    FileVerInfo.FileName:= paramstr(0);
+    {$IFOPT D+}
+    FileVerInfo.FileName:= 'Generator-Amplifier Debug.exe';
+    {$ELSE}
+    FileVerInfo.FileName:= 'Generator-Amplifier Control.exe';
+    {$ENDIF}
     FileVerInfo.ReadFileInfo;
-    {writeln('Company: ',FileVerInfo.VersionStrings.Values['CompanyName']);
-    writeln('File description: ',FileVerInfo.VersionStrings.Values['FileDescription']); }
-    lProgramInfo.Caption:= 'Версия программы: ' +  FileVerInfo.VersionStrings.Values['FileVersion'];
-    {writeln('Internal name: ',FileVerInfo.VersionStrings.Values['InternalName']);
-    writeln('Legal copyright: ',FileVerInfo.VersionStrings.Values['LegalCopyright']);
-    writeln('Original filename: ',FileVerInfo.VersionStrings.Values['OriginalFilename']);
-    writeln('Product name: ',FileVerInfo.VersionStrings.Values['ProductName']);
-    writeln('Product version: ',FileVerInfo.VersionStrings.Values['ProductVersion']); }
+    lProgramVersion.Caption:= 'Версия программы:  ' +  FileVerInfo.VersionStrings.Values['FileVersion'];
+    lCompany.Caption:= LineEnding + FileVerInfo.VersionStrings.Values['CompanyName'];
+    lCopyright.Caption:= LineEnding + FileVerInfo.VersionStrings.Values['LegalCopyright'];
   finally
     FileVerInfo.Free;
   end;

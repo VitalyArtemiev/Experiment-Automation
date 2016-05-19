@@ -12,11 +12,12 @@ object MainForm: TMainForm
   Constraints.MinHeight = 600
   Constraints.MinWidth = 524
   KeyPreview = True
-  Menu = MainMenu1
+  Menu = MainMenu
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
+  ShowHint = True
   ShowInTaskBar = stAlways
   LCLVersion = '1.6.0.4'
   object cbPortSelect: TComboBox
@@ -235,11 +236,11 @@ object MainForm: TMainForm
       object Label26: TLabel
         AnchorSideLeft.Control = FrequencyReading
         AnchorSideTop.Control = Label4
-        Left = 365
+        Left = 364
         Height = 15
         Top = 12
         Width = 13
-        BorderSpacing.Left = 121
+        BorderSpacing.Left = 120
         Caption = 'Гц'
         ParentColor = False
       end
@@ -850,7 +851,7 @@ object MainForm: TMainForm
     Hint = 'Сконструировать команду,'#13#10'не поддерживаемую интерфейсом'
     Top = 325
     Width = 102
-    Caption = 'btCustomCommand'
+    Caption = 'Польз.'
     Enabled = False
     OnClick = btCustomCommandClick
     ShowHint = True
@@ -1159,33 +1160,48 @@ object MainForm: TMainForm
     Enabled = False
     OnClick = btStatusClick
   end
-  object MainMenu1: TMainMenu
+  object MainMenu: TMainMenu
     left = 456
     object miFile: TMenuItem
       Caption = 'Файл'
-      object NewReport: TMenuItem
+      object miNewReport: TMenuItem
         Caption = 'Новый отчет'
-        OnClick = NewReportClick
+        Hint = 'Список последовательных экспериментов'#13#10'с указанием даты, параметров эксперимента'#13#10'и файла с данными'
+        OnClick = miNewReportClick
       end
       object miExportParams: TMenuItem
-        Caption = 'Сохранить параметры эксперимента'#31
+        Caption = 'Записать эксперимент в отчет'
+        Hint = 'Добавить текущие параметры эксперимента'#13#10'в отчет со списком экспериментов'
         OnClick = miExportParamsClick
+      end
+      object MenuItem1: TMenuItem
+        Caption = '-'
       end
       object miSavePar: TMenuItem
         Caption = 'Сохранить параметры'
+        Hint = 'Сохранение параметров эксперимента'
         OnClick = miSaveParClick
       end
       object miLoadPar: TMenuItem
         Caption = 'Загрузить параметры'
+        Hint = 'Загрузка параметров эксперимента'
         OnClick = miLoadParClick
+      end
+      object MenuItem2: TMenuItem
+        Caption = '-'
       end
       object miSaveCfg: TMenuItem
         Caption = 'Сохранить конфигурацию'
+        Hint = 'Сохранение текущих настроек программы'
         OnClick = miSaveCfgClick
       end
       object miLoadCfg: TMenuItem
         Caption = 'Загрузить конфигурацию'
+        Hint = 'Загрузка настроек программы'
         OnClick = miLoadCfgClick
+      end
+      object MenuItem3: TMenuItem
+        Caption = '-'
       end
       object miOptions: TMenuItem
         Caption = 'Настройки'

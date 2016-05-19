@@ -781,6 +781,7 @@ begin
     else
       exit(-2);
   end;
+  StatusBar.Panels[spStatus].Text:= 'Данные сохранены в ' + CurrLogFileName;
 end;
 
 function tReadingsForm.RecvSnap(p: array of shortint): PBuffer;
@@ -1021,6 +1022,10 @@ begin
     AddCommand(dResetStorage);
     PassCommands;
   LeaveCriticalSection(CommCS);
+
+  {$IFOPT D+}
+  if DeviceIndex =0 then deviceindex:= 1;
+  {$ENDIF}
 
   if DeviceIndex = iDefaultDevice then exit;
 

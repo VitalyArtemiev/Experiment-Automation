@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 334
+  Left = 1051
   Height = 600
-  Top = 80
+  Top = 129
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'

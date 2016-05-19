@@ -1,33 +1,22 @@
 object AboutForm: TAboutForm
-  Left = 536
-  Height = 210
-  Top = 343
-  Width = 397
+  Left = 1011
+  Height = 198
+  Top = 336
+  Width = 400
+  BorderStyle = bsToolWindow
   Caption = 'О программе'
-  ClientHeight = 210
-  ClientWidth = 397
+  ClientHeight = 198
+  ClientWidth = 400
+  OnCreate = FormCreate
   Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
-  object Label1: TLabel
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = lProgramInfo
-    AnchorSideTop.Side = asrBottom
-    Left = 8
-    Height = 105
-    Top = 17
-    Width = 382
-    BorderSpacing.Left = 8
-    BorderSpacing.Top = 8
-    Caption = 'МФТИ'#13#10'Кафедра фотоники'#13#10#13#10'Артемьев Виталий'#13#10#13#10'E-mail:  vitaly.artemiev@yandex.ru'#13#10'Github: https://github.com/VitalyArtemiev/Generator-Amplifier-Control'
-    ParentColor = False
-  end
   object btCopyEmail: TButton
-    AnchorSideLeft.Control = Label1
-    AnchorSideTop.Control = Label1
+    AnchorSideLeft.Control = InfoPanel
+    AnchorSideTop.Control = InfoPanel
     AnchorSideTop.Side = asrBottom
-    Left = 8
-    Height = 25
-    Top = 130
+    Left = 4
+    Height = 23
+    Top = 140
     Width = 136
     BorderSpacing.Top = 8
     Caption = 'Скопировать e-mail'
@@ -38,9 +27,9 @@ object AboutForm: TAboutForm
     AnchorSideLeft.Control = btCopyEmail
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btCopyEmail
-    Left = 152
-    Height = 25
-    Top = 130
+    Left = 148
+    Height = 23
+    Top = 140
     Width = 136
     BorderSpacing.Left = 8
     Caption = 'Перейти на GitHub'
@@ -51,25 +40,101 @@ object AboutForm: TAboutForm
     AnchorSideLeft.Control = btCopyEmail
     AnchorSideTop.Control = btCopyEmail
     AnchorSideTop.Side = asrBottom
-    Left = 8
-    Height = 25
+    Left = 4
+    Height = 23
     Top = 171
     Width = 136
-    BorderSpacing.Top = 16
+    BorderSpacing.Top = 8
     Caption = 'Сообщить о проблеме'
     Default = True
     OnClick = btReportIssueClick
     TabOrder = 2
   end
-  object lProgramInfo: TLabel
+  object InfoPanel: TPanel
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
-    Left = 8
-    Height = 1
-    Top = 8
-    Width = 1
-    BorderSpacing.Left = 8
-    BorderSpacing.Top = 8
-    ParentColor = False
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 4
+    Height = 128
+    Top = 4
+    Width = 392
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 4
+    BorderSpacing.Top = 4
+    BorderSpacing.Right = 4
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    Caption = 'InfoPanel'
+    ClientHeight = 124
+    ClientWidth = 388
+    TabOrder = 3
+    object lContactInfo: TLabel
+      AnchorSideLeft.Control = lProgramVersion
+      AnchorSideTop.Control = lCopyRight
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = lProgramVersion
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 49
+      Top = 75
+      Width = 388
+      Anchors = [akTop, akLeft, akRight]
+      AutoSize = False
+      Caption = #13#10'E-mail:  vitaly.artemiev@yandex.ru'#13#10'GitHub: https://github.com/VitalyArtemiev/Generator-Amplifier-Control'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object lProgramVersion: TLabel
+      AnchorSideLeft.Control = InfoPanel
+      AnchorSideTop.Control = InfoPanel
+      AnchorSideRight.Control = InfoPanel
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 0
+      Width = 388
+      Anchors = [akTop, akLeft, akRight]
+      AutoSize = False
+      Caption = 'Версия программы:'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object lCompany: TLabel
+      AnchorSideLeft.Control = lProgramVersion
+      AnchorSideTop.Control = lProgramVersion
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = lProgramVersion
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 30
+      Top = 15
+      Width = 388
+      Anchors = [akTop, akLeft, akRight]
+      AutoSize = False
+      Caption = #13#10'МФТИ, кафедра Фотоники'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object lCopyRight: TLabel
+      AnchorSideLeft.Control = lProgramVersion
+      AnchorSideTop.Control = lCompany
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = lProgramVersion
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 30
+      Top = 45
+      Width = 388
+      Anchors = [akTop, akLeft, akRight]
+      AutoSize = False
+      Caption = #13#10'© 2015-2016 Виталий Артемьев'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
   end
 end
