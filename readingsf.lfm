@@ -130,11 +130,15 @@ object ReadingsForm: TReadingsForm
         Width = 313
         AxisList = <        
           item
+            Intervals.MaxLength = 70
+            Marks.OverlapPolicy = opHideNeighbour
             Minors = <>
             Title.LabelFont.Orientation = 900
           end        
           item
+            Intervals.MaxLength = 70
             Alignment = calBottom
+            Marks.OverlapPolicy = opHideNeighbour
             Minors = <>
           end>
         BackColor = clWhite
@@ -303,11 +307,15 @@ object ReadingsForm: TReadingsForm
         Width = 318
         AxisList = <        
           item
+            Intervals.MaxLength = 70
+            Marks.OverlapPolicy = opHideNeighbour
             Minors = <>
             Title.LabelFont.Orientation = 900
           end        
           item
+            Intervals.MaxLength = 70
             Alignment = calBottom
+            Marks.OverlapPolicy = opHideNeighbour
             Minors = <>
             Range.Max = 20
           end>

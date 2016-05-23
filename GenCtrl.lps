@@ -3,7 +3,7 @@
   <ProjectSession>
     <PathDelim Value="\"/>
     <Version Value="9"/>
-    <BuildModes Active="Release"/>
+    <BuildModes Active="Debug"/>
     <Units Count="44">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
@@ -20,9 +20,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="MainF"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="7"/>
         <TopLine Value="794"/>
-        <CursorPos X="3" Y="796"/>
+        <CursorPos X="31" Y="800"/>
         <UsageCount Value="323"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -75,10 +76,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="ReadingsF"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="15"/>
         <TopLine Value="354"/>
-        <CursorPos X="19" Y="367"/>
+        <CursorPos X="18" Y="359"/>
         <UsageCount Value="208"/>
         <Bookmarks Count="4">
           <Item0 Y="825"/>
@@ -246,7 +246,7 @@
         <EditorIndex Value="1"/>
         <TopLine Value="11"/>
         <CursorPos X="19" Y="36"/>
-        <UsageCount Value="177"/>
+        <UsageCount Value="179"/>
         <Loaded Value="True"/>
       </Unit21>
       <Unit22>
@@ -383,7 +383,7 @@
         <EditorIndex Value="3"/>
         <TopLine Value="47"/>
         <CursorPos Y="72"/>
-        <UsageCount Value="81"/>
+        <UsageCount Value="82"/>
         <Loaded Value="True"/>
       </Unit39>
       <Unit40>
