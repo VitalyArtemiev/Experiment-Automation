@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 1051
+  Left = 889
   Height = 600
-  Top = 129
+  Top = 58
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Снятие показаний'
@@ -198,10 +198,11 @@ object ReadingsForm: TReadingsForm
       object Label11: TLabel
         AnchorSideLeft.Control = Chart1
         AnchorSideTop.Control = cbChart1Show
+        AnchorSideTop.Side = asrCenter
         AnchorSideRight.Control = cbChart1Show
         Left = 0
         Height = 15
-        Top = 308
+        Top = 312
         Width = 92
         BorderSpacing.Right = 8
         Caption = 'График 1 - Ось Y'
@@ -235,9 +236,10 @@ object ReadingsForm: TReadingsForm
       object Label9: TLabel
         AnchorSideLeft.Control = Chart1
         AnchorSideTop.Control = cbCh1
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 15
-        Top = 0
+        Top = 4
         Width = 26
         BorderSpacing.Left = 4
         Caption = 'CH 1'
@@ -246,10 +248,11 @@ object ReadingsForm: TReadingsForm
       object Label14: TLabel
         AnchorSideLeft.Control = Label13
         AnchorSideTop.Control = cbRatio1
+        AnchorSideTop.Side = asrCenter
         AnchorSideRight.Control = cbRatio1
         Left = 141
         Height = 15
-        Top = 0
+        Top = 4
         Width = 94
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
@@ -370,10 +373,11 @@ object ReadingsForm: TReadingsForm
       object Label12: TLabel
         AnchorSideLeft.Control = Chart2
         AnchorSideTop.Control = cbChart2Show
+        AnchorSideTop.Side = asrCenter
         AnchorSideRight.Control = cbChart2Show
         Left = 0
         Height = 15
-        Top = 308
+        Top = 312
         Width = 92
         BorderSpacing.Right = 8
         Caption = 'График 2 - Ось Y'
@@ -382,9 +386,10 @@ object ReadingsForm: TReadingsForm
       object Label10: TLabel
         AnchorSideLeft.Control = Chart2
         AnchorSideTop.Control = cbCh2
+        AnchorSideTop.Side = asrCenter
         Left = 4
         Height = 15
-        Top = 0
+        Top = 4
         Width = 26
         BorderSpacing.Left = 4
         Caption = 'CH 2'
@@ -438,10 +443,11 @@ object ReadingsForm: TReadingsForm
       object Label15: TLabel
         AnchorSideLeft.Control = Label13
         AnchorSideTop.Control = cbRatio2
+        AnchorSideTop.Side = asrCenter
         AnchorSideRight.Control = cbRatio2
         Left = 146
         Height = 15
-        Top = 0
+        Top = 4
         Width = 94
         Anchors = [akTop, akRight]
         BorderSpacing.Right = 4
@@ -509,7 +515,7 @@ object ReadingsForm: TReadingsForm
     TabOrder = 0
     object btReset: TSpeedButton
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = Label3
+      AnchorSideTop.Control = cbPortSelect
       AnchorSideRight.Control = btQuery
       Left = 352
       Height = 54
@@ -558,9 +564,10 @@ object ReadingsForm: TReadingsForm
     object Label8: TLabel
       AnchorSideLeft.Control = Label3
       AnchorSideTop.Control = seRecvTimeout
+      AnchorSideTop.Side = asrCenter
       Left = 8
       Height = 15
-      Top = 69
+      Top = 73
       Width = 67
       Caption = 'Таймаут, мс'
       Color = clWhite
@@ -610,7 +617,7 @@ object ReadingsForm: TReadingsForm
     object btnConnect: TButton
       AnchorSideLeft.Control = cbPortSelect
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = Label3
+      AnchorSideTop.Control = cbPortSelect
       Left = 225
       Height = 23
       Top = 7
@@ -622,13 +629,13 @@ object ReadingsForm: TReadingsForm
     end
     object Label3: TLabel
       AnchorSideLeft.Control = pnConnection
-      AnchorSideTop.Control = pnConnection
+      AnchorSideTop.Control = cbPortSelect
+      AnchorSideTop.Side = asrCenter
       Left = 8
       Height = 15
-      Top = 7
+      Top = 11
       Width = 72
       BorderSpacing.Left = 8
-      BorderSpacing.Top = 7
       Caption = 'Выбор порта'
       Color = clWhite
       ParentColor = False
@@ -637,12 +644,13 @@ object ReadingsForm: TReadingsForm
     object cbPortSelect: TComboBox
       AnchorSideLeft.Control = Label3
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = Label3
+      AnchorSideTop.Control = pnConnection
       Left = 88
       Height = 23
       Top = 7
       Width = 121
       BorderSpacing.Left = 8
+      BorderSpacing.Top = 7
       ItemHeight = 15
       Style = csDropDownList
       TabOrder = 0
@@ -879,7 +887,7 @@ object ReadingsForm: TReadingsForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
-      Value = 1500
+      Value = 4000
     end
     object Label29: TLabel
       AnchorSideLeft.Control = pnGraphControl
@@ -1077,10 +1085,11 @@ object ReadingsForm: TReadingsForm
     object Label6: TLabel
       AnchorSideLeft.Side = asrBottom
       AnchorSideTop.Control = cbTimeConstant
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = cbTimeConstant
       Left = 11
       Height = 15
-      Top = 0
+      Top = 4
       Width = 107
       Anchors = [akTop, akRight]
       BorderSpacing.Left = 16
@@ -1093,9 +1102,10 @@ object ReadingsForm: TReadingsForm
     object Label7: TLabel
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbSensitivity
+      AnchorSideTop.Side = asrCenter
       Left = 11
       Height = 15
-      Top = 31
+      Top = 35
       Width = 99
       Caption = 'Чувствительность'
       Color = clWhite
@@ -1105,9 +1115,10 @@ object ReadingsForm: TReadingsForm
     object Label16: TLabel
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbReserve1
+      AnchorSideTop.Side = asrCenter
       Left = 11
       Height = 15
-      Top = 62
+      Top = 66
       Width = 65
       Caption = 'Дин. резерв'
       Color = clWhite
@@ -1136,9 +1147,10 @@ object ReadingsForm: TReadingsForm
     object Label17: TLabel
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbReserve2
+      AnchorSideTop.Side = asrCenter
       Left = 11
       Height = 15
-      Top = 93
+      Top = 97
       Width = 65
       Caption = 'Дин. резерв'
       Color = clWhite
@@ -1225,9 +1237,10 @@ object ReadingsForm: TReadingsForm
     object Label18: TLabel
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbInputRange
+      AnchorSideTop.Side = asrCenter
       Left = 11
       Height = 15
-      Top = 124
+      Top = 128
       Width = 69
       Caption = 'Вх. диапазон'
       Color = clWhite

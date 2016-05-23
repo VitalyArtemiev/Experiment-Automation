@@ -65,6 +65,7 @@ type
     procedure eDevice1Change(Sender: TObject);
     procedure eDeviceChange(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
     Save: boolean;
@@ -222,6 +223,12 @@ begin
       CanClose:= false;
     end;
   end;
+end;
+
+procedure TOptionForm.FormCreate(Sender: TObject);
+begin
+  if MainForm.FileResult <> 0 then
+    SaveOptions;
 end;
 
 procedure TOptionForm.FormShow(Sender: TObject);

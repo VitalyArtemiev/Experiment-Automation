@@ -146,11 +146,13 @@ object CustomCommandForm: TCustomCommandForm
     TabOrder = 9
   end
   object cbTerminator: TComboBox
-    AnchorSideTop.Control = Label3
+    AnchorSideTop.Control = mCustomCommand
+    AnchorSideTop.Side = asrBottom
     Left = 118
     Height = 23
     Top = 166
     Width = 76
+    BorderSpacing.Top = 16
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -221,13 +223,12 @@ object CustomCommandForm: TCustomCommandForm
   end
   object Label3: TLabel
     AnchorSideLeft.Control = mCustomCommand
-    AnchorSideTop.Control = mCustomCommand
-    AnchorSideTop.Side = asrBottom
+    AnchorSideTop.Control = cbTerminator
+    AnchorSideTop.Side = asrCenter
     Left = 8
     Height = 15
-    Top = 166
+    Top = 170
     Width = 68
-    BorderSpacing.Top = 16
     Caption = 'Терминатор'
     ParentColor = False
   end

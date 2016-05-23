@@ -75,10 +75,11 @@ object StatusForm: TStatusForm
     object eDDS: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lDDSB
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = lDDSB
       Left = 163
       Height = 23
-      Top = 81
+      Top = 77
       Width = 60
       BorderSpacing.Right = 16
       TabOrder = 0
@@ -150,7 +151,7 @@ object StatusForm: TStatusForm
       AnchorSideTop.Control = eESB
       Left = 4
       Height = 15
-      Top = 108
+      Top = 104
       Width = 155
       Caption = 'Байт проверки исправности'
       ParentColor = False
@@ -228,10 +229,11 @@ object StatusForm: TStatusForm
     object eSPSB: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSPSB
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = lSPSB
       Left = 163
       Height = 23
-      Top = 27
+      Top = 23
       Width = 60
       BorderSpacing.Right = 16
       TabOrder = 2
@@ -240,10 +242,11 @@ object StatusForm: TStatusForm
     object eSESB: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lSESB
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = lSESB
       Left = 163
       Height = 23
-      Top = 54
+      Top = 50
       Width = 60
       BorderSpacing.Right = 16
       TabOrder = 3
@@ -252,10 +255,11 @@ object StatusForm: TStatusForm
     object eLIAS: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lLIASB
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = lLIASB
       Left = 163
       Height = 23
-      Top = 81
+      Top = 77
       Width = 60
       BorderSpacing.Right = 16
       TabOrder = 4
@@ -264,10 +268,11 @@ object StatusForm: TStatusForm
     object eESB: TEdit
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = lESB
+      AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = lESB
       Left = 163
       Height = 23
-      Top = 108
+      Top = 104
       Width = 60
       BorderSpacing.Right = 16
       TabOrder = 5
@@ -306,7 +311,7 @@ object StatusForm: TStatusForm
       AnchorSideTop.Control = eLIAS
       Left = 4
       Height = 15
-      Top = 81
+      Top = 77
       Width = 142
       Caption = 'Байт состояния детектора'
       ParentColor = False
@@ -316,7 +321,7 @@ object StatusForm: TStatusForm
       AnchorSideTop.Control = eDDS
       Left = 4
       Height = 15
-      Top = 81
+      Top = 77
       Width = 50
       Caption = 'Байт DDS'
       ParentColor = False

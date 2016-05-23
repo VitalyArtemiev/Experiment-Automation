@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, variants, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
   ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, {visa, session,}
-  {libusboop, libusb,} StatusF, CustomCommandF;
+  {libusboop, libusb,} StatusF, CustomCommandF, MenuH;
 
 type
   tIntegerArray = array of integer;
@@ -78,7 +78,7 @@ type
     seRecvTimeout: TSpinEdit;
     Label3: TLabel;
     Label8: TLabel;
-    StatusBar: TStatusBar;
+    StatusBar: TStatusBar;//THintRedirStatusBar;
 
     procedure btnConnectClick(Sender: TObject); virtual;
     procedure btCustomCommandClick(Sender: TObject);

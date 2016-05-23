@@ -7,7 +7,7 @@ object DeviceForm: TDeviceForm
   Caption = 'Устройства'
   ClientHeight = 792
   ClientWidth = 651
-  Constraints.MinHeight = 584
+  Constraints.MinHeight = 566
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -24,13 +24,13 @@ object DeviceForm: TDeviceForm
     Height = 784
     Top = 4
     Width = 377
-    ActivePage = tsDetectors
+    ActivePage = tsGenerators
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 12
     BorderSpacing.Bottom = 4
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
@@ -1363,13 +1363,12 @@ object DeviceForm: TDeviceForm
   end
   object Label6: TLabel
     AnchorSideLeft.Control = Label3
-    AnchorSideTop.Control = Label5
-    AnchorSideTop.Side = asrBottom
+    AnchorSideTop.Control = cbTerminator
+    AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 381
+    Top = 369
     Width = 68
-    BorderSpacing.Top = 20
     Caption = 'Терминатор'
     Color = clWhite
     ParentColor = False
@@ -1377,11 +1376,13 @@ object DeviceForm: TDeviceForm
   end
   object cbTerminator: TComboBox
     AnchorSideLeft.Control = cbStopBits
-    AnchorSideTop.Control = Label6
+    AnchorSideTop.Control = cbHandshake
+    AnchorSideTop.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 381
+    Top = 365
     Width = 125
+    BorderSpacing.Top = 8
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -1399,7 +1400,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 420
+    Top = 404
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1430,10 +1431,10 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 276
+    Top = 272
     Width = 125
     Anchors = [akTop, akRight]
-    BorderSpacing.Top = 12
+    BorderSpacing.Top = 8
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -1446,11 +1447,13 @@ object DeviceForm: TDeviceForm
   end
   object cbParity: TComboBox
     AnchorSideLeft.Control = cbStopBits
-    AnchorSideTop.Control = Label4
+    AnchorSideTop.Control = cbStopBits
+    AnchorSideTop.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 311
+    Top = 303
     Width = 125
+    BorderSpacing.Top = 8
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -1465,11 +1468,13 @@ object DeviceForm: TDeviceForm
   end
   object cbHandshake: TComboBox
     AnchorSideLeft.Control = cbStopBits
-    AnchorSideTop.Control = Label5
+    AnchorSideTop.Control = cbParity
+    AnchorSideTop.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 346
+    Top = 334
     Width = 125
+    BorderSpacing.Top = 8
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -1483,14 +1488,13 @@ object DeviceForm: TDeviceForm
   end
   object Label3: TLabel
     AnchorSideLeft.Control = Label2
-    AnchorSideTop.Control = Label2
-    AnchorSideTop.Side = asrBottom
+    AnchorSideTop.Control = cbStopBits
+    AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = cbStopBits
     Left = 393
     Height = 15
     Top = 276
     Width = 60
-    BorderSpacing.Top = 20
     Caption = 'Стоп-биты'
     Color = clWhite
     ParentColor = False
@@ -1498,13 +1502,12 @@ object DeviceForm: TDeviceForm
   end
   object Label4: TLabel
     AnchorSideLeft.Control = Label3
-    AnchorSideTop.Control = Label3
-    AnchorSideTop.Side = asrBottom
+    AnchorSideTop.Control = cbParity
+    AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 311
+    Top = 307
     Width = 53
-    BorderSpacing.Top = 20
     Caption = 'Парность'
     Color = clWhite
     ParentColor = False
@@ -1512,13 +1515,12 @@ object DeviceForm: TDeviceForm
   end
   object Label5: TLabel
     AnchorSideLeft.Control = Label3
-    AnchorSideTop.Control = Label4
-    AnchorSideTop.Side = asrBottom
+    AnchorSideTop.Control = cbHandshake
+    AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 346
+    Top = 338
     Width = 59
-    BorderSpacing.Top = 20
     Caption = 'Handshake'
     Color = clWhite
     ParentColor = False
@@ -1584,9 +1586,10 @@ object DeviceForm: TDeviceForm
   object Label2: TLabel
     AnchorSideLeft.Control = btAddDevice
     AnchorSideTop.Control = cbInterface
+    AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 241
+    Top = 245
     Width = 62
     Caption = 'Интерфейс'
     Color = clWhite
@@ -1650,7 +1653,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 449
+    Top = 433
     Width = 254
     BorderSpacing.Top = 4
     Font.Style = [fsBold]

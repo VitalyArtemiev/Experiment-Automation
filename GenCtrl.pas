@@ -27,13 +27,14 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
+  Forms, menuh, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
   serconf, AxisSource, AboutF, DeviceF, dialogs, lazcontrols, ReadingThreads,
   OffsetF, DevSession;
 
 {$R *.res}
 
 begin
+  //Application.OnHint := @MenuHint.Show;
   Application.Title:= 'Generator-Amplifier Control';
   Application.MainFormOnTaskBar:= true;
   RequireDerivedFormResource:= True;

@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
   TATransformations, TADbSource, Forms, Controls, Graphics,
-  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, synaser,
+  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls,
   MainF, SerConF, ReadingThreads, TACustomSource, AxisSource;
 
 type
@@ -178,7 +178,6 @@ type
 var
   ReadingsForm: TReadingsForm;
   ReadingsThread: TThread;
-
 
 implementation
 
@@ -357,6 +356,7 @@ begin
   FLogState:= AValue;
   if FLogState = lActive then
   begin
+    btReset.Enabled:=           false;
     cbCh1.Enabled:=             false;
     cbCh2.Enabled:=             false;
     cbRatio1.Enabled:=          false;
@@ -381,6 +381,7 @@ begin
   end
   else
   begin
+    btReset.Enabled:=           true;
     cbCh1.Enabled:=             true;
     cbCh2.Enabled:=             true;
     cbRatio1.Enabled:=          true;
@@ -565,18 +566,17 @@ begin
     LeaveCriticalSection(CommCS);
   end;
 
-  ReadingsThread.Terminate;
+  if assigned(ReadingsThread) then
+    ReadingsThread.Terminate;
   PauseTime:= Now;
   if assigned(ReadingsThread) then
     ReadingsThread.WaitFor;
   ProcessBuffers;
- // btApply.Enabled:= true;
 end;
 
 procedure tReadingsForm.ContinueLog;
 begin
   btStartPauseLog.Caption:= 'Приостановить';
- // btApply.Enabled:= false;
   WriteProgramLog('Data collection resume');
 
   LogState:= lActive;
@@ -805,10 +805,13 @@ begin
   num:= i;
   setlength(ParamArr, num);
 
-  WriteProgramLog(strf(num) + ' SNAP elements');
+  //WriteProgramLog(strf(num) + ' SNAP elements');
 
   for i:= 0 to high(ParamArr) do
     ParamArr[i]:= p[i] + FirstIndex;
+
+  for i:= 0 to high(ParamArr) do
+    WriteProgramLog(ParamArr[i]);
 
   try
   EnterCriticalSection(CommCS);
@@ -1024,8 +1027,13 @@ begin
   LeaveCriticalSection(CommCS);
 
   {$IFOPT D+}
-  if DeviceIndex =0 then deviceindex:= 1;
+  if DeviceIndex =0 then
+  begin
+   deviceindex:= 2;
+   connectionkind:= cserial;
+  end;
   {$ENDIF}
+
 
   if DeviceIndex = iDefaultDevice then exit;
 

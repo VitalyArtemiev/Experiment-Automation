@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 478
+  Left = 320
   Height = 600
-  Top = 160
+  Top = 48
   Width = 528
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -55,6 +55,7 @@ object MainForm: TMainForm
     Height = 23
     Top = 557
     Width = 528
+    AutoHint = True
     Panels = <    
       item
         Text = 'Нет подключения'
@@ -69,7 +70,9 @@ object MainForm: TMainForm
       item
         Width = 200
       end>
+    ParentShowHint = False
     SimplePanel = False
+    OnHint = StatusBarHint
   end
   object btnConnect: TButton
     AnchorSideLeft.Control = cbPortSelect
@@ -176,12 +179,12 @@ object MainForm: TMainForm
     Height = 192
     Top = 325
     Width = 410
-    ActivePage = tsSweep
+    ActivePage = tsStep
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 24
     BorderSpacing.Right = 4
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 7
     object tsConstantFrequency: TTabSheet
       Caption = 'Постоянная частота'
@@ -1174,7 +1177,7 @@ object MainForm: TMainForm
         Hint = 'Добавить текущие параметры эксперимента'#13#10'в отчет со списком экспериментов'
         OnClick = miExportParamsClick
       end
-      object MenuItem1: TMenuItem
+      object Separator1: TMenuItem
         Caption = '-'
       end
       object miSavePar: TMenuItem
@@ -1187,7 +1190,7 @@ object MainForm: TMainForm
         Hint = 'Загрузка параметров эксперимента'
         OnClick = miLoadParClick
       end
-      object MenuItem2: TMenuItem
+      object Separator2: TMenuItem
         Caption = '-'
       end
       object miSaveCfg: TMenuItem
@@ -1200,7 +1203,7 @@ object MainForm: TMainForm
         Hint = 'Загрузка настроек программы'
         OnClick = miLoadCfgClick
       end
-      object MenuItem3: TMenuItem
+      object Separator3: TMenuItem
         Caption = '-'
       end
       object miOptions: TMenuItem

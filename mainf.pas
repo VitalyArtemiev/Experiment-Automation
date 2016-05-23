@@ -62,9 +62,9 @@ type
 
     About: TMenuItem;
     Label29: TLabel;
-    MenuItem1: TMenuItem;
-    MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
+    Separator1: TMenuItem;
+    Separator2: TMenuItem;
+    Separator3: TMenuItem;
 
     miShowReadingsF: TMenuItem;
 
@@ -140,10 +140,10 @@ type
     procedure miSaveCfgClick(Sender: TObject);
     procedure ReadingTimerStartTimer(Sender: TObject);
     procedure ReadingTimerTimer(Sender: TObject);
+    procedure StatusBarHint(Sender: TObject);
   private
     { private declarations }
     FrequencyLimits, MinAmplitudeLimits, MaxAmplitudeLimits: array of double;
-   // procedure RestoreStatusBar;
   public
     { public declarations }
     FileResult: integer;
@@ -409,8 +409,10 @@ begin
   end;
 
   system.assign(f, FileName);
+  writeprogramlog(Ioresult);
   {$I-}
   rewrite(f, sizeof(RParams));
+  writeprogramlog(Ioresult);
   blockwrite(f, Params, 1);
 
   SaveParams:= IOResult;
@@ -614,13 +616,11 @@ begin
   {$I+}
 
   ExportParams:= IOResult;
-  if ExportParams <> 0 then ShowMessage('Ошибка сохранения отчета');
+  if ExportParams <> 0 then
+    ShowMessage('Ошибка сохранения отчета')
+  else
+    StatusBar.Panels[spStatus].Text:= 'Cохранено в ' + FileName;
 end;
-
-{function TMainForm.SaveParams: word;
-begin
-
-end;}
 
 procedure tMainForm.FormCreate(Sender: TObject);
 var
@@ -777,7 +777,7 @@ end;
 
 procedure tMainForm.cbPointPerStepChange(Sender: TObject);
 begin
-  if cbPointPerStep.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = 0) then
+  if cbPointPerStep.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = integer(rBuffer)) then
   begin
     ReadingsForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
     ReadingsForm.cbReadingsModeChange(Self);
@@ -838,6 +838,11 @@ begin
   if ReadingsForm.LogState = lActive then
     ReadingsForm.StopLog;
   ReadingTimer.Enabled:= false;
+end;
+
+procedure tMainForm.StatusBarHint(Sender: TObject);
+begin
+
 end;
 
 {procedure tMainForm.RestoreStatusBar;
@@ -918,11 +923,6 @@ begin
     eOffset.MaxValue:=     MaxAmplitudeLimits[ItemIndex] / 2;
     eOffset.MinValue:=   - eOffset.MaxValue
   end;
-
-  writeprogramlog(eAmplitude.MaxValue);
-  writeprogramlog(eAmplitude.MinValue);
-  writeprogramlog(eOffset.MaxValue);
-  writeprogramlog(eOffset.MinValue);
 
   if length(MinAmplitudeLimits) = 1 then
   begin
@@ -1131,6 +1131,8 @@ procedure tMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
   readingsform.enablecontrols(true);
+  serport:= tblockserial.create;
+  readingsform.serport:= tblockserial.create;
   //readingsform.btnConnectClick(self);
 end;
 
@@ -1308,7 +1310,11 @@ begin
   inherited btnConnectClick(Sender);
 
   {$IFOPT D+}
-  if DeviceIndex = 0 then deviceindex:= 1;
+  if DeviceIndex = 0 then
+  begin
+   deviceindex:= 1;
+   connectionkind:= cserial;
+  end;
   {$ENDIF}
 
   if DeviceIndex = iDefaultDevice then Exit;
@@ -1443,6 +1449,7 @@ begin
   SweepRateReading.Enabled:= Enable;
   cbSweepType.Enabled:=      Enable;
   cbSweepDirection.Enabled:= Enable;
+  cbModulation.Enabled:=     Enable;
   eSweepStartF.Enabled:=     Enable;
   eSweepStopF.Enabled:=      Enable;
   btApply.Enabled:=          Enable;

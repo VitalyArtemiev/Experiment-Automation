@@ -10,6 +10,7 @@ object OptionForm: TOptionForm
   Constraints.MinHeight = 350
   Constraints.MinWidth = 350
   OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
   OnShow = FormShow
   Position = poOwnerFormCenter
   LCLVersion = '1.6.0.4'
@@ -50,9 +51,9 @@ object OptionForm: TOptionForm
     Height = 328
     Top = 0
     Width = 350
-    ActivePage = ConnectionTab
+    ActivePage = GeneralTab
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 2
     object GeneralTab: TTabSheet
       Caption = 'Общие настройки'
@@ -113,7 +114,7 @@ object OptionForm: TOptionForm
         Items.Strings = (
           'Загружать параметры при запуске'
           'Сохранять параметры программы при выходе'
-          'Сохранять данные эксперимента автоматически'
+          'Сохранять отчет об эксперименте автоматически'
           'Запрашивать комментарий при автосохранении'
           'Вести журнал программы'
         )
@@ -219,10 +220,10 @@ object OptionForm: TOptionForm
         Height = 263
         Top = 37
         Width = 342
-        ActivePage = GenTab
+        ActivePage = DetTab
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 8
-        TabIndex = 0
+        TabIndex = 1
         TabOrder = 0
         object GenTab: TTabSheet
           AnchorSideTop.Side = asrBottom
