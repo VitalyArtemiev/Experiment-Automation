@@ -580,18 +580,18 @@ begin
   if ConnectionKind <> cNone then
   begin
     writeln(f);
-    writeln(f, Label6.Caption, cbTimeConstant.Text);
-    writeln(f, Label7.Caption, cbSensitivity.Text);
+    writeln(f, Label6.Caption, ' ', cbTimeConstant.Text);
+    writeln(f, Label7.Caption, ' ', cbSensitivity.Text);
     if cbReserve1.Visible then
-      writeln(f, Label16.Caption, cbReserve1.Text);
+      writeln(f, Label16.Caption, ' ', cbReserve1.Text);
     if cbReserve2.Visible then
-      writeln(f, Label17.Caption, cbReserve2.Text);
+      writeln(f, Label17.Caption, ' ', cbReserve2.Text);
     if cbInputRange.Visible then
-      writeln(f, Label18.Caption, cbInputRange.Text);
+      writeln(f, Label18.Caption, ' ', cbInputRange.Text);
     if cbRatio1.Visible then
-      writeln(f, Label14.Caption, cbRatio1.Text);
+      writeln(f, Label14.Caption, ' ', cbRatio1.Text);
     if cbRatio2.Visible then
-      writeln(f, Label15.Caption, cbRatio2.Text);
+      writeln(f, Label15.Caption, ' ', cbRatio2.Text);
     if OffsetTracked then
     with OffsetForm do
     begin              { TODO 3 -cImprovement : total query???? }

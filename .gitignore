@@ -55,6 +55,10 @@ Temporary Items
 *.txt
 *visa*
 *libusb*
+*niscope*
+*.exe
+*.prm
+*.cfg
 ProgramLog.txt
 backup
 lib

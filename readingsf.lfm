@@ -125,7 +125,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideBottom.Control = cbChart1Show
         Left = 0
         Height = 285
-        Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для просмотра'#13#10'Сброс - выделение вверх'
+        Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
         Top = 23
         Width = 313
         AxisList = <        
@@ -158,6 +158,7 @@ object ReadingsForm: TReadingsForm
         Anchors = [akTop, akLeft, akRight, akBottom]
         DoubleBuffered = True
         ParentShowHint = False
+        PopupMenu = pmChart
         ShowHint = True
         object Chart1LineSeries1: TLineSeries
           LinePen.Color = clBlue
@@ -302,7 +303,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideBottom.Control = cbChart2Show
         Left = 0
         Height = 285
-        Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для просмотра'#13#10'Сброс - выделение вверх'
+        Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
         Top = 23
         Width = 318
         AxisList = <        
@@ -338,6 +339,7 @@ object ReadingsForm: TReadingsForm
         Anchors = [akTop, akLeft, akRight, akBottom]
         DoubleBuffered = True
         ParentShowHint = False
+        PopupMenu = pmChart
         ShowHint = True
         object Chart2LineSeries1: TLineSeries
           LinePen.Color = clBlue
@@ -1127,8 +1129,8 @@ object ReadingsForm: TReadingsForm
       Left = 11
       Height = 15
       Top = 66
-      Width = 65
-      Caption = 'Дин. резерв'
+      Width = 103
+      Caption = 'Дин. резерв (close)'
       Color = clWhite
       ParentColor = False
       Transparent = False
@@ -1159,8 +1161,8 @@ object ReadingsForm: TReadingsForm
       Left = 11
       Height = 15
       Top = 97
-      Width = 65
-      Caption = 'Дин. резерв'
+      Width = 101
+      Caption = 'Дин. резерв (wide)'
       Color = clWhite
       ParentColor = False
       Transparent = False
@@ -1291,19 +1293,6 @@ object ReadingsForm: TReadingsForm
       TabOrder = 9
     end
   end
-  object ChartToolset1: TChartToolset
-    left = 376
-    top = 64
-    object ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool
-    end
-    object ChartToolset1DataPointHintTool1: TDataPointHintTool
-    end
-    object ChartToolset1ZoomDragTool1: TZoomDragTool
-    end
-    object ChartToolset1PanDragTool1: TPanDragTool
-      MinDragRadius = 1
-    end
-  end
   object Source1: TUserDefinedChartSource
     OnGetChartDataItem = Source1GetChartDataItem
     left = 408
@@ -1317,8 +1306,38 @@ object ReadingsForm: TReadingsForm
   object UpdateTimer: TTimer
     Enabled = False
     Interval = 5000
-    OnTimer = UpdateTimerTimer
     left = 344
     top = 64
+  end
+  object pmChart: TPopupMenu
+    OnPopup = pmChartPopup
+    left = 472
+    top = 64
+    object ZoomIn: TMenuItem
+      Caption = 'Увеличить'
+      OnClick = ZoomInClick
+    end
+    object ZoomOut: TMenuItem
+      Caption = 'Уменьшить'
+      OnClick = ZoomOutClick
+    end
+    object RestoreScale: TMenuItem
+      Caption = 'Сбросить масштаб'
+      OnClick = RestoreScaleClick
+    end
+    object Divider: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem1: TMenuItem
+      Caption = 'X'
+      Checked = True
+      ShowAlwaysCheckable = True
+      OnClick = ChartMenuItemClick
+    end
+    object MenuItem2: TMenuItem
+      Caption = 'Y'
+      ShowAlwaysCheckable = True
+      OnClick = ChartMenuItemClick
+    end
   end
 end

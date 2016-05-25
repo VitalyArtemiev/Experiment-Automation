@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
   TATransformations, TADbSource, Forms, Controls, Graphics,
-  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls,
+  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus,
   MainF, SerConF, ReadingThreads, TACustomSource, AxisSource;
 
 type
@@ -49,10 +49,6 @@ type
     cbUseGenFreq: TCheckBox;
     cbRatio1: TComboBox;
     cbRatio2: TComboBox;
-    ChartToolset1DataPointHintTool1: TDataPointHintTool;
-    ChartToolset1PanDragTool1: TPanDragTool;
-    ChartToolset1ZoomDragTool1: TZoomDragTool;
-    ChartToolset1ZoomMouseWheelTool1: TZoomMouseWheelTool;
 
     eAxisLimit: TFloatSpinEdit;
     eDelay: TSpinEdit;
@@ -77,6 +73,12 @@ type
     Label9: TLabel;
 
     GraphSplitter: TPairSplitter;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    ZoomOut: TMenuItem;
+    ZoomIn: TMenuItem;
+    RestoreScale: TMenuItem;
+    Divider: TMenuItem;
     PairSplitterSide1: TPairSplitterSide;
     PairSplitterSide2: TPairSplitterSide;
     eUpdateInterval: TSpinEdit;
@@ -87,9 +89,9 @@ type
     Chart1LineSeries1: TLineSeries;
     Chart2LineSeries1: TLineSeries;
 
-    ChartToolset1: TChartToolset;
     pnGraphControl: TPanel;
     pnConnection: TPanel;
+    pmChart: TPopupMenu;
     sbParamScroll: TScrollBox;
     sbSettingScroll: TScrollBox;
 
@@ -113,6 +115,7 @@ type
     procedure cbChart1ShowChange(Sender: TObject);
     procedure cbChart2ShowChange(Sender: TObject);
     procedure cbReadingsModeChange(Sender: TObject);
+    procedure ChartMenuItemClick(Sender: TObject);
     procedure ParamsChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
     procedure cbUseGenFreqChange(Sender: TObject);
@@ -123,11 +126,15 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure GraphSplitterResize(Sender: TObject);
+    procedure pmChartPopup(Sender: TObject);
+    procedure RestoreScaleClick(Sender: TObject);
     procedure Source1GetChartDataItem(ASource: TUserDefinedChartSource;
       AIndex: Integer; var AItem: TChartDataItem);
     procedure Source2GetChartDataItem(ASource: TUserDefinedChartSource;
       AIndex: Integer; var AItem: TChartDataItem);
     procedure UpdateTimerTimer(Sender: TObject);
+    procedure ZoomInClick(Sender: TObject);
+    procedure ZoomOutClick(Sender: TObject);
 
   private
     { private declarations }
@@ -181,7 +188,11 @@ var
 
 implementation
 
-uses Dateutils, StrUtils, stepf, optionf, DeviceF, OffsetF;
+uses
+  Dateutils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, OffsetF;
+
+const
+  ChartZoomFactor = 2;
 
 procedure tReadingsForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -317,6 +328,33 @@ begin
     Position:= Width div 2;
 end;
 
+procedure tReadingsForm.pmChartPopup(Sender: TObject);
+var
+  i: integer;
+  cb: tCombobox;
+begin
+  with TChart(pmChart.PopupComponent) do
+    case Name of
+      'Chart1': cb:= cbChart1Show;
+      'Chart2': cb:= cbChart2Show;
+    end;
+
+  with cb do
+  begin
+    if ItemIndex >= 0 then
+    begin
+      for i:= 0 to pmChart.Items.Count - 1 do
+        pmChart.Items[i].Checked:= false;
+      pmChart.Items[ItemIndex + 4].Checked:= true;
+    end;
+  end;
+end;
+
+procedure tReadingsForm.RestoreScaleClick(Sender: TObject);
+begin
+  tChart(pmChart.PopupComponent).ZoomFull(true);
+end;
+
 procedure tReadingsForm.EnableControls(Enable: boolean);    //+++
 begin
   btOffset.Enabled:=          Enable;
@@ -349,6 +387,51 @@ end;
 procedure tReadingsForm.UpdateTimerTimer(Sender: TObject);
 begin
   ProcessBuffers;
+end;
+
+procedure tReadingsForm.ZoomInClick(Sender: TObject);
+var
+  c: tChart;
+  Rect: tDoubleRect;
+  Center: tDoublePoint;
+begin
+  c:= tChart(pmChart.PopupComponent);
+  with c do
+  begin
+    Rect:= CurrentExtent;
+
+    Center.x:= (Rect.a.x + Rect.b.x) / 2;
+    Center.y:= (Rect.a.y + Rect.b.y) / 2;
+
+    Rect.a.x:= (Rect.a.x - Center.X) / ChartZoomFactor + Center.X;
+    Rect.b.x:= (Rect.b.x - Center.X) / ChartZoomFactor + Center.X;
+    Rect.a.y:= (Rect.a.y - Center.y) / ChartZoomFactor + Center.Y;
+    Rect.b.y:= (Rect.b.y - Center.y) / ChartZoomFactor + Center.Y;
+
+    LogicalExtent:= Rect;
+  end;
+end;
+
+procedure tReadingsForm.ZoomOutClick(Sender: TObject);
+var
+  c: tChart;
+  Rect: tDoubleRect;
+  Center: tDoublePoint;
+begin
+  c:= tChart(pmChart.PopupComponent);
+  with c do
+  begin
+    Rect:= CurrentExtent;
+    Center.x:= (Rect.a.x + Rect.b.x) / 2;
+    Center.y:= (Rect.a.y + Rect.b.y) / 2;
+
+    Rect.a.x:= (Rect.a.x - Center.X) * ChartZoomFactor + Center.X;
+    Rect.b.x:= (Rect.b.x - Center.X) * ChartZoomFactor + Center.X;
+    Rect.a.y:= (Rect.a.y - Center.y) * ChartZoomFactor + Center.Y;
+    Rect.b.y:= (Rect.b.y - Center.y) * ChartZoomFactor + Center.Y;
+
+    LogicalExtent:= Rect;
+  end;
 end;
 
 procedure tReadingsForm.SetLogState(AValue: eLogState);
@@ -731,7 +814,7 @@ var
   Sources: array of tAxisSource;
 begin
   if IsEmptyStr(CurrLogFileName, [' ']) then exit(-1);
-
+                                     { TODO 1 -cFeature : log path }
   if LogTime then
   begin
     setlength(Sources, length(Sources) + 1);
@@ -1027,7 +1110,7 @@ begin
   LeaveCriticalSection(CommCS);
 
   {$IFOPT D+}
-  if DeviceIndex =0 then
+  if DeviceIndex = 0 then
   begin
    deviceindex:= 2;
    connectionkind:= cserial;
@@ -1054,12 +1137,21 @@ begin
   cbReserve1.Items.Clear;
   cbReserve2.Items.Clear;
   cbInputRange.Items.Clear;
+  for i:= 4 to pmChart.Items.Count - 1 do
+    pmChart.Items.Delete(4);
 
   with DeviceForm.sgDetCommands do
   begin
     cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hTransferParams)]);
     cbChart1Show.Items:= cgTransfer.Items;
     cbChart2Show.Items:= cgTransfer.Items;
+    for i:= 0 to cgTransfer.Items.Count - 1 do
+    with pmChart do
+    begin
+      Items.Add(tMenuItem.Create(pmChart));
+      Items[Items.Count - 1].Caption:= cgTransfer.Items[i];
+      Items[Items.Count - 1].OnClick:= @ChartMenuItemClick;
+    end;
     cbCh1.Items.AddText(Cells[DeviceIndex, integer(hCH1Options)]);
     cbCh2.Items.AddText(Cells[DeviceIndex, integer(hCH2Options)]);
     cbRatio1.Items.AddText(Cells[DeviceIndex, integer(hRatio1Options)]);
@@ -1441,13 +1533,14 @@ begin
   StopLog(true);
 end;
 
-procedure tReadingsForm.cbChart1ShowChange(Sender: TObject);
+procedure tReadingsForm.cbChart1ShowChange(Sender: TObject); //FIXIT
 begin
   if (LogState = lActive) and (ReadingMode = rBuffer) then
+  with cbChart1Show do
   begin
-    cbChart1Show.ItemIndex:= cbChart1Show.Items.IndexOf(cbCH1.Text);
-    if cbChart1Show.ItemIndex < 0 then
-      cbChart1Show.ItemIndex:= CH1Index;
+    ItemIndex:= Items.IndexOf(cbCH1.Text);
+    if ItemIndex < 0 then
+      ItemIndex:= CH1Index;
   end;
   Source1.PointsNumber:= ProcessedPoints;
   Source1.Reset;
@@ -1456,10 +1549,11 @@ end;
 procedure tReadingsForm.cbChart2ShowChange(Sender: TObject);
 begin
   if (LogState = lActive) and (ReadingMode = rBuffer) then
+  with cbChart2Show do
   begin
-    cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
-    if cbChart2Show.ItemIndex < 0 then
-      cbChart2Show.ItemIndex:= CH2Index;
+    ItemIndex:= Items.IndexOf(cbCH2.Text);
+    if ItemIndex < 0 then
+      ItemIndex:= CH2Index;
   end;
   Source2.PointsNumber:= ProcessedPoints;
   Source2.Reset;
@@ -1487,6 +1581,30 @@ begin
       sbParamScroll.Hide;
       cbXAxis.Items.Strings[0]:= 'Номер точки';
     end;
+  end;
+end;
+
+procedure tReadingsForm.ChartMenuItemClick(Sender: TObject);
+var
+  cb: tComboBox;
+  i: integer;
+begin
+  with TChart(pmChart.PopupComponent) do
+    case Name of
+      'Chart1': cb:= cbChart1Show;
+      'Chart2': cb:= cbChart2Show;
+    end;
+
+  with cb do
+  begin
+    ItemIndex:= Items.IndexOf(tMenuItem(Sender).Caption);
+    if ItemIndex >= 0 then
+    begin
+      for i:= 0 to pmChart.Items.Count - 1 do
+        pmChart.Items[i].Checked:= false;
+      tMenuItem(Sender).Checked:= true;
+    end;
+    OnChange(Self);
   end;
 end;
 

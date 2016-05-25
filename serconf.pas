@@ -343,23 +343,23 @@ begin
         TimeOut:=       valf(Cells[i, longint(hTimeout)]);
 
         case Cells[i, longint(hInterface)] of
-          'Ethernet - Telnet':
+          TelnetString:
           begin
             Connection:= cTelNet;
             Host:= Cells[i, longint(hIPAdress)];
             Port:= Cells[i, longint(hPort)];
           end;
-          'Ethernet - VXI':
+          VXIString:
           begin
             Connection:= cVXI;
             Host:= Cells[i, longint(hIPAdress)];
             Port:= Cells[i, longint(hPort)];
           end;
-          'USB':
+          USBString:
           begin
             Connection:= cUSB;
           end;
-          'RS232':
+          SerialString:
           begin
             Connection:= cSerial;
             BaudRate:= valf(Cells[i, longint(hBaudRate)]);

@@ -201,6 +201,10 @@ const
   SGHeaderLength = integer(high(eHeaderRow)) + 3; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
+  TelnetString = 'Ethernet - Telnet';
+  VXIString = 'Ethernet - VXI';
+  USBString = 'USB';
+  SerialString = 'RS232';
 
 var
   DeviceForm: TDeviceForm;
