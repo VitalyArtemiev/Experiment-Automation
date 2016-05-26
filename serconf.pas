@@ -17,7 +17,7 @@ type
 
   eConnectionKind = (cNone = -1, cSerial, cUSB, cTelNet, cVXI);
 
-  eDeviceKind = (dGenerator, dDetector);
+  eDeviceKind = (dGenerator, dDetector, dTempController);
 
   tSSA = array of ansistring;
   pSSA = ^tSSA;
@@ -159,22 +159,22 @@ implementation
 uses
   Controls, StrUtils, DeviceF, MainF, OptionF;
 
-function strf(x: double): string;
+function strf(x: double): string; inline;
 begin
   str(x, Result);
 end;
 
-function strf(x: longint): string;
+function strf(x: longint): string; inline;
 begin
   str(x, Result);
 end;
 
-function valf(s: string): integer;
+function valf(s: string): integer; inline;
 begin
   val(s, Result);
 end;
 
-function vald(s: string): double;
+function vald(s: string): double; inline;
 begin
   val(s, Result);
 end;
@@ -192,7 +192,7 @@ begin
   end;
 end; }
 
-procedure WriteProgramLog(Log: string);
+procedure WriteProgramLog(Log: string); inline;
 begin
   if Config.KeepLog then
   try
@@ -204,12 +204,12 @@ begin
   end;
 end;
 
-procedure WriteProgramLog(i: longint);
+procedure WriteProgramLog(i: longint); inline;
 begin
   WriteProgramLog(strf(i));
 end;
 
-procedure WriteProgramLog(d: double);
+procedure WriteProgramLog(d: double); inline;
 begin
   WriteProgramLog(strf(d));
 end;
