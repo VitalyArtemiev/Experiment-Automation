@@ -51,9 +51,9 @@ object OptionForm: TOptionForm
     Height = 328
     Top = 0
     Width = 350
-    ActivePage = GeneralTab
+    ActivePage = ConnectionTab
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 2
     object GeneralTab: TTabSheet
       Caption = 'Общие настройки'
@@ -614,6 +614,204 @@ object OptionForm: TOptionForm
             BorderSpacing.Top = 4
             Font.Style = [fsBold]
             ParentFont = False
+          end
+        end
+        object TempTab: TTabSheet
+          Caption = 'Температурный контроллер'
+          ClientHeight = 235
+          ClientWidth = 334
+          object DividerBevel5: TDividerBevel
+            AnchorSideLeft.Control = Label18
+            AnchorSideTop.Control = cbHandshake2
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 148
+            Width = 322
+            BorderSpacing.Top = 4
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object DividerBevel6: TDividerBevel
+            AnchorSideLeft.Control = Label19
+            AnchorSideTop.Control = eDevice2
+            AnchorSideTop.Side = asrBottom
+            Left = 4
+            Height = 15
+            Top = 31
+            Width = 322
+            BorderSpacing.Top = 4
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object ePort2: TEdit
+            AnchorSideLeft.Control = eIPAdress2
+            AnchorSideTop.Control = eIPAdress2
+            AnchorSideTop.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 203
+            Width = 120
+            BorderSpacing.Top = 12
+            TabOrder = 0
+            Text = '80'
+          end
+          object Label14: TLabel
+            AnchorSideLeft.Control = Label18
+            AnchorSideTop.Control = ePort2
+            AnchorSideTop.Side = asrCenter
+            Left = 4
+            Height = 15
+            Top = 207
+            Width = 28
+            BorderSpacing.Top = 20
+            Caption = 'Порт'
+            ParentColor = False
+          end
+          object eIPAdress2: TEdit
+            AnchorSideLeft.Control = cbHandshake2
+            AnchorSideTop.Control = cbHandshake2
+            AnchorSideTop.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 168
+            Width = 120
+            BorderSpacing.Top = 24
+            TabOrder = 1
+            Text = '192.168.1.1'
+          end
+          object Label15: TLabel
+            AnchorSideLeft.Control = Label18
+            AnchorSideTop.Control = eIPAdress2
+            AnchorSideTop.Side = asrCenter
+            Left = 4
+            Height = 15
+            Top = 172
+            Width = 46
+            BorderSpacing.Top = 20
+            Caption = 'IP-адрес'
+            ParentColor = False
+          end
+          object eDevice2: TComboBox
+            AnchorSideTop.Control = TempTab
+            AnchorSideRight.Control = TempTab
+            AnchorSideRight.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 4
+            Width = 120
+            Anchors = [akTop, akRight]
+            BorderSpacing.Top = 4
+            BorderSpacing.Right = 8
+            ItemHeight = 15
+            OnChange = eDevice2Change
+            TabOrder = 2
+            Text = 'eDevice2'
+          end
+          object eBaudRate2: TSpinEdit
+            AnchorSideLeft.Control = eDevice2
+            AnchorSideTop.Control = eDevice2
+            AnchorSideTop.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 51
+            Width = 120
+            BorderSpacing.Top = 24
+            Increment = 1200
+            MaxValue = 4000000
+            MinValue = 50
+            TabOrder = 3
+            Value = 9600
+          end
+          object cbParity2: TComboBox
+            AnchorSideLeft.Control = eDevice2
+            AnchorSideTop.Control = eBaudRate2
+            AnchorSideTop.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 86
+            Width = 120
+            BorderSpacing.Top = 12
+            ItemHeight = 15
+            ItemIndex = 0
+            Items.Strings = (
+              'Отсутствует'
+              'Нечетная'
+              'Четная'
+              'Всегда 1 (неиспользуемый бит)'
+              'Всегда 0 (неиспользуемый бит)'
+            )
+            TabOrder = 4
+            Text = 'Отсутствует'
+          end
+          object cbHandshake2: TComboBox
+            AnchorSideLeft.Control = eDevice2
+            AnchorSideTop.Control = cbParity2
+            AnchorSideTop.Side = asrBottom
+            Left = 206
+            Height = 23
+            Top = 121
+            Width = 120
+            BorderSpacing.Top = 12
+            ItemHeight = 15
+            ItemIndex = 0
+            Items.Strings = (
+              'Отсутствует'
+              'Программное'
+              'Аппаратное'
+              'Программное + аппаратное'
+            )
+            TabOrder = 5
+            Text = 'Отсутствует'
+          end
+          object Label16: TLabel
+            AnchorSideLeft.Control = Label19
+            AnchorSideTop.Control = cbParity2
+            AnchorSideTop.Side = asrCenter
+            Left = 4
+            Height = 15
+            Top = 90
+            Width = 53
+            BorderSpacing.Top = 20
+            Caption = 'Парность'
+            ParentColor = False
+          end
+          object Label17: TLabel
+            AnchorSideLeft.Control = Label19
+            AnchorSideTop.Control = eBaudRate2
+            AnchorSideTop.Side = asrCenter
+            Left = 4
+            Height = 15
+            Top = 55
+            Width = 188
+            BorderSpacing.Top = 20
+            Caption = 'Бод-частота (символов в секунду)'
+            ParentColor = False
+          end
+          object Label18: TLabel
+            AnchorSideLeft.Control = Label19
+            AnchorSideTop.Control = cbHandshake2
+            AnchorSideTop.Side = asrCenter
+            Left = 4
+            Height = 15
+            Top = 125
+            Width = 151
+            BorderSpacing.Top = 20
+            Caption = 'Рукопожатие (подтв. связи)'
+            ParentColor = False
+          end
+          object Label19: TLabel
+            AnchorSideLeft.Control = TempTab
+            AnchorSideTop.Control = eDevice2
+            AnchorSideTop.Side = asrCenter
+            Left = 4
+            Height = 15
+            Top = 8
+            Width = 44
+            BorderSpacing.Left = 4
+            BorderSpacing.Top = 12
+            Caption = 'Прибор'
+            ParentColor = False
           end
         end
       end

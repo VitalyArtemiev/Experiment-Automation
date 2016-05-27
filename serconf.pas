@@ -17,13 +17,13 @@ type
 
   eConnectionKind = (cNone = -1, cSerial, cUSB, cTelNet, cVXI);
 
-  eDeviceKind = (dGenerator, dDetector);
+  eDeviceKind = (dGenerator, dDetector, dTempController);
 
   tSSA = array of ansistring;
   pSSA = ^tSSA;
 
   rConfig = record
-    DefaultParams, WorkConfig, DefaultGens, DefaultDets: shortstring;
+    DefaultParams, WorkConfig, DefaultGens, DefaultDets, DefaultTemps: shortstring;
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
     AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
@@ -108,6 +108,7 @@ type
     DeviceKind: eDeviceKind;
     SupportedDevices: array of tDevice;
     AmplitudeUnits: array [-1..2] of string;
+    MinDelay: longword;
 
     property TimeOutErrors: longword read fTimeOuts write SetTOE;
     property CurrentDevice: pDevice read GetCurDev;
@@ -159,22 +160,22 @@ implementation
 uses
   Controls, StrUtils, DeviceF, MainF, OptionF;
 
-function strf(x: double): string;
+function strf(x: double): string; inline;
 begin
   str(x, Result);
 end;
 
-function strf(x: longint): string;
+function strf(x: longint): string; inline;
 begin
   str(x, Result);
 end;
 
-function valf(s: string): integer;
+function valf(s: string): integer; inline;
 begin
   val(s, Result);
 end;
 
-function vald(s: string): double;
+function vald(s: string): double; inline;
 begin
   val(s, Result);
 end;
@@ -192,7 +193,7 @@ begin
   end;
 end; }
 
-procedure WriteProgramLog(Log: string);
+procedure WriteProgramLog(Log: string); inline;
 begin
   if Config.KeepLog then
   try
@@ -204,12 +205,12 @@ begin
   end;
 end;
 
-procedure WriteProgramLog(i: longint);
+procedure WriteProgramLog(i: longint); inline;
 begin
   WriteProgramLog(strf(i));
 end;
 
-procedure WriteProgramLog(d: double);
+procedure WriteProgramLog(d: double); inline;
 begin
   WriteProgramLog(strf(d));
 end;
@@ -318,8 +319,9 @@ var
   sg: tStringGrid;
 begin
   case Kind of
-    dGenerator: sg:= DeviceForm.sgGenCommands;
-    dDetector:  sg:= DeviceForm.sgDetCommands;
+    dGenerator:      sg:= DeviceForm.sgGenCommands;
+    dDetector:       sg:= DeviceForm.sgDetCommands;
+    dTempController: sg:= DeviceForm.sgTempCommands;
   end;
 
   with sg do
@@ -396,8 +398,9 @@ begin
         for j:= 0 to RowCount - SGHeaderLength  - 1 do
           Commands[j]:= Cells[i, j + SGHeaderLength];
 
-        {for j:= 0 to high(Commands) do
-          writeProgramLog(getcommandname(j) + '  ' + Commands[j]); }
+        {writeprogramlog(model);
+        for j:= 0 to high(Commands) do
+          writeProgramLog(getcommandname(j) + '  ' + Commands[j]);}
       end;
     end;
   end;
@@ -497,9 +500,7 @@ begin
             4: P:= 'S';
           end;
 
-          writeprogramlog('config' + strf(baudrate) + strf(databits) + p + strf(stopbits));
           SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
-          writeprogramlog('sucess');
           InitDevice;
           TestResult:= RecvestIdentity(seRecvTimeout.Value);
           WriteProgramLog('Ответ устройства: ' + TestResult);
@@ -595,15 +596,25 @@ end;
 function tSerConnectForm.ConnectTelNet: longint;
 var
   i: integer;
+  s: string;
 begin
   DeviceIndex:= iDefaultDevice;
   ConnectionKind:= cTelNet;
   TelNetClient:= tTelNetSend.Create;
   for i:= 1 to high(SupportedDevices) do
+  begin
+    DeviceIndex:= i;
     with SupportedDevices[i] do
       if Connection = cTelNet then
       begin
-        WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
+        s:= 'Попытка подключения к ' + Model;
+        StatusBar.Panels[spStatus].Text:= s;
+        StatusBar.Update;
+        WriteProgramLog(s);
+        WriteProgramLog(Host + ':' + Port);
+
+        TelNetClient.IPInterface:= inputbox('ipint', '', '255.255.0.0');
+
         TelNetClient.TargetHost:= Host;
         TelNetClient.TargetPort:= Port;
         TelNetClient.Timeout:= TimeOut;
@@ -619,8 +630,13 @@ begin
           begin
             DeviceIndex:= i;
             break;
-          end;
+          end
+          else
+            DeviceIndex:= 0;                 { TODO -cBug : this is fucked }
       end;
+  end;
+
+  writeprogramlog(TelNetClient.SessionLog);
   if DeviceIndex <> iDefaultDevice then
   begin
     StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
@@ -783,12 +799,19 @@ begin
           else
             str(eDetCommand(c),Result);
         end;
+        dTempController:
+        begin
+          if c > integer(high(eTempCommand)) then
+            Result:= 'Invalid command'
+          else
+            str(eDetCommand(c),Result);
+        end;
       end;
   end;
 end;
 
-function tSerConnectForm.CommandSupported(c: variant): boolean;
-begin
+function tSerConnectForm.CommandSupported(c: variant): boolean; { TODO 1 -cImprovement : change some visibility stuff to this? }
+begin                                                              //currently only used in offsetf
   if (c > high(CurrentDevice^.Commands)) or
      (CurrentDevice^.Commands[c] = '') then
     Result:= false
@@ -798,54 +821,63 @@ end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then  //time critical so no complicated checks???
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then  //time critical so no complicated checks???
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + strf(deviceindex){Model});
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; s: string);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then  //time critical so no complicated checks???
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then  //time critical so no complicated checks???
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    CommandString+= s;
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  CommandString+= s;
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; i: longint);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    CommandString+= strf(i);
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  CommandString+= strf(i);
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
@@ -853,23 +885,26 @@ procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
 var
   i: longint;
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
-  end;
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
 
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
+    if CommandString <> '' then CommandString+= CommSeparator;
 
-  CommandString+= CurrentDevice^.Commands[c];
+    CommandString+= Commands[c];
 
-  if Query then CommandString+= '?';
+    if Query then CommandString+= '?';
 
-  for i:= 0 to high(a) do
-  begin
-    if i <> 0 then CommandString+= CurrentDevice^.ParSeparator;
-    CommandString+= strf(a[i]);
+    for i:= 0 to high(a) do
+    begin
+      if i <> 0 then CommandString+= ParSeparator;
+      CommandString+= strf(a[i]);
+    end;
   end;
 end;
 
@@ -878,51 +913,57 @@ procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
 var
   i: longint;
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    for i:= 0 to high(a) do
+    begin
+      if i <> 0 then CommandString+= ParSeparator;
+
+      if VarIsOrdinal(a[i]) then
+        CommandString+= strf(integer(a[i]))
+      else
+      if VarIsFloat(a[i]) then
+        CommandString+= strf(double(a[i]))
+      else
+      if VarIsStr(a[i]) then
+        CommandString+= a[i];
+    end
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  for i:= 0 to high(a) do
-  begin
-    if i <> 0 then CommandString+= CurrentDevice^.ParSeparator;
-
-    if VarIsOrdinal(a[i]) then
-      CommandString+= strf(integer(a[i]))
-    else
-    if VarIsFloat(a[i]) then
-      CommandString+= strf(double(a[i]))
-    else
-    if VarIsStr(a[i]) then
-      CommandString+= a[i];
-  end
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: double;
   Units: eUnits = uNone);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Currentdevice^.Model);
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    CommandString+= strf(x) + AmplitudeUnits[integer(Units)]; //does this work ???
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  CommandString+= strf(x) + AmplitudeUnits[integer(Units)]; //does this work ???
 end;
 
 procedure tSerConnectForm.PassCommands;
@@ -965,7 +1006,7 @@ begin
       end;
     cTelNet:
       begin
-        TelNetClient.RecvString //??????
+        //TelNetClient.RecvString //?????? { TODO 1 -cBug : check }
       end;
 
     cVXI:

@@ -62,6 +62,7 @@ type
 
     About: TMenuItem;
     Label29: TLabel;
+    miShowTempControlF: TMenuItem;
     Separator1: TMenuItem;
     Separator2: TMenuItem;
     Separator3: TMenuItem;
@@ -130,6 +131,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FrequencyTabChange(Sender: TObject);
     procedure miLoadParClick(Sender: TObject);
     procedure miOptionsClick(Sender: TObject);
     procedure miSaveParClick(Sender: TObject);
@@ -138,6 +140,7 @@ type
     procedure miExportParamsClick(Sender: TObject);
     procedure miLoadCfgClick(Sender: TObject);
     procedure miSaveCfgClick(Sender: TObject);
+    procedure miShowTempControlFClick(Sender: TObject);
     procedure ReadingTimerStartTimer(Sender: TObject);
     procedure ReadingTimerTimer(Sender: TObject);
     procedure StatusBarHint(Sender: TObject);
@@ -147,7 +150,6 @@ type
   public
     { public declarations }
     FileResult: integer;
-    MinDelay: longword;
 
     function SaveParams(FileName: ansistring): word;
     function LoadParams(FileName: ansistring): word;
@@ -169,7 +171,6 @@ const
   HT = #09;
 
 var
- // CurrFunction: FunctionType;
   AmplitudeUnit: eUnits;
   MainForm: TMainForm;
   ExperimentLog: TFileStream;
@@ -181,12 +182,10 @@ var
   Config: RConfig;
   Params: RParams;
 
-  //ParamArr: array of longint;
-
 implementation
 
 uses
-  Math, Variants, MemoF, StepF, OptionF, ReadingsF, OffsetF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, ReadingsF, TempControlF, OffsetF, AboutF;
 
 {$R *.lfm}
 
@@ -632,7 +631,7 @@ begin
   {$ENDIF}
 
   Top:= Screen.Height div 2 - Height div 2;
-  Left:= Screen.Width div 2 - Width - 8;
+  Left:= 8;
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btProgram.Caption:= 'Включить' + LineEnding + 'управление';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -700,6 +699,14 @@ begin
   DoneCriticalSection(LogCS);
   ProgramLog.Free;
   DoneCriticalSection(CommCS);
+end;
+
+procedure tMainForm.FrequencyTabChange(Sender: TObject);
+begin
+  if FrequencyTab.TabIndex = 2 then
+    eAmplitude.Enabled:= false
+  else
+    eAmplitude.Enabled:= true;
 end;
 
 procedure tMainForm.miNewReportClick(Sender: TObject);
@@ -826,6 +833,20 @@ begin
   end;
   Config.WorkConfig:= s;
   //RestoreStatusBar;
+end;
+
+procedure tMainForm.miShowTempControlFClick(Sender: TObject);
+begin
+  if not miShowTempControlF.Checked then
+  begin
+    TempControlForm.Show;
+    miShowTempControlF.Checked:= true;
+  end
+  else
+  begin
+    TempControlForm.Hide;
+    miShowTempControlF.Checked:= false;
+  end;
 end;
 
 procedure tMainForm.ReadingTimerStartTimer(Sender: TObject);
@@ -1286,6 +1307,7 @@ begin
   if cbModulation.ItemIndex < 0 then
     cbModulation.ItemIndex:= 0;
   eStepChange(Self);
+  FrequencyTabChange(Self);
   ReadingsForm.cbReadingsModeChange(ReadingsForm);
 end;
 
@@ -1318,6 +1340,8 @@ begin
   {$ENDIF}
 
   if DeviceIndex = iDefaultDevice then Exit;
+
+  FrequencyTabChange(Self);
 
   Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
   Params.LastGenerator:= MainForm.CurrentDevice^.Model;

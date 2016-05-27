@@ -29,7 +29,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, menuh, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
   serconf, AxisSource, AboutF, DeviceF, dialogs, lazcontrols, ReadingThreads,
-  OffsetF, DevSession;
+  OffsetF, DevSession, TempControlF, LogModule;
 
 {$R *.res}
 
@@ -50,6 +50,7 @@ begin
   Application.CreateForm(TStatusForm, StatusForm);
   Application.CreateForm(TAboutForm, AboutForm);
   Application.CreateForm(TOffsetForm, OffsetForm);
+  Application.CreateForm(TTempControlForm, TempControlForm);
   Application.Run;
 end.
 

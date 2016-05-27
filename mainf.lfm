@@ -146,6 +146,7 @@ object MainForm: TMainForm
     AnchorSideTop.Control = btTrigger
     Left = 362
     Height = 23
+    Hint = 'Начинает снятие показаний, если включена'#13#10'соответствующая опция в настройках'
     Top = 525
     Width = 90
     Caption = 'Применить'
@@ -186,6 +187,7 @@ object MainForm: TMainForm
     BorderSpacing.Right = 4
     TabIndex = 2
     TabOrder = 7
+    OnChange = FrequencyTabChange
     object tsConstantFrequency: TTabSheet
       Caption = 'Постоянная частота'
       ClientHeight = 164
@@ -1214,9 +1216,14 @@ object MainForm: TMainForm
     object miView: TMenuItem
       Caption = 'Вид'
       object miShowReadingsF: TMenuItem
-        Caption = 'Окно снятия показаний'
+        Caption = 'Окно управления детектором'
         Checked = True
         OnClick = miShowReadingsFClick
+      end
+      object miShowTempControlF: TMenuItem
+        Caption = 'Окно управления температурным контроллером'
+        Checked = True
+        OnClick = miShowTempControlFClick
       end
     end
     object miAbout: TMenuItem

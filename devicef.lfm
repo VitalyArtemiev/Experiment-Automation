@@ -24,13 +24,13 @@ object DeviceForm: TDeviceForm
     Height = 784
     Top = 4
     Width = 377
-    ActivePage = tsGenerators
+    ActivePage = tsTempControllers
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 12
     BorderSpacing.Bottom = 4
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
@@ -1344,6 +1344,216 @@ object DeviceForm: TDeviceForm
           3
           74
           'DDEF'
+        )
+      end
+    end
+    object tsTempControllers: TTabSheet
+      Caption = 'Температурные контроллеры'
+      ClientHeight = 756
+      ClientWidth = 369
+      object sgTempCommands: TStringGrid
+        AnchorSideLeft.Control = tsGenerators
+        AnchorSideTop.Control = tsGenerators
+        AnchorSideRight.Control = tsGenerators
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = tsGenerators
+        AnchorSideBottom.Side = asrBottom
+        Left = 0
+        Height = 752
+        Top = 2
+        Width = 367
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        AutoAdvance = aaDown
+        BorderSpacing.Top = 2
+        BorderSpacing.Right = 2
+        BorderSpacing.Bottom = 2
+        Color = clWhite
+        ColCount = 2
+        Columns = <        
+          item
+            Title.Caption = 'Title'
+            Width = 70
+          end>
+        FixedRows = 0
+        MouseWheelOption = mwGrid
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goDrawFocusSelected, goEditing, goSmoothScroll, goSelectionActive, goTruncCellHints]
+        ParentShowHint = False
+        RowCount = 128
+        ShowHint = True
+        TabOrder = 0
+        OnClick = sgTempCommandsClick
+        OnKeyDown = sgTempCommandsKeyDown
+        OnSelection = sgTempCommandsSelection
+        OnSelectCell = sgTempCommandsSelectCell
+        OnValidateEntry = sgTempCommandsValidateEntry
+        ColWidths = (
+          136
+          70
+        )
+        Cells = (
+          54
+          0
+          0
+          'Модель'
+          0
+          1
+          'Изготовитель'
+          0
+          2
+          'Интерфейс'
+          0
+          3
+          'Baud rate'
+          0
+          4
+          'Биты данных'
+          0
+          5
+          'Стоп-биты'
+          0
+          6
+          'Парность'
+          0
+          7
+          'Handshake'
+          0
+          8
+          'IP-адрес'
+          0
+          9
+          'Порт'
+          0
+          10
+          'Строка инициализации'
+          0
+          11
+          'Таймаут'
+          0
+          12
+          'Мин. задержка при передаче'
+          0
+          13
+          'Разделитель параметров'
+          0
+          14
+          'Разделитель команд'
+          0
+          15
+          'Терминатор'
+          0
+          33
+          'Команды:'
+          0
+          34
+          'Сброс'
+          0
+          35
+          'Перезагрузка'
+          0
+          36
+          'Идентификация'
+          0
+          37
+          'Загрузить профиль'
+          0
+          38
+          'Сохранить профиль'
+          0
+          39
+          'Проверка'
+          0
+          40
+          'Калибровка'
+          0
+          41
+          'Очистить статус'
+          0
+          42
+          'Байт опроса STB'
+          0
+          43
+          'Байт слежения за STB'
+          0
+          44
+          'Байт стд. событий ESR'
+          0
+          45
+          'Байт слежения за ESR'
+          0
+          46
+          'Сброс статуса при включении PSC'
+          0
+          47
+          'Триггер'
+          1
+          0
+          'PTC10'
+          1
+          1
+          'Stanford Research Systems'
+          1
+          2
+          'Ethernet - Telnet'
+          1
+          8
+          '192.168.1.1'
+          1
+          9
+          '23'
+          1
+          11
+          '800'
+          1
+          12
+          '140'
+          1
+          13
+          ','
+          1
+          14
+          ';'
+          1
+          15
+          'CRLF'
+          1
+          34
+          '*RST'
+          1
+          36
+          '*IDN'
+          1
+          37
+          '*RCL'
+          1
+          38
+          '*SAV'
+          1
+          39
+          '*TST'
+          1
+          40
+          '*CAL'
+          1
+          41
+          '*CLS'
+          1
+          42
+          '*STB'
+          1
+          43
+          '*SRE'
+          1
+          44
+          '*ESR'
+          1
+          45
+          '*ESE'
+          1
+          46
+          '*PSC'
+          1
+          47
+          '*TRG'
         )
       end
     end

@@ -18,9 +18,9 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
-      <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="5"/>
+      <MajorVersionNr Value="3"/>
       <Language Value="0419"/>
+      <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>
     </VersionInfo>
     <BuildModes Count="3">
@@ -30,7 +30,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="Generator-Amplifier Debug"/>
+            <Filename Value="Generator-Amplifier Debug3"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -49,10 +49,6 @@
               <OverflowChecks Value="True"/>
               <StackChecks Value="True"/>
             </Checks>
-            <VerifyObjMethodCallValidity Value="True"/>
-            <Optimizations>
-              <OptimizationLevel Value="0"/>
-            </Optimizations>
           </CodeGeneration>
           <Linking>
             <Debugging>
@@ -128,7 +124,7 @@
         <PackageName Value="LCL"/>
       </Item5>
     </RequiredPackages>
-    <Units Count="22">
+    <Units Count="24">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -262,6 +258,16 @@
         <Filename Value="menuh.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit21>
+      <Unit22>
+        <Filename Value="TempControlF.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="TempControlForm"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="LogModule.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit23>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

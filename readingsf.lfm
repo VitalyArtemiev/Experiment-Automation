@@ -1,10 +1,10 @@
 object ReadingsForm: TReadingsForm
-  Left = 889
+  Left = 197
   Height = 600
-  Top = 58
+  Top = 71
   Width = 800
   HorzScrollBar.Visible = False
-  Caption = 'Снятие показаний'
+  Caption = 'Управление детектором'
   ClientHeight = 600
   ClientWidth = 800
   Constraints.MinHeight = 600
@@ -47,10 +47,10 @@ object ReadingsForm: TReadingsForm
     AnchorSideBottom.Control = StatusBar
     Left = 706
     Height = 23
-    Top = 540
+    Top = 545
     Width = 90
     Anchors = [akTop, akRight]
-    BorderSpacing.Top = 70
+    BorderSpacing.Top = 75
     BorderSpacing.Bottom = 8
     Caption = 'Применить'
     Default = True
@@ -155,6 +155,7 @@ object ReadingsForm: TReadingsForm
         Title.Text.Strings = (
           'TAChart'
         )
+        Toolset = ChartToolset
         Anchors = [akTop, akLeft, akRight, akBottom]
         DoubleBuffered = True
         ParentShowHint = False
@@ -336,6 +337,7 @@ object ReadingsForm: TReadingsForm
         Title.Text.Strings = (
           'TAChart'
         )
+        Toolset = ChartToolset
         Anchors = [akTop, akLeft, akRight, akBottom]
         DoubleBuffered = True
         ParentShowHint = False
@@ -467,7 +469,6 @@ object ReadingsForm: TReadingsForm
     end
   end
   object cbReadingsMode: TComboBox
-    AnchorSideLeft.Control = cbShowPoints
     AnchorSideTop.Control = Label1
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
@@ -1306,10 +1307,12 @@ object ReadingsForm: TReadingsForm
   object UpdateTimer: TTimer
     Enabled = False
     Interval = 5000
+    OnTimer = UpdateTimerTimer
     left = 344
     top = 64
   end
   object pmChart: TPopupMenu
+    AutoPopup = False
     OnPopup = pmChartPopup
     left = 472
     top = 64
@@ -1338,6 +1341,22 @@ object ReadingsForm: TReadingsForm
       Caption = 'Y'
       ShowAlwaysCheckable = True
       OnClick = ChartMenuItemClick
+    end
+  end
+  object ChartToolset: TChartToolset
+    left = 376
+    top = 64
+    object PanDragTool: TPanDragTool
+      Shift = [ssRight]
+      OnAfterMouseDown = PanDragToolAfterMouseDown
+      OnAfterMouseMove = PanDragToolAfterMouseMove
+    end
+    object ZoomDragTool: TZoomDragTool
+      Shift = [ssLeft]
+      RestoreExtentOn = [zreClick]
+    end
+    object DataPointHintTool: TDataPointHintTool
+      OnHint = DataPointHintToolHint
     end
   end
 end

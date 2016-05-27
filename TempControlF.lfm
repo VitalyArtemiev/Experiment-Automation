@@ -1,0 +1,700 @@
+object TempControlForm: TTempControlForm
+  Left = 1013
+  Height = 600
+  Top = 71
+  Width = 500
+  Caption = 'Управление температурным контроллером'
+  ClientHeight = 600
+  ClientWidth = 500
+  Constraints.MinHeight = 600
+  Constraints.MinWidth = 500
+  OnCreate = FormCreate
+  OnShow = FormShow
+  ShowInTaskBar = stAlways
+  LCLVersion = '1.6.0.4'
+  Visible = True
+  object pnConnection: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 4
+    Height = 100
+    Top = 0
+    Width = 328
+    BorderSpacing.Left = 4
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    ClientHeight = 96
+    ClientWidth = 324
+    TabOrder = 0
+    object Label8: TLabel
+      AnchorSideLeft.Control = Label3
+      AnchorSideTop.Control = seRecvTimeout
+      AnchorSideTop.Side = asrCenter
+      Left = 8
+      Height = 15
+      Top = 73
+      Width = 67
+      Caption = 'Таймаут, мс'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object seRecvTimeout: TSpinEdit
+      AnchorSideLeft.Control = cbPortSelect
+      AnchorSideTop.Control = btnTest
+      Left = 88
+      Height = 23
+      Hint = 'Время ожидания ответа прибора'
+      Top = 69
+      Width = 121
+      MaxValue = 10000
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      Value = 800
+    end
+    object btnTest: TButton
+      AnchorSideLeft.Control = btnConnect
+      AnchorSideTop.Control = btnDisconnect
+      AnchorSideTop.Side = asrBottom
+      Left = 225
+      Height = 23
+      Top = 69
+      Width = 90
+      BorderSpacing.Top = 8
+      Caption = 'Тест'
+      OnClick = btnTestClick
+      TabOrder = 4
+    end
+    object btnDisconnect: TButton
+      AnchorSideLeft.Control = btnConnect
+      AnchorSideTop.Control = btnConnect
+      AnchorSideTop.Side = asrBottom
+      Left = 225
+      Height = 23
+      Top = 38
+      Width = 90
+      BorderSpacing.Top = 8
+      Caption = 'Отключение'
+      OnClick = btnDisconnectClick
+      TabOrder = 2
+    end
+    object btnConnect: TButton
+      AnchorSideLeft.Control = cbPortSelect
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = cbPortSelect
+      Left = 225
+      Height = 23
+      Top = 7
+      Width = 90
+      BorderSpacing.Left = 16
+      Caption = 'Подключение'
+      OnClick = btnConnectClick
+      TabOrder = 1
+    end
+    object Label3: TLabel
+      AnchorSideLeft.Control = pnConnection
+      AnchorSideTop.Control = cbPortSelect
+      AnchorSideTop.Side = asrCenter
+      Left = 8
+      Height = 15
+      Top = 11
+      Width = 72
+      BorderSpacing.Left = 8
+      Caption = 'Выбор порта'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object cbPortSelect: TComboBox
+      AnchorSideLeft.Control = Label3
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = pnConnection
+      Left = 88
+      Height = 23
+      Top = 7
+      Width = 121
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 7
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 0
+    end
+  end
+  object Chart1: TChart
+    AnchorSideLeft.Control = pnConnection
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Side = asrBottom
+    Left = 4
+    Height = 291
+    Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
+    Top = 131
+    Width = 316
+    AxisList = <    
+      item
+        Intervals.MaxLength = 70
+        Marks.OverlapPolicy = opHideNeighbour
+        Minors = <>
+        Title.LabelFont.Orientation = 900
+      end    
+      item
+        Intervals.MaxLength = 70
+        Alignment = calBottom
+        Marks.OverlapPolicy = opHideNeighbour
+        Minors = <>
+      end>
+    BackColor = clWhite
+    ExpandPercentage = 2
+    ExtentSizeLimit.UseXMin = True
+    ExtentSizeLimit.UseYMin = True
+    ExtentSizeLimit.XMin = 1E-9
+    ExtentSizeLimit.YMin = 1E-9
+    Foot.Brush.Color = clBtnFace
+    Foot.Font.Color = clBlue
+    ReticuleMode = rmCross
+    Title.Brush.Color = clBtnFace
+    Title.Font.Color = clBlue
+    Title.Text.Strings = (
+      'TAChart'
+    )
+    Toolset = ChartToolset
+    Anchors = [akTop, akLeft, akBottom]
+    DoubleBuffered = True
+    ParentShowHint = False
+    PopupMenu = pmChart
+    ShowHint = True
+    object Chart1LineSeries1: TLineSeries
+      LinePen.Color = clBlue
+      Source = Source1
+    end
+  end
+  object btApply: TButton
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Side = asrBottom
+    Left = 395
+    Height = 23
+    Top = 540
+    Width = 90
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 70
+    BorderSpacing.Bottom = 8
+    Caption = 'Применить'
+    Default = True
+    Enabled = False
+    TabOrder = 2
+  end
+  object pnGraphControl: TPanel
+    AnchorSideLeft.Control = Owner
+    Left = 4
+    Height = 126
+    Top = 450
+    Width = 319
+    Anchors = [akLeft, akBottom]
+    BorderSpacing.Left = 4
+    BorderSpacing.Bottom = 4
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    ClientHeight = 122
+    ClientWidth = 315
+    TabOrder = 3
+    object Label5: TLabel
+      AnchorSideLeft.Control = Label29
+      AnchorSideTop.Control = cbXAxis
+      AnchorSideTop.Side = asrCenter
+      Left = 4
+      Height = 15
+      Top = 69
+      Width = 31
+      Caption = 'Ось Х'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object Label4: TLabel
+      AnchorSideLeft.Control = Label29
+      AnchorSideTop.Control = eAxisLimit
+      AnchorSideTop.Side = asrCenter
+      Left = 4
+      Height = 15
+      Top = 100
+      Width = 66
+      Caption = 'Секунд по Х'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object Label2: TLabel
+      AnchorSideLeft.Control = Label29
+      AnchorSideTop.Control = eUpdateInterval
+      AnchorSideTop.Side = asrCenter
+      Left = 4
+      Height = 30
+      Top = 30
+      Width = 88
+      BorderSpacing.Top = 4
+      Caption = 'Интервал'#13#10'обновления, мс'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+    object cbXAxis: TComboBox
+      AnchorSideLeft.Control = eDelay
+      AnchorSideTop.Control = eUpdateInterval
+      AnchorSideTop.Side = asrBottom
+      Left = 98
+      Height = 23
+      Top = 65
+      Width = 104
+      BorderSpacing.Top = 8
+      ItemHeight = 15
+      ItemIndex = 0
+      Items.Strings = (
+        'Время, с'
+        'Частота, Гц'
+        'Амплитуда, В'
+      )
+      TabOrder = 4
+      Text = 'Время, с'
+    end
+    object eAxisLimit: TFloatSpinEdit
+      AnchorSideLeft.Control = eDelay
+      AnchorSideTop.Control = cbXAxis
+      AnchorSideTop.Side = asrBottom
+      Left = 98
+      Height = 23
+      Hint = 'Максимальный интервал времени,'#13#10'отображающийся на графиках'
+      Top = 96
+      Width = 104
+      BorderSpacing.Top = 8
+      BorderSpacing.Bottom = 8
+      Increment = 1
+      MaxValue = 100
+      MinValue = 0
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 6
+      Value = 0
+    end
+    object btClear: TButton
+      AnchorSideLeft.Control = btStartPauseLog
+      AnchorSideTop.Control = eAxisLimit
+      Left = 221
+      Height = 23
+      Top = 96
+      Width = 90
+      BorderSpacing.Bottom = 9
+      Caption = 'Очистить'
+      TabOrder = 7
+    end
+    object eUpdateInterval: TSpinEdit
+      AnchorSideLeft.Control = eDelay
+      AnchorSideTop.Control = eDelay
+      AnchorSideTop.Side = asrBottom
+      Left = 98
+      Height = 23
+      Hint = 'Интервал обработки буфера'#13#10'и обновления графика'
+      Top = 34
+      Width = 104
+      BorderSpacing.Top = 8
+      MaxValue = 90000
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+      Value = 500
+    end
+    object cbShowPoints: TCheckBox
+      AnchorSideLeft.Control = pnGraphControl
+      AnchorSideTop.Control = eDelay
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = pnGraphControl
+      AnchorSideRight.Side = asrBottom
+      Left = 211
+      Height = 19
+      Top = 5
+      Width = 104
+      Anchors = [akTop, akRight]
+      AutoSize = False
+      BorderSpacing.Left = 4
+      BorderSpacing.Top = 1
+      Caption = 'Показать точки'
+      Color = clWhite
+      ParentColor = False
+      TabOrder = 1
+    end
+    object btStopLog: TButton
+      AnchorSideLeft.Control = btStartPauseLog
+      AnchorSideTop.Control = cbXAxis
+      Left = 221
+      Height = 23
+      Top = 65
+      Width = 90
+      Caption = 'Остановить'
+      Enabled = False
+      TabOrder = 5
+    end
+    object btStartPauseLog: TButton
+      AnchorSideLeft.Control = eUpdateInterval
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = eUpdateInterval
+      AnchorSideRight.Control = pnGraphControl
+      AnchorSideRight.Side = asrBottom
+      Left = 221
+      Height = 23
+      Hint = 'Изменения параметров будут'#13#10'автоматически применены '
+      Top = 34
+      Width = 90
+      Anchors = [akTop, akRight]
+      BorderSpacing.Left = 16
+      BorderSpacing.Right = 4
+      Caption = 'Начать снятие'
+      Enabled = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+    end
+    object eDelay: TSpinEdit
+      AnchorSideLeft.Control = Label29
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = pnGraphControl
+      Left = 98
+      Height = 23
+      Hint = 'Задержка перед началом снятия'
+      Top = 3
+      Width = 104
+      BorderSpacing.Left = 20
+      BorderSpacing.Top = 3
+      BorderSpacing.Right = 4
+      MaxValue = 10000
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 0
+      Value = 4000
+    end
+    object Label29: TLabel
+      AnchorSideLeft.Control = pnGraphControl
+      AnchorSideTop.Control = eDelay
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = eDelay
+      Left = 4
+      Height = 15
+      Top = 7
+      Width = 74
+      BorderSpacing.Left = 4
+      BorderSpacing.Right = 8
+      Caption = 'Задержка, мс'
+      Color = clWhite
+      ParentColor = False
+      Transparent = False
+    end
+  end
+  object StatusBar: TStatusBar
+    Left = 0
+    Height = 23
+    Top = 577
+    Width = 500
+    Panels = <    
+      item
+        Text = 'Нет подключения'
+        Width = 130
+      end    
+      item
+        Width = 80
+      end    
+      item
+        Width = 120
+      end    
+      item
+        Width = 200
+      end>
+    SimplePanel = False
+  end
+  object btReset: TSpeedButton
+    AnchorSideLeft.Control = pnConnection
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = btQuery
+    Left = 340
+    Height = 54
+    Top = 4
+    Width = 72
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 4
+    BorderSpacing.Right = 8
+    Caption = 'Сброс'
+    Enabled = False
+  end
+  object btQuery: TSpeedButton
+    AnchorSideLeft.Control = btReset
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btReset
+    AnchorSideRight.Control = btCustomCommand
+    AnchorSideBottom.Control = btReset
+    Left = 420
+    Height = 54
+    Top = 4
+    Width = 72
+    Caption = 'Запрос'
+    Enabled = False
+  end
+  object btCustomCommand: TSpeedButton
+    AnchorSideLeft.Control = btReset
+    AnchorSideTop.Control = btReset
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = btStatus
+    Left = 340
+    Height = 54
+    Hint = 'Сконструировать команду,'#13#10'не поддерживаемую интерфейсом'
+    Top = 58
+    Width = 72
+    Caption = 'Польз.'
+    Enabled = False
+    ShowHint = True
+    ParentShowHint = False
+  end
+  object btStatus: TSpeedButton
+    AnchorSideLeft.Control = btQuery
+    AnchorSideTop.Control = btCustomCommand
+    AnchorSideRight.Side = asrBottom
+    Left = 420
+    Height = 54
+    Top = 58
+    Width = 72
+    Caption = 'Статус'
+    Enabled = False
+  end
+  object cbChart1Show: TComboBox
+    AnchorSideLeft.Control = Chart1
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = Chart1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Chart1
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Side = asrBottom
+    Left = 92
+    Height = 23
+    Hint = 'Что отображается на графике 1'
+    Top = 422
+    Width = 140
+    Anchors = [akTop, akLeft, akBottom]
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'X'
+      'Y'
+      'R (V)'
+      'R (dBm)'
+      'Φ'
+      'AUX IN 1'
+      'AUX IN 2'
+      'Опорная частота'
+      'Дисплей 1'
+      'Дисплей 2'
+    )
+    OnChange = cbChart1ShowChange
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 5
+    Text = 'X'
+  end
+  object Label1: TLabel
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = btCustomCommand
+    AnchorSideTop.Side = asrBottom
+    Left = 360
+    Height = 15
+    Top = 120
+    Width = 78
+    BorderSpacing.Top = 8
+    Caption = 'Режим снятия'
+    ParentColor = False
+  end
+  object cbSampleRate: TComboBox
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = Label13
+    AnchorSideTop.Side = asrBottom
+    Left = 360
+    Height = 23
+    Top = 204
+    Width = 130
+    BorderSpacing.Top = 8
+    Enabled = False
+    ItemHeight = 15
+    ItemIndex = 13
+    Items.Strings = (
+      '62.5 мГц'
+      '125 мГц'
+      '250 мГц'
+      '500 мГц'
+      '1 Гц'
+      '2 Гц'
+      '4 Гц'
+      '8 Гц'
+      '16 Гц'
+      '32 Гц'
+      '64 Гц'
+      '128 Гц'
+      '256 Гц'
+      '512 Гц'
+      'По триггеру'
+    )
+    TabOrder = 6
+    Text = '512 Гц'
+  end
+  object cbReadingsMode: TComboBox
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 360
+    Height = 23
+    Hint = 'Использовать команду TRCL (быстрее, внутренний'#13#10'буфер, снимаются параметры только с Ch1 и Ch2),'#13#10'либо команду SNAP (снятие от 2 до 6 параметров в'#13#10'один момент времени)'
+    Top = 139
+    Width = 136
+    Anchors = [akTop, akRight]
+    BorderSpacing.Top = 4
+    BorderSpacing.Right = 4
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'Внутренний буфер'
+      'Одновременный запрос'
+    )
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 7
+    Text = 'Внутренний буфер'
+  end
+  object Label13: TLabel
+    AnchorSideLeft.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    Left = 360
+    Height = 15
+    Top = 181
+    Width = 87
+    BorderSpacing.Top = 8
+    Caption = 'Частота буфера'
+    ParentColor = False
+  end
+  object sbParamScroll: TScrollBox
+    AnchorSideLeft.Control = cbReadingsMode
+    AnchorSideTop.Control = cbReadingsMode
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = cbReadingsMode
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Side = asrBottom
+    Left = 360
+    Height = 190
+    Top = 162
+    Width = 136
+    HorzScrollBar.Page = 83
+    HorzScrollBar.Smooth = True
+    HorzScrollBar.Tracking = True
+    VertScrollBar.Increment = 15
+    VertScrollBar.Page = 154
+    VertScrollBar.Smooth = True
+    VertScrollBar.Tracking = True
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderStyle = bsNone
+    ClientHeight = 190
+    ClientWidth = 136
+    TabOrder = 8
+    object cgTransfer: TCheckGroup
+      AnchorSideLeft.Control = sbParamScroll
+      AnchorSideTop.Control = sbParamScroll
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Side = asrBottom
+      Left = 0
+      Height = 146
+      Top = 8
+      Width = 83
+      AutoFill = True
+      AutoSize = True
+      BorderSpacing.Top = 8
+      BorderSpacing.CellAlignHorizontal = ccaLeftTop
+      BorderSpacing.CellAlignVertical = ccaLeftTop
+      Caption = 'Параметры'
+      ChildSizing.LeftRightSpacing = 6
+      ChildSizing.TopBottomSpacing = 6
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsScaleChilds
+      ChildSizing.ShrinkVertical = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 126
+      ClientWidth = 79
+      Enabled = False
+      Items.Strings = (
+        'X'
+        'Y'
+        'R (V)'
+        'R (dBm)'
+        'out1'
+        'out2'
+      )
+      OnClick = cgTransferClick
+      TabOrder = 0
+      Data = {
+        06000000030202020202
+      }
+    end
+  end
+  object UpdateTimer: TTimer
+    Enabled = False
+    Interval = 5000
+    left = 624
+    top = 64
+  end
+  object Source1: TUserDefinedChartSource
+    left = 688
+    top = 64
+  end
+  object Source2: TUserDefinedChartSource
+    left = 720
+    top = 64
+  end
+  object pmChart: TPopupMenu
+    OnPopup = pmChartPopup
+    left = 752
+    top = 64
+    object ZoomIn: TMenuItem
+      Caption = 'Увеличить'
+    end
+    object ZoomOut: TMenuItem
+      Caption = 'Уменьшить'
+    end
+    object RestoreScale: TMenuItem
+      Caption = 'Сбросить масштаб'
+    end
+    object Divider: TMenuItem
+      Caption = '-'
+    end
+    object MenuItem1: TMenuItem
+      Caption = 'X'
+      Checked = True
+      ShowAlwaysCheckable = True
+      OnClick = ChartMenuItemClick
+    end
+    object MenuItem2: TMenuItem
+      Caption = 'Y'
+      ShowAlwaysCheckable = True
+    end
+  end
+  object ChartToolset: TChartToolset
+    left = 656
+    top = 64
+    object PanDragTool: TPanDragTool
+      Shift = [ssRight]
+      OnAfterMouseDown = PanDragToolAfterMouseDown
+      OnAfterMouseMove = PanDragToolAfterMouseMove
+    end
+    object ZoomDragTool: TZoomDragTool
+      Shift = [ssLeft]
+      RestoreExtentOn = [zreClick]
+    end
+    object DataPointHintTool: TDataPointHintTool
+    end
+  end
+end

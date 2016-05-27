@@ -44,6 +44,10 @@ type
     dReadPointsNative, dStorageMode, dReadSimultaneous, dDisplaySelect
                  );
 
+  eTempCommand = (
+    tError = integer(cTrigger) + 1, tPrint
+                 );
+
   {type
   TSR844Command = (
     PRST = longint(TRG) + 1, LOCL, OVRM,
@@ -150,6 +154,7 @@ const
     cbInterface: TComboBox;
     DividerBevel1: TDividerBevel;
     DividerBevel2: TDividerBevel;
+    sgTempCommands: TStringGrid;
     stInstruction: TStaticText;
     Label2: TLabel;
     Label3: TLabel;
@@ -161,6 +166,7 @@ const
     SaveDialog: TSaveDialog;
     sgGenCommands: TStringGrid;
     sgDetCommands: TStringGrid;
+    tsTempControllers: TTabSheet;
     tsGenerators: TTabSheet;
     tsDetectors: TTabSheet;
     procedure btAddDeviceClick(Sender: TObject);
@@ -188,10 +194,18 @@ const
     procedure sgGenCommandsSelection(Sender: TObject; aCol, aRow: Integer);
     procedure EditOptionString(c, r: integer);
     function CheckConformance: integer;
+    procedure sgTempCommandsClick(Sender: TObject);
+    procedure sgTempCommandsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure sgTempCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
+      var CanSelect: Boolean);
+    procedure sgTempCommandsSelection(Sender: TObject; aCol, aRow: Integer);
+    procedure sgTempCommandsValidateEntry(sender: TObject; aCol, aRow: Integer;
+      const OldValue: string; var NewValue: String);
   private
     { private declarations }
     CurrColumn: integer;  //stringgrid.row
-    CurrGenFileName, CurrDetFileName: string;
+    CurrGenFileName, CurrDetFileName, CurrTempFileName: string;
     sg: tStringGrid;
   public
     { public declarations }
@@ -201,6 +215,7 @@ const
   SGHeaderLength = integer(high(eHeaderRow)) + 3; //кол-во строк в tStringGrid, не относящ. к командам
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
+  DefaultTemp = 'DefaultTempCommands.xml';
   TelnetString = 'Ethernet - Telnet';
   VXIString = 'Ethernet - VXI';
   USBString = 'USB';
@@ -374,6 +389,7 @@ begin
     case pcDevice.TabIndex of
       0: FileName:= DefaultGen;
       1: FileName:= DefaultDet;
+      2: FileName:= DefaultTemp;
     end;
     Title:= 'Загрузить файл устройств';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
@@ -406,10 +422,9 @@ end;
 procedure tDeviceForm.btResetDefaultFileClick(Sender: TObject);
 begin
   case pcDevice.TabIndex of
-    0:
-      Config.DefaultGens:= '';
-    1:
-      Config.DefaultDets:= '';
+    0: Config.DefaultGens:= '';
+    1: Config.DefaultDets:= '';
+    2: Config.DefaultTemps:= '';
   end;
 end;
 
@@ -418,8 +433,9 @@ begin
   with SaveDialog do
   begin
     case pcDevice.TabIndex of
-      0: FileName:= 'DefaultGenCommands';
-      1: FileName:= 'DefaultDetCommands';
+      0: FileName:= DefaultGen;
+      1: FileName:= DefaultDet;
+      2: FileName:= DefaultTemp;
     end;
 
     Title:= 'Сохранить файл устройств как';
@@ -447,6 +463,8 @@ begin
          Config.DefaultGens:= CurrGenFileName;
     1: if CurrDetFileName <> '' then
          Config.DefaultDets:= CurrDetFileName;
+    2: if CurrTempFileName <> '' then
+      Config.DefaultTemps:= CurrTempFileName;
   end;
 end;
 
@@ -497,6 +515,7 @@ begin
   case pcDevice.TabIndex of
     0: sg:= sgGenCommands;
     1: sg:= sgDetCommands;
+    2: sg:= sgTempCommands;
   end;
 end;
 
@@ -1202,6 +1221,35 @@ begin
         mComment.Lines.Clear;
       end;
     end;
+end;
+
+procedure tDeviceForm.sgTempCommandsClick(Sender: TObject);
+begin
+
+end;
+
+procedure tDeviceForm.sgTempCommandsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+
+end;
+
+procedure tDeviceForm.sgTempCommandsSelectCell(Sender: TObject; aCol,
+  aRow: Integer; var CanSelect: Boolean);
+begin
+
+end;
+
+procedure tDeviceForm.sgTempCommandsSelection(Sender: TObject; aCol,
+  aRow: Integer);
+begin
+  CurrColumn:= aCol;
+end;
+
+procedure tDeviceForm.sgTempCommandsValidateEntry(sender: TObject; aCol,
+  aRow: Integer; const OldValue: string; var NewValue: String);
+begin
+  { TODO 2 -cImprovement : Look at this }
 end;
 
 end.

@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
   TATransformations, TADbSource, Forms, Controls, Graphics,
   Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus,
-  MainF, SerConF, ReadingThreads, TACustomSource, AxisSource;
+  MainF, SerConF, ReadingThreads, TACustomSource, AxisSource, Types;
 
 type
   Buffer = array of double;
@@ -49,6 +49,10 @@ type
     cbUseGenFreq: TCheckBox;
     cbRatio1: TComboBox;
     cbRatio2: TComboBox;
+    ChartToolset: TChartToolset;
+    DataPointHintTool: TDataPointHintTool;
+    ZoomDragTool: TZoomDragTool;
+    PanDragTool: TPanDragTool;
 
     eAxisLimit: TFloatSpinEdit;
     eDelay: TSpinEdit;
@@ -116,6 +120,10 @@ type
     procedure cbChart2ShowChange(Sender: TObject);
     procedure cbReadingsModeChange(Sender: TObject);
     procedure ChartMenuItemClick(Sender: TObject);
+    procedure DataPointHintToolHint(ATool: TDataPointHintTool;
+      const APoint: TPoint; var AHint: String);
+    procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
+    procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
     procedure ParamsChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
     procedure cbUseGenFreqChange(Sender: TObject);
@@ -146,7 +154,7 @@ type
     ReadingMode: eReadMode;
     MaxSimultPars, TotalPars,
     FirstIndex, ReferenceIndex, CH1Index, CH2Index: shortint;
-    PointsInBuffer, MinDelay: longword;
+    PointsInBuffer: longword;
 
     ReadPars: array of boolean;
     ProcessedPoints: longword;
@@ -265,7 +273,7 @@ begin
   WriteProgramLog('Creating Readings form');
 
   Top:= MainForm.Top;
-  Left:= Screen.Width div 2;
+  Left:= MainForm.Left + MainForm.Width;
 
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -422,6 +430,7 @@ begin
   with c do
   begin
     Rect:= CurrentExtent;
+
     Center.x:= (Rect.a.x + Rect.b.x) / 2;
     Center.y:= (Rect.a.y + Rect.b.y) / 2;
 
@@ -893,8 +902,8 @@ begin
   for i:= 0 to high(ParamArr) do
     ParamArr[i]:= p[i] + FirstIndex;
 
-  for i:= 0 to high(ParamArr) do
-    WriteProgramLog(ParamArr[i]);
+  {for i:= 0 to high(ParamArr) do
+    WriteProgramLog(ParamArr[i]);}
 
   try
   EnterCriticalSection(CommCS);
@@ -906,8 +915,8 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  //sleep(60 + random(30));
-  //s:= strf(random)+',' +strf(random)+',' + strf(random);
+  sleep(60 + random(30));
+  s:= strf(random)+',' +strf(random)+',' + strf(random);
   //writeprogramlog(s);
   if IsEmptyStr(s, [' ']) then
   begin
@@ -916,7 +925,7 @@ begin
   end;
 
   new(Result);
-  setlength(Result^, num);//MEM LEAK 2 blocks 24 and 4 still leaking +++ 3 blocks 8 32 4
+  setlength(Result^, num);
 
   for i:= 0 to num - 2 do
   begin
@@ -1102,9 +1111,12 @@ begin
        { TODO 2 -cImprovement : check ip }
   end;
 
-  OptionForm.TabControl.TabIndex:= 2;
+  OptionForm.TabControl.TabIndex:= 1;
+  OptionForm.DevicePage.TabIndex:= 1;
+
+  inherited btnConnectClick(Sender);
+
   EnterCriticalSection(CommCS);
-    inherited btnConnectClick(Sender);
     AddCommand(dResetStorage);
     PassCommands;
   LeaveCriticalSection(CommCS);
@@ -1593,6 +1605,7 @@ begin
     case Name of
       'Chart1': cb:= cbChart1Show;
       'Chart2': cb:= cbChart2Show;
+      else cb:= cbChart1Show;
     end;
 
   with cb do
@@ -1606,6 +1619,30 @@ begin
     end;
     OnChange(Self);
   end;
+end;
+
+procedure tReadingsForm.DataPointHintToolHint(
+  ATool: TDataPointHintTool; const APoint: TPoint; var AHint: String);
+var
+  s: string;
+begin
+  case Atool.Series.ParentChart.Name of
+    'Chart1': s:= cbChart1Show.Text;
+    'Chart2': s:= cbChart2Show.Text;
+  end;
+  AHint:= ' ' + cbXAxis.Text + ': ' + strf(APoint.x) + '; ' + s + ': ' + strf(APoint.Y);
+end;
+
+procedure tReadingsForm.PanDragToolAfterMouseDown(ATool: TChartTool;
+  APoint: TPoint);
+begin
+  pmChart.AutoPopup:= true;
+end;
+
+procedure tReadingsForm.PanDragToolAfterMouseMove(ATool: TChartTool;
+  APoint: TPoint);
+begin
+  pmChart.AutoPopup:= false;
 end;
 
 procedure tReadingsForm.ParamsChange(Sender: TObject);
