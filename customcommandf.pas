@@ -62,31 +62,60 @@ uses MainF, SerConF;
 
 procedure TCustomCommandForm.btSendClick(Sender: TObject);
 var
-  i: longint;
+  i, t: longint;
   s: ansistring;
 begin
-
   with TSerConnectForm(Form) do
-    if SerPort.InstanceActive then
-    begin
-      SerPort.RaiseExcept:= false;
-      for i:= 0 to mCustomCommand.Lines.Count - 1 do
-        Command+= mCustomCommand.Lines[i];
-      EnterCriticalSection(CommCS);
-        case cbTerminator.ItemIndex of
-          0: SerPort.SendString(Command  + CR);
-          1: SerPort.SendString(Command  + LF);
-          2: SerPort.SendString(Command  + CRLF);
-        end;
-        if cbAwaitResponse.Checked then
-        begin
-          s:= SerPort.Recvstring(eTimeOut.Value);
-          ShowMessage(s);
-        end;
-      LeaveCriticalSection(CommCS);
-      Command:= '';
-      SerPort.RaiseExcept:= true;
+  begin
+    for i:= 0 to mCustomCommand.Lines.Count - 1 do
+      Command+= mCustomCommand.Lines[i];
+
+    case cbTerminator.ItemIndex of
+      0: Command+= CR;
+      1: Command+= LF;
+      2: Command+= CRLF;
     end;
+
+    case ConnectionKind of
+      //cNone: ;
+      cSerial:
+        if SerPort.InstanceActive then
+        begin
+          EnterCriticalSection(CommCS);
+            SerPort.RaiseExcept:= false;
+
+            SerPort.SendString(Command);
+
+              if cbAwaitResponse.Checked then
+              begin
+                s:= SerPort.Recvstring(eTimeOut.Value);
+                ShowMessage(s);
+              end;
+
+            SerPort.RaiseExcept:= true;
+          LeaveCriticalSection(CommCS);
+        end;
+      cUSB: ;
+      cTelNet:
+      begin
+        EnterCriticalSection(CommCS);
+          TelNetClient.Send(Command);
+
+          if cbAwaitResponse.Checked then
+          begin
+            t:= TelNetClient.Timeout;
+            TelNetClient.Timeout:= eTimeOut.Value;
+            s:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+            ShowMessage(s);
+            TelNetClient.Timeout:= t;
+          end;
+        LeaveCriticalSection(CommCS);
+      end;
+      cVXI: ;
+    end;
+
+    Command:= '';
+  end;
 end;
 
 procedure TCustomCommandForm.btAddClick(Sender: TObject);
@@ -107,7 +136,7 @@ begin
   if cbFloat.Checked then Params+= ' ' + s;
   if mCustomCommand.Lines.Count > 0 then
     mCustomCommand.Lines.Append(';');
-    mCustomCommand.Lines.AddText(cbCommands.Text + Params);
+  mCustomCommand.Lines.AddText(cbCommands.Text + Params);
 end;
 
 procedure TCustomCommandForm.btClearClick(Sender: TObject);

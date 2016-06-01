@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
   TATransformations, TADbSource, Forms, Controls, Graphics,
   Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus,
-  MainF, SerConF, ReadingThreads, TACustomSource, AxisSource, Types;
+  MainF, SerConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
 
 type
   Buffer = array of double;
@@ -168,6 +168,8 @@ type
     function GetTime: TDateTime;
   public
     { public declarations }
+    Log: tLogModule;
+
     ParToRead: array of shortint;
     ThreadList: TThreadList;
     LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep, OffsetTracked: boolean;
@@ -273,7 +275,7 @@ begin
   WriteProgramLog('Creating Readings form');
 
   Top:= MainForm.Top;
-  Left:= MainForm.Left + MainForm.Width;
+  Left:= MainForm.Left + MainForm.Width + 8;
 
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -294,7 +296,8 @@ begin
   for i:= 0 to PortCount - 1 do
     cbPortSelect.AddItem(MainForm.cbPortSelect.Items[i], nil);
 
-  if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
+  if cbPortSelect.ItemIndex < 0 then
+    cbPortSelect.ItemIndex:= 0;
 
   if PortCount = 1 then
     StatusBar.Panels[spStatus].Text:= 'Нет доступных COM-портов';
@@ -664,6 +667,7 @@ begin
   if assigned(ReadingsThread) then
     ReadingsThread.WaitFor;
   ProcessBuffers;
+  freeandnil(ReadingsThread);
 end;
 
 procedure tReadingsForm.ContinueLog;
@@ -673,7 +677,6 @@ begin
 
   LogState:= lActive;
   UpdateTimer.Enabled:= true;
-  ReadingsThread.Start;
 
   if ReadingMode = rBuffer then
   begin
@@ -689,7 +692,7 @@ begin
     rSimultaneous:
     begin
       if OnePointPerStep then
-        ReadingsThread:= nil //
+        ReadingsThread:= nil // in stepf
       else
         ReadingsThread:= tSimultaneousThread.Create;
     end;
@@ -915,8 +918,8 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  sleep(60 + random(30));
-  s:= strf(random)+',' +strf(random)+',' + strf(random);
+  //sleep(60 + random(30));
+  //s:= strf(random)+',' +strf(random)+',' + strf(random);
   //writeprogramlog(s);
   if IsEmptyStr(s, [' ']) then
   begin
@@ -1075,7 +1078,9 @@ end;
 
 procedure tReadingsForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
-  if LogState <> lInActive then StopLog;
+  savestate;
+  if LogState <> lInActive then
+    StopLog;
   MainForm.miShowReadingsF.Checked:= false;
 end;
 
@@ -1155,6 +1160,16 @@ begin
   with DeviceForm.sgDetCommands do
   begin
     cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hTransferParams)]);
+
+    if cgTransfer.Width < 90 then
+    begin
+      cgTransfer.Columns:= 2;
+    end
+    else
+    begin
+      cgTransfer.Columns:= 1;
+    end;
+
     cbChart1Show.Items:= cgTransfer.Items;
     cbChart2Show.Items:= cgTransfer.Items;
     for i:= 0 to cgTransfer.Items.Count - 1 do

@@ -66,3 +66,6 @@ local
 Synapse
 ProgramLog.txt
 Default.cfg
+*.cfg
+*.prm
+ProgramLog.txt

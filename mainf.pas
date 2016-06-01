@@ -5,9 +5,9 @@ unit MainF;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, DividerBevel, StrUtils, Forms, Controls,
-  Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls,
-  Buttons, ActnList, Synaser, SerConF, DeviceF;
+  Classes, SysUtils, FileUtil, DividerBevel, IDEWindowIntf, StrUtils, Forms,
+  Controls, Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin,
+  ExtCtrls, Buttons, ActnList, XMLPropStorage, Synaser, SerConF, DeviceF;
 
 type
   { TMainForm }
@@ -706,7 +706,7 @@ begin
   if FrequencyTab.TabIndex = 2 then
     eAmplitude.Enabled:= false
   else
-    eAmplitude.Enabled:= true;
+    eAmplitude.Enabled:= cbACEnable.Enabled;
 end;
 
 procedure tMainForm.miNewReportClick(Sender: TObject);
@@ -1152,6 +1152,7 @@ procedure tMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
   readingsform.enablecontrols(true);
+  tempcontrolform.enablecontrols(true);
   serport:= tblockserial.create;
   readingsform.serport:= tblockserial.create;
   //readingsform.btnConnectClick(self);

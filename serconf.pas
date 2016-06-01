@@ -133,6 +133,9 @@ type
     procedure Purge;
     function RecvString: string;
     function RecvString(TimeOut: longword): string;
+
+    procedure SaveState;
+    procedure RestoreState;
   end;
 
   procedure WriteProgramLog(Log: string);
@@ -257,7 +260,7 @@ begin
     StatusBar.Panels[spConnection].Text:= 'Нет подключения';
     EnableControls(false);
     ConnectionKind:= cNone;
-    DeviceIndex:= iDefaultdevice;
+    DeviceIndex:= iDefaultDevice;
 
     freeandnil(TelNetClient);
   end;
@@ -418,7 +421,20 @@ begin
   WriteProgramLog('Строка на устройство ' + TestResult);
   WriteProgramLog(s);
   WriteProgramLog('');
-  SerPort.SendString(s);        //cts????
+
+  case ConnectionKind of
+    //cNone: ;
+    cSerial:
+      begin
+        SerPort.SendString(s);  //cts????
+      end;
+    cUSB: ;
+    cTelNet:
+      begin
+
+      end;
+    cVXI: ;
+  end;
 end;
 
 function tSerConnectForm.RecvestIdentity(TimeOut: longword): string;
@@ -604,7 +620,7 @@ begin
   for i:= 1 to high(SupportedDevices) do
   begin
     DeviceIndex:= i;
-    with SupportedDevices[i] do
+    with CurrentDevice^ do
       if Connection = cTelNet then
       begin
         s:= 'Попытка подключения к ' + Model;
@@ -613,8 +629,7 @@ begin
         WriteProgramLog(s);
         WriteProgramLog(Host + ':' + Port);
 
-        TelNetClient.IPInterface:= inputbox('ipint', '', '255.255.0.0');
-
+        TelNetClient.TermType:= '';
         TelNetClient.TargetHost:= Host;
         TelNetClient.TargetPort:= Port;
         TelNetClient.Timeout:= TimeOut;
@@ -626,25 +641,32 @@ begin
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if not IsEmptyStr(TestResult, [' ']) then
+        begin
           if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
           begin
             DeviceIndex:= i;
             break;
           end
           else
-            DeviceIndex:= 0;                 { TODO -cBug : this is fucked }
+            DeviceIndex:= 0;
+        end
+        else
+          DeviceIndex:= 0;
       end;
   end;
 
-  writeprogramlog(TelNetClient.SessionLog);
   if DeviceIndex <> iDefaultDevice then
   begin
     StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
     Result:= 0;
+    TimeOutErrors:= 0;
+    EnableControls(true);
+
     case Config.OnConnect of
       AQuery: btQueryClick(Self);
       AReset: btResetClick(Self);
     end;
+
     CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
   end
   else
@@ -1071,6 +1093,103 @@ begin
         writeprogramlog('Получена строка ' + Result);
       end
   end
+end;
+
+procedure tSerConnectForm.SaveState;
+var
+  i, j: integer;
+  FileStream: tFileStream;
+  s: string;
+begin
+  FileStream:= tFileStream.Create(Name + '.prm', fmCreate);
+  for i:= 0 to ComponentCount - 1 do   { TODO 1 -cImprovement : Overhaul form params }
+  begin
+    if Components[i] is TComboBox then
+    with TComboBox(Components[i]) do
+    begin
+      s:= Name + '=' + strf(ItemIndex) + LineEnding;
+      Filestream.WriteAnsiString(s);
+    end
+    else
+    if Components[i] is TSpinEdit then
+    with TSpinEdit(Components[i]) do
+    begin
+      s:= Name + '=' + strf(Value) + LineEnding;
+      Filestream.WriteAnsiString(s);
+    end
+    else
+    if Components[i] is TFloatSpinEdit then
+    with TFloatSpinEdit(Components[i]) do
+    begin
+      s:= Name + '=' + strf(Value) + LineEnding;
+      Filestream.WriteAnsiString(s);
+    end
+    else
+    if Components[i] is TCheckBox then
+    with TCheckBox(Components[i]) do
+    begin
+      s:= Name + '=' + strf(integer(Checked)) + LineEnding;
+      Filestream.WriteAnsiString(s);
+    end
+    else
+    if Components[i] is TCheckGroup then
+    with TCheckGroup(Components[i]) do
+    begin
+      s:= Name + '=' + strf(Items.Count) + LineEnding;
+      Filestream.WriteAnsiString(s);
+
+      for j:= 0 to Items.Count - 1 do
+      begin
+        s:= '#' + strf(j) + '=' + strf(integer(Checked[j])) + LineEnding;
+        Filestream.WriteAnsiString(s);
+      end;
+    end
+    {else
+    if Components[i] is TComboBox then
+    with TComboBox(Components[i]) do
+    begin
+
+    end   }
+  end;
+end;
+
+procedure tSerConnectForm.RestoreState;
+var
+  i: integer;
+  FileStream: tFileStream;
+begin
+  for i:= 0 to ComponentCount - 1 do
+  begin
+    if Components[i] is TComboBox then
+    begin
+      showmessage(components[i].name);
+    end
+    else
+    if Components[i] is TSpinEdit then
+    begin
+
+    end
+    else
+    if Components[i] is TFloatSpinEdit then
+    begin
+
+    end
+    else
+    if Components[i] is TCheckBox then
+    begin
+
+    end
+    else
+    if Components[i] is TCheckGroup then
+    begin
+
+    end
+    {else
+    if Components[i] is TComboBox then
+    begin
+
+    end   }
+  end;
 end;
 
 end.

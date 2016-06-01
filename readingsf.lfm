@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 197
+  Left = 605
   Height = 600
-  Top = 71
+  Top = 176
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -91,29 +91,28 @@ object ReadingsForm: TReadingsForm
     Text = '512 Гц'
   end
   object GraphSplitter: TPairSplitter
-    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Control = pnConnection
     AnchorSideTop.Control = pnConnection
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideBottom.Control = pnGraphControl
-    Left = 8
+    Left = 4
     Height = 331
     Top = 108
-    Width = 636
+    Width = 640
     Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Left = 8
     BorderSpacing.Top = 8
     BorderSpacing.Right = 16
     BorderSpacing.Bottom = 8
     OnResize = GraphSplitterResize
-    Position = 313
+    Position = 317
     object PairSplitterSide1: TPairSplitterSide
       Cursor = crArrow
       Left = 0
       Height = 331
       Top = 0
-      Width = 313
-      ClientWidth = 313
+      Width = 317
+      ClientWidth = 317
       ClientHeight = 331
       Constraints.MinWidth = 290
       object Chart1: TChart
@@ -127,7 +126,7 @@ object ReadingsForm: TReadingsForm
         Height = 285
         Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
         Top = 23
-        Width = 313
+        Width = 317
         AxisList = <        
           item
             Intervals.MaxLength = 70
@@ -256,7 +255,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideTop.Control = cbRatio1
         AnchorSideTop.Side = asrCenter
         AnchorSideRight.Control = cbRatio1
-        Left = 141
+        Left = 145
         Height = 15
         Top = 4
         Width = 94
@@ -269,7 +268,7 @@ object ReadingsForm: TReadingsForm
         AnchorSideTop.Control = cbCh1
         AnchorSideRight.Control = Chart1
         AnchorSideRight.Side = asrBottom
-        Left = 239
+        Left = 243
         Height = 23
         Top = 0
         Width = 74
@@ -288,7 +287,7 @@ object ReadingsForm: TReadingsForm
     end
     object PairSplitterSide2: TPairSplitterSide
       Cursor = crArrow
-      Left = 318
+      Left = 322
       Height = 331
       Top = 0
       Width = 318
@@ -517,66 +516,18 @@ object ReadingsForm: TReadingsForm
     Left = 4
     Height = 100
     Top = 0
-    Width = 792
+    Width = 320
     BorderSpacing.Left = 4
     BevelOuter = bvNone
     BorderStyle = bsSingle
     ClientHeight = 96
-    ClientWidth = 788
+    ClientWidth = 316
     TabOrder = 0
-    object btReset: TSpeedButton
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = cbPortSelect
-      AnchorSideRight.Control = btQuery
-      Left = 352
-      Height = 54
-      Top = 7
-      Width = 102
-      Anchors = [akTop, akRight]
-      BorderSpacing.Right = 8
-      Caption = 'Сброс'
-      Enabled = False
-      OnClick = btResetClick
-    end
-    object btQuery: TSpeedButton
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = btReset
-      AnchorSideRight.Control = btCustomCommand
-      AnchorSideBottom.Control = btReset
-      Left = 462
-      Height = 54
-      Top = 7
-      Width = 102
-      Anchors = [akTop, akRight]
-      BorderSpacing.Right = 8
-      BorderSpacing.Bottom = 8
-      Caption = 'Запрос'
-      Enabled = False
-      OnClick = btQueryClick
-    end
-    object btCustomCommand: TSpeedButton
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = btReset
-      AnchorSideRight.Control = btStatus
-      Left = 572
-      Height = 54
-      Hint = 'Сконструировать команду,'#13#10'не поддерживаемую интерфейсом'
-      Top = 7
-      Width = 102
-      Anchors = [akTop, akRight]
-      BorderSpacing.Right = 8
-      BorderSpacing.Bottom = 8
-      Caption = 'Польз.'
-      Enabled = False
-      OnClick = btCustomCommandClick
-      ShowHint = True
-      ParentShowHint = False
-    end
     object Label8: TLabel
       AnchorSideLeft.Control = Label3
       AnchorSideTop.Control = seRecvTimeout
       AnchorSideTop.Side = asrCenter
-      Left = 8
+      Left = 4
       Height = 15
       Top = 73
       Width = 67
@@ -588,11 +539,11 @@ object ReadingsForm: TReadingsForm
     object seRecvTimeout: TSpinEdit
       AnchorSideLeft.Control = cbPortSelect
       AnchorSideTop.Control = btnTest
-      Left = 88
+      Left = 98
       Height = 23
       Hint = 'Время ожидания ответа прибора'
       Top = 69
-      Width = 121
+      Width = 104
       MaxValue = 10000
       ParentShowHint = False
       ShowHint = True
@@ -603,7 +554,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btnConnect
       AnchorSideTop.Control = btnDisconnect
       AnchorSideTop.Side = asrBottom
-      Left = 225
+      Left = 222
       Height = 23
       Top = 69
       Width = 90
@@ -616,7 +567,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btnConnect
       AnchorSideTop.Control = btnConnect
       AnchorSideTop.Side = asrBottom
-      Left = 225
+      Left = 222
       Height = 23
       Top = 38
       Width = 90
@@ -627,13 +578,15 @@ object ReadingsForm: TReadingsForm
     end
     object btnConnect: TButton
       AnchorSideLeft.Control = cbPortSelect
-      AnchorSideLeft.Side = asrBottom
       AnchorSideTop.Control = cbPortSelect
-      Left = 225
+      AnchorSideRight.Control = pnConnection
+      AnchorSideRight.Side = asrBottom
+      Left = 222
       Height = 23
       Top = 7
       Width = 90
-      BorderSpacing.Left = 16
+      Anchors = [akTop, akRight]
+      BorderSpacing.Right = 4
       Caption = 'Подключение'
       OnClick = btnConnectClick
       TabOrder = 1
@@ -642,11 +595,11 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = pnConnection
       AnchorSideTop.Control = cbPortSelect
       AnchorSideTop.Side = asrCenter
-      Left = 8
+      Left = 4
       Height = 15
       Top = 11
       Width = 72
-      BorderSpacing.Left = 8
+      BorderSpacing.Left = 4
       Caption = 'Выбор порта'
       Color = clWhite
       ParentColor = False
@@ -656,31 +609,15 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = Label3
       AnchorSideLeft.Side = asrBottom
       AnchorSideTop.Control = pnConnection
-      Left = 88
+      Left = 98
       Height = 23
       Top = 7
-      Width = 121
-      BorderSpacing.Left = 8
+      Width = 104
+      BorderSpacing.Left = 22
       BorderSpacing.Top = 7
       ItemHeight = 15
       Style = csDropDownList
       TabOrder = 0
-    end
-    object btStatus: TSpeedButton
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = btReset
-      AnchorSideRight.Control = pnConnection
-      AnchorSideRight.Side = asrBottom
-      Left = 682
-      Height = 54
-      Top = 7
-      Width = 102
-      Anchors = [akTop, akRight]
-      BorderSpacing.Left = 8
-      BorderSpacing.Right = 4
-      Caption = 'Статус'
-      Enabled = False
-      OnClick = btStatusClick
     end
   end
   object Label1: TLabel
@@ -711,14 +648,14 @@ object ReadingsForm: TReadingsForm
     Left = 4
     Height = 126
     Top = 447
-    Width = 319
+    Width = 320
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Bottom = 4
     BevelOuter = bvNone
     BorderStyle = bsSingle
     ClientHeight = 122
-    ClientWidth = 315
+    ClientWidth = 316
     TabOrder = 6
     object Label5: TLabel
       AnchorSideLeft.Control = Label29
@@ -804,7 +741,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btStartPauseLog
       AnchorSideTop.Control = eAxisLimit
       AnchorSideBottom.Control = StatusBar
-      Left = 221
+      Left = 222
       Height = 23
       Top = 96
       Width = 90
@@ -835,7 +772,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = pnGraphControl
       AnchorSideRight.Side = asrBottom
-      Left = 211
+      Left = 212
       Height = 19
       Top = 5
       Width = 104
@@ -852,7 +789,7 @@ object ReadingsForm: TReadingsForm
     object btStopLog: TButton
       AnchorSideLeft.Control = btStartPauseLog
       AnchorSideTop.Control = cbXAxis
-      Left = 221
+      Left = 222
       Height = 23
       Top = 65
       Width = 90
@@ -867,7 +804,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideTop.Control = eUpdateInterval
       AnchorSideRight.Control = pnGraphControl
       AnchorSideRight.Side = asrBottom
-      Left = 221
+      Left = 222
       Height = 23
       Hint = 'Изменения параметров будут'#13#10'автоматически применены '
       Top = 34
@@ -946,6 +883,7 @@ object ReadingsForm: TReadingsForm
     object cgTransfer: TCheckGroup
       AnchorSideLeft.Control = sbParamScroll
       AnchorSideTop.Control = sbParamScroll
+      AnchorSideRight.Control = sbParamScroll
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Side = asrBottom
       Left = 0
@@ -959,14 +897,16 @@ object ReadingsForm: TReadingsForm
       Caption = 'Параметры'
       ChildSizing.LeftRightSpacing = 6
       ChildSizing.TopBottomSpacing = 6
+      ChildSizing.HorizontalSpacing = 12
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.EnlargeVertical = crsHomogenousChildResize
       ChildSizing.ShrinkHorizontal = crsScaleChilds
       ChildSizing.ShrinkVertical = crsScaleChilds
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 1
+      ChildSizing.Layout = cclTopToBottomThenLeftToRight
+      ChildSizing.ControlsPerLine = 10
       ClientHeight = 202
       ClientWidth = 126
+      ColumnLayout = clVerticalThenHorizontal
       Enabled = False
       Items.Strings = (
         'X'
@@ -1009,11 +949,11 @@ object ReadingsForm: TReadingsForm
     AnchorSideTop.Control = pnGraphControl
     AnchorSideRight.Control = btOffset
     AnchorSideBottom.Control = StatusBar
-    Left = 323
+    Left = 324
     Height = 130
     Top = 447
-    Width = 375
-    HorzScrollBar.Page = 358
+    Width = 374
+    HorzScrollBar.Page = 357
     HorzScrollBar.Visible = False
     VertScrollBar.Increment = 11
     VertScrollBar.Page = 113
@@ -1023,12 +963,12 @@ object ReadingsForm: TReadingsForm
     BorderSpacing.Right = 8
     BorderStyle = bsNone
     ClientHeight = 130
-    ClientWidth = 358
+    ClientWidth = 357
     TabOrder = 7
     object cbSensitivity: TComboBox
       AnchorSideLeft.Control = cbTimeConstant
       AnchorSideTop.Control = btAutoSensitivity
-      Left = 126
+      Left = 125
       Height = 23
       Top = 31
       Width = 130
@@ -1060,7 +1000,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = btAutoPhase
       AnchorSideRight.Control = btAutoPhase
-      Left = 126
+      Left = 125
       Height = 23
       Top = 0
       Width = 130
@@ -1098,7 +1038,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideTop.Control = cbTimeConstant
       AnchorSideTop.Side = asrCenter
       AnchorSideRight.Control = cbTimeConstant
-      Left = 11
+      Left = 10
       Height = 15
       Top = 4
       Width = 107
@@ -1114,7 +1054,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbSensitivity
       AnchorSideTop.Side = asrCenter
-      Left = 11
+      Left = 10
       Height = 15
       Top = 35
       Width = 99
@@ -1127,7 +1067,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbReserve1
       AnchorSideTop.Side = asrCenter
-      Left = 11
+      Left = 10
       Height = 15
       Top = 66
       Width = 103
@@ -1139,7 +1079,7 @@ object ReadingsForm: TReadingsForm
     object cbReserve1: TComboBox
       AnchorSideLeft.Control = cbTimeConstant
       AnchorSideTop.Control = btAutoReserve1
-      Left = 126
+      Left = 125
       Height = 23
       Top = 62
       Width = 130
@@ -1159,7 +1099,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbReserve2
       AnchorSideTop.Side = asrCenter
-      Left = 11
+      Left = 10
       Height = 15
       Top = 97
       Width = 101
@@ -1171,7 +1111,7 @@ object ReadingsForm: TReadingsForm
     object cbReserve2: TComboBox
       AnchorSideLeft.Control = cbTimeConstant
       AnchorSideTop.Control = btAutoReserve2
-      Left = 126
+      Left = 125
       Height = 23
       Top = 93
       Width = 130
@@ -1192,7 +1132,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btAutoPhase
       AnchorSideTop.Control = btAutoPhase
       AnchorSideTop.Side = asrBottom
-      Left = 264
+      Left = 263
       Height = 23
       Top = 31
       Width = 90
@@ -1206,7 +1146,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btAutoPhase
       AnchorSideTop.Control = btAutoSensitivity
       AnchorSideTop.Side = asrBottom
-      Left = 264
+      Left = 263
       Height = 23
       Top = 62
       Width = 90
@@ -1220,7 +1160,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btAutoPhase
       AnchorSideTop.Control = btAutoReserve1
       AnchorSideTop.Side = asrBottom
-      Left = 264
+      Left = 263
       Height = 23
       Top = 93
       Width = 90
@@ -1234,7 +1174,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideTop.Control = sbSettingScroll
       AnchorSideRight.Control = sbSettingScroll
       AnchorSideRight.Side = asrBottom
-      Left = 264
+      Left = 263
       Height = 23
       Top = 0
       Width = 90
@@ -1249,7 +1189,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = Label6
       AnchorSideTop.Control = cbInputRange
       AnchorSideTop.Side = asrCenter
-      Left = 11
+      Left = 10
       Height = 15
       Top = 128
       Width = 69
@@ -1261,7 +1201,7 @@ object ReadingsForm: TReadingsForm
     object cbInputRange: TComboBox
       AnchorSideLeft.Control = cbTimeConstant
       AnchorSideTop.Control = btAutoRange
-      Left = 126
+      Left = 125
       Height = 23
       Top = 124
       Width = 130
@@ -1283,7 +1223,7 @@ object ReadingsForm: TReadingsForm
       AnchorSideLeft.Control = btAutoPhase
       AnchorSideTop.Control = cbReserve2
       AnchorSideTop.Side = asrBottom
-      Left = 264
+      Left = 263
       Height = 23
       Top = 124
       Width = 90
@@ -1293,6 +1233,63 @@ object ReadingsForm: TReadingsForm
       OnClick = btAutoRangeClick
       TabOrder = 9
     end
+  end
+  object btReset: TSpeedButton
+    AnchorSideLeft.Control = pnConnection
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = pnConnection
+    Left = 340
+    Height = 54
+    Top = 9
+    Width = 74
+    BorderSpacing.Left = 16
+    BorderSpacing.Top = 9
+    BorderSpacing.Right = 8
+    Caption = 'Сброс'
+    Enabled = False
+    OnClick = btResetClick
+  end
+  object btQuery: TSpeedButton
+    AnchorSideLeft.Control = btReset
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btReset
+    Left = 422
+    Height = 54
+    Top = 9
+    Width = 74
+    BorderSpacing.Left = 8
+    Caption = 'Запрос'
+    Enabled = False
+    OnClick = btQueryClick
+  end
+  object btCustomCommand: TSpeedButton
+    AnchorSideLeft.Control = btQuery
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btReset
+    Left = 504
+    Height = 54
+    Hint = 'Сконструировать команду,'#13#10'не поддерживаемую интерфейсом'
+    Top = 9
+    Width = 74
+    BorderSpacing.Left = 8
+    Caption = 'Польз.'
+    Enabled = False
+    OnClick = btCustomCommandClick
+    ShowHint = True
+    ParentShowHint = False
+  end
+  object btStatus: TSpeedButton
+    AnchorSideLeft.Control = btCustomCommand
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btReset
+    Left = 586
+    Height = 54
+    Top = 9
+    Width = 74
+    BorderSpacing.Left = 8
+    Caption = 'Статус'
+    Enabled = False
+    OnClick = btStatusClick
   end
   object Source1: TUserDefinedChartSource
     OnGetChartDataItem = Source1GetChartDataItem

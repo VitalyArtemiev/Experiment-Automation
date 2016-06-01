@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, TASources, TATools, TAGraph, TASeries, Forms,
   Controls, Graphics, Dialogs, ExtCtrls, Buttons, StdCtrls, Spin, Menus,
-  ComCtrls, SerConF, Types;
+  ComCtrls, EditBtn, Types, SerConF, LogModule;
 
 type
 
@@ -21,6 +21,7 @@ type
     cbReadingsMode: TComboBox;
     cbSampleRate: TComboBox;
     cbShowPoints: TCheckBox;
+    cbUseGenFreq: TCheckBox;
     cbXAxis: TComboBox;
     cgTransfer: TCheckGroup;
     Chart1: TChart;
@@ -31,6 +32,7 @@ type
     eAxisLimit: TFloatSpinEdit;
     eDelay: TSpinEdit;
     eUpdateInterval: TSpinEdit;
+    FileNameEdit1: TFileNameEdit;
     Label1: TLabel;
     Label13: TLabel;
     Label2: TLabel;
@@ -52,11 +54,17 @@ type
     ZoomIn: TMenuItem;
     ZoomOut: TMenuItem;
 
+    procedure btClearClick(Sender: TObject);
     procedure btnConnectClick(Sender: TObject); override;
+    procedure btStartPauseLogClick(Sender: TObject);
+    procedure btStopLogClick(Sender: TObject);
     procedure cbChart1ShowChange(Sender: TObject);
     procedure cgTransferClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure btQueryClick(Sender: TObject); override;
     procedure ChartMenuItemClick(Sender: TObject);
     procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
     procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
@@ -65,6 +73,7 @@ type
     { private declarations }
   public
     { public declarations }
+    Log: tLogModule;
     procedure EnableControls(Enable: boolean); override;
   end;
 
@@ -87,7 +96,7 @@ begin
   WriteProgramLog('Creating TempControl form');
 
   Top:= MainForm.Top;
-  Left:= ReadingsForm.Left + ReadingsForm.Width;
+  Left:= ReadingsForm.Left + ReadingsForm.Width + 8;
 
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -121,9 +130,28 @@ begin
   InitCriticalSection(RTDCS);}
 end;
 
+procedure TTempControlForm.FormDestroy(Sender: TObject);
+begin
+  //if LogState <> lInActive then StopLog;
+  //btClearClick(Self);
+  SerPort.Free;
+  TelNetClient.Free;
+  //ThreadList.Free;
+  DoneCriticalSection(CommCS);
+  //DoneCriticalSection(RNCS);
+  //DoneCriticalSection(TimeCS);
+  //DoneCriticalSection(OPSCS);
+  //DoneCriticalSection(RTDCS);
+end;
+
 procedure TTempControlForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
+end;
+
+procedure TTempControlForm.btQueryClick(Sender: TObject);
+begin
+
 end;
 
 procedure TTempControlForm.ChartMenuItemClick(Sender: TObject);
@@ -146,7 +174,7 @@ begin
   end;
 end;
 
-procedure TTempControlForm.PanDragToolAfterMouseDown(ATool: TChartTool;
+procedure TTempControlForm.PanDragToolAfterMouseDown(ATool: TChartTool;   { TODO 2 -cImprovement : update tachart to get rid of this }
   APoint: TPoint);
 begin
   pmChart.AutoPopup:= true;
@@ -178,7 +206,14 @@ end;
 
 procedure TTempControlForm.EnableControls(Enable: boolean);
 begin
-
+  cgTransfer.Enabled:=      Enable;
+  btReset.Enabled:=         Enable;
+  btQuery.Enabled:=         Enable;
+  btCustomCommand.Enabled:= Enable;
+  btStatus.Enabled:=        Enable;
+  btApply.Enabled:=         Enable;
+  btStartPauseLog.Enabled:= Enable;
+  btStopLog.Enabled:=       Enable;
 end;
 
 procedure TTempControlForm.btnConnectClick(Sender: TObject);
@@ -220,26 +255,39 @@ begin
 
   OptionForm.eDevice2.ItemIndex:= DeviceIndex - 1;
 
-  {cgTransfer.Items.Clear;
+  {
   cbCh1.Items.Clear;
   cbCh2.Items.Clear;
   cbRatio1.Items.Clear;
   cbRatio2.Items.Clear;
-  cbChart1Show.Items.Clear;
+
   cbChart2Show.Items.Clear;
   cbSensitivity.Items.Clear;
   cbTimeConstant.Items.Clear;
   cbReserve1.Items.Clear;
   cbReserve2.Items.Clear;
   cbInputRange.Items.Clear;  }
+  cgTransfer.Items.Clear;
+  cbChart1Show.Items.Clear;
+
   for i:= 4 to pmChart.Items.Count - 1 do
     pmChart.Items.Delete(4);
 
   with DeviceForm.sgTempCommands do
   begin
-    {cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hTransferParams)]);
+    cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hChannelList)]);
+
+    if cgTransfer.Width < 90 then
+    begin
+      cgTransfer.Columns:= 2;
+    end
+    else
+    begin
+      cgTransfer.Columns:= 1;
+    end;
+
     cbChart1Show.Items:= cgTransfer.Items;
-    cbChart2Show.Items:= cgTransfer.Items; }
+
     for i:= 0 to cgTransfer.Items.Count - 1 do
     with pmChart do
     begin
@@ -376,6 +424,21 @@ begin
   end;    }
 end;
 
+procedure TTempControlForm.btClearClick(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.btStartPauseLogClick(Sender: TObject);
+begin
+  Log.Toggle;
+end;
+
+procedure TTempControlForm.btStopLogClick(Sender: TObject);
+begin
+  Log.Stop;
+end;
+
 procedure TTempControlForm.cbChart1ShowChange(Sender: TObject);
 begin
   {if (LogState = lActive) and (ReadingMode = rBuffer) then
@@ -392,6 +455,14 @@ end;
 procedure TTempControlForm.cgTransferClick(Sender: TObject);
 begin
 
+end;
+
+procedure TTempControlForm.FormCloseQuery(Sender: TObject; var CanClose: boolean
+  );
+begin
+  //if LogState <> lInActive then StopLog;
+  { TODO 1 -cBug : enable }
+  MainForm.miShowTempControlF.Checked:= false;
 end;
 
 
