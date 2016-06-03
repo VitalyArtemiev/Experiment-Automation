@@ -302,7 +302,7 @@ begin
       cgReadings.Checked[0]:= AutoReadingConst;
       cgReadings.Checked[1]:= AutoReadingSweep;
       cgReadings.Checked[2]:= AutoReadingStep;
-      eReadingTime.Value:= Params.ReadingTime;
+      eReadingTime.Value:= ReadingTime;
 
       NewDefaultParams:= DefaultParams;
     end;
@@ -312,9 +312,7 @@ begin
   with MainForm, MainForm.CurrentDevice^, eDevice do
   begin
     if CurrentDevice^.Model <> '' then
-      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)
-    else
-      ItemIndex:= Items.IndexOf(PresumedDevice);
+      ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
     if ItemIndex < 0 then ItemIndex:= 0;
 
     eBaudRate.Value:= BaudRate;
@@ -330,9 +328,7 @@ begin
   with ReadingsForm, ReadingsForm.CurrentDevice^, eDevice1 do
   begin
     if CurrentDevice^.Model <> '' then
-      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)
-    else
-      ItemIndex:= Items.IndexOf(PresumedDevice);
+      ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
     if ItemIndex < 0 then ItemIndex:= 0;
 
     eBaudRate1.Value:= BaudRate;
@@ -348,9 +344,7 @@ begin
   with TempControlForm, TempControlForm.CurrentDevice^, eDevice2 do
   begin
     if CurrentDevice^.Model <> '' then
-      ItemIndex:= Items.IndexOf(CurrentDevice^.Model)
-    else
-      ItemIndex:= Items.IndexOf(PresumedDevice);
+      ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
     if ItemIndex < 0 then ItemIndex:= 0;
 
     eBaudRate2.Value:= BaudRate;
@@ -417,7 +411,7 @@ begin
     AutoReadingConst:= cgReadings.Checked[0];
     AutoReadingSweep:= cgReadings.Checked[1];
     AutoReadingStep:=  cgReadings.Checked[2];
-    Params.ReadingTime:= eReadingTime.Value;
+    ReadingTime:=      eReadingTime.Value;
 
     DefaultParams:= NewDefaultParams;
     OnConnect:= ConnectAction(rgOnConnect.ItemIndex);
@@ -426,7 +420,6 @@ begin
   if eDevice.ItemIndex >= 0 then
     with MainForm, Mainform.SupportedDevices[eDevice.ItemIndex + 1], DeviceForm.sgGenCommands do
     begin
-      PresumedDevice:= eDevice.Text;
       Timeout:= seRecvTimeOut.Value;
       case Connection of
         cSerial:
@@ -488,7 +481,6 @@ begin
   if eDevice1.ItemIndex >= 0 then
     with ReadingsForm, ReadingsForm.SupportedDevices[eDevice1.ItemIndex + 1], DeviceForm.sgDetCommands do
     begin
-      PresumedDevice:= eDevice1.Text;
       Timeout:= seRecvTimeOut.Value;
       case Connection of
         cSerial:
@@ -547,7 +539,6 @@ begin
   if eDevice2.ItemIndex >= 0 then
     with TempControlForm, TempControlForm.SupportedDevices[eDevice2.ItemIndex + 1], DeviceForm.sgTempCommands do
     begin
-      PresumedDevice:= eDevice2.Text;
       Timeout:= seRecvTimeOut.Value;
       case Connection of
         cSerial:

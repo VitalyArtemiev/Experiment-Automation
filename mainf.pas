@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, DividerBevel, IDEWindowIntf, StrUtils, Forms,
   Controls, Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, ActnList, XMLPropStorage, Synaser, SerConF, DeviceF;
+  ExtCtrls, Buttons, ActnList, Synaser, SerConF, DeviceF;
 
 type
   { TMainForm }
@@ -151,11 +151,11 @@ type
     { public declarations }
     FileResult: integer;
 
-    function SaveParams(FileName: ansistring): word;
-    function LoadParams(FileName: ansistring): word;
-    function SaveConfig(FileName: ansistring): word;
-    function LoadConfig(FileName: ansistring): word;
-    function ExportParams(Manual: boolean; Header: boolean = false): word;
+    function SaveParams(FileName: ansistring): integer;
+    function LoadParams(FileName: ansistring): integer;
+    function SaveConfig(FileName: ansistring): integer;
+    function LoadConfig(FileName: ansistring): integer;
+    function ExportParams(Manual: boolean; Header: boolean = false): integer;
   end;
 
 
@@ -191,14 +191,44 @@ uses
 
 { TMainForm }
 
-function tMainForm.LoadParams(FileName: ansistring): word;
+function tMainForm.LoadParams(FileName: ansistring): integer;
 var
-  f: file;
-  i: longint;
-  s: shortstring;
-  LastPortExists: boolean = false;
+  FileStream: TFileStream;
+  s: string;
 begin
-  system.assign(f, FileName);
+  if FileExists(FileName) then
+  begin
+    try
+      FileStream:= TFilestream.Create(FileName, fmOpenRead);
+      Result:= RestoreState(FileStream);
+      Result+= ReadingsForm.RestoreState(FileStream);
+      Result+= TempControlForm.RestoreState(FileStream);
+      FileStream.Destroy;
+      if Result < 0 then s:= 'неверный параметр ' + strf(Result);
+    except
+      on e:Exception do
+      begin
+        Result:= 1;
+        s:= e.Message;
+      end;
+    end;
+  end
+  else
+  begin
+    Result:= 2;
+    s:= 'не найден файл ' + FileName;
+  end;
+
+  if Result <> 0 then
+    ShowMessage('Ошибка загрузки параметров: ' + s);
+
+  if cbPortSelect.ItemIndex < 0 then
+  begin
+    ShowMessage('Сохраненный порт недоступен');
+    cbPortSelect.ItemIndex:= 0;
+  end;
+
+  {system.assign(f, FileName);
   {$I-}
   reset(f, sizeof(RParams));
   blockread(f, Params, 1);
@@ -343,14 +373,33 @@ begin
   ReadingsForm.PresumedDevice:= Params.LastDetector;
 
   system.close(f);
-  {$I+}
+  {$I+} }
 end;
 
-function tMainForm.SaveParams(FileName: ansistring): word;
+function tMainForm.SaveParams(FileName: ansistring): integer;
 var
-  f: file;
+  FileStream: TFileStream;
+  s: string;
 begin
-  if not FileExists(FileName) then
+  Result:= 0;
+  try
+    FileStream:= TFilestream.Create(FileName, fmCreate);
+  except
+    on e: Exception do
+    begin
+      Result:= 1;
+      s:= e.Message;
+    end;
+  end;
+  SaveState(FileStream);
+  ReadingsForm.SaveState(FileStream);
+  TempControlForm.SaveState(FileStream);
+  FileStream.Free;
+
+  if Result <> 0 then
+      ShowMessage('Ошибка сохранения параметров: ' + s);
+
+  {if not FileExists(FileName) then
   with Params do
   begin
     if not ParamsApplied then
@@ -416,13 +465,10 @@ begin
 
   SaveParams:= IOResult;
   system.close(f);
-  {$I+}
-  begin
-    if SaveParams <> 0 then ShowMessage('Ошибка сохранения параметров. Код ошибки ' + strf(SaveParams));
-  end;
+  {$I+}  }
 end;
 
-function tMainForm.SaveConfig(FileName: ansistring): word;
+function tMainForm.SaveConfig(FileName: ansistring): integer;
 var
   f: file;
   s: string;
@@ -442,7 +488,7 @@ begin
   if SaveConfig <> 0 then ShowMessage('Ошибка сохранения конфигурации. Код ошибки ' + s);
 end;
 
-function tMainForm.LoadConfig(FileName: ansistring): word;
+function tMainForm.LoadConfig(FileName: ansistring): integer;
 var
   f: file;
   s: string;
@@ -463,15 +509,17 @@ begin
     LoadConfig:= 2;
   str(LoadConfig, s);
   if LoadConfig <> 0 then ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
-  if (LoadConfig <> 0) or IsEmptyStr(Config.DefaultGens, [' ']) or
-                          IsEmptyStr(Config.DefaultDets, [' ']) then
+  if (LoadConfig <> 0) or IsEmptyStr(Config.DefaultGens, [' ']) or       //this affects deviceform.create
+                          IsEmptyStr(Config.DefaultDets, [' ']) or
+                          IsEmptyStr(Config.DefaultTemps, [' ']) then
   begin
     Config.DefaultGens:= DefaultGen;
     Config.DefaultDets:= DefaultDet;
+    Config.DefaultTemps:= DefaultTemp;
   end;
 end;
 
-function tMainForm.ExportParams(Manual: boolean; Header: boolean): word;
+function tMainForm.ExportParams(Manual: boolean; Header: boolean): integer;
 var
   i: integer;
   f: system.text;
@@ -851,7 +899,7 @@ end;
 
 procedure tMainForm.ReadingTimerStartTimer(Sender: TObject);
 begin
-  ReadingTimer.Interval:= Params.ReadingTime * 1000;
+  ReadingTimer.Interval:= Config.ReadingTime * 1000;
 end;
 
 procedure tMainForm.ReadingTimerTimer(Sender: TObject);
@@ -989,7 +1037,6 @@ begin
     Offset:= eOffset.Value;
     ACOn:= cbACEnable.Checked;
     AmplUnit:= cbAmplUnit.ItemIndex;
-    ReadingTime:= ReadingTimer.Interval;
     if not cbAmplUnit.Visible then AmplitudeUnit:= uNone;
 
     EnterCriticalSection(CommCS);
@@ -1134,7 +1181,7 @@ begin
     ParamsApplied:= true;
   end;
 
-  str(eAmplitude.Value:0:2, s);
+  str(eAmplitude.Value:0:2, s);     { TODO 2 -cImprovement : To events? properties? }
   AmplitudeReading.Caption:= s;
   str(eOffset.Value:0:2, s);
   OffsetReading.Caption:= s;

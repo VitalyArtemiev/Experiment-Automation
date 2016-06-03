@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, DividerBevel, Forms, Controls, Graphics, Dialogs,
-  Grids, Buttons, StdCtrls, ComCtrls, ExtCtrls;
+  Grids, Buttons, StdCtrls, ComCtrls, ExtCtrls, Types;
 
 type
   eHeaderRow = (
@@ -214,9 +214,11 @@ const
 
 const
   SGHeaderLength = integer(high(eHeaderRow)) + 3; //кол-во строк в tStringGrid, не относящ. к командам
+
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
   DefaultTemp = 'DefaultTempCommands.xml';
+
   TelnetString = 'Ethernet - Telnet';
   VXIString = 'Ethernet - VXI';
   USBString = 'USB';
@@ -478,7 +480,7 @@ begin
     1: if CurrDetFileName <> '' then
          Config.DefaultDets:= CurrDetFileName;
     2: if CurrTempFileName <> '' then
-      Config.DefaultTemps:= CurrTempFileName;
+         Config.DefaultTemps:= CurrTempFileName;
   end;
 end;
 
@@ -502,7 +504,7 @@ begin
 end;
 
 procedure tDeviceForm.FormCreate(Sender: TObject);
-begin
+begin                                                 //this is regulated by mainform.loadconfig
   if FileExists(Config.DefaultGens) then
     sgGenCommands.LoadFromFile(Config.DefaultGens)
   else

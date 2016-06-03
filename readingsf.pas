@@ -1078,7 +1078,7 @@ end;
 
 procedure tReadingsForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
-  savestate;
+  //savestate;
   if LogState <> lInActive then
     StopLog;
   MainForm.miShowReadingsF.Checked:= false;

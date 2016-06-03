@@ -27,6 +27,7 @@ type
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
     AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
+    ReadingTime: longint;
   end;
 
   rParams = record
@@ -103,7 +104,7 @@ type
     //UsbContext : tLibUsbContext;
 
     ParamsApplied: boolean;
-    CommandString, PresumedDevice: shortstring;
+    CommandString: shortstring;
     DeviceIndex: longint;
     DeviceKind: eDeviceKind;
     SupportedDevices: array of tDevice;
@@ -115,7 +116,7 @@ type
 
     procedure GetSupportedDevices(Kind: eDeviceKind);
     procedure InitDevice;
-    function RecvestIdentity(TimeOut: longword): string;
+    function RequestIdentity(TimeOut: longword): string;
     function ConnectSerial: longint; virtual;
     function ConnectTelNet: longint; virtual;
     function ConnectVXI: longint; virtual;
@@ -134,8 +135,8 @@ type
     function RecvString: string;
     function RecvString(TimeOut: longword): string;
 
-    procedure SaveState;
-    procedure RestoreState;
+    procedure SaveState(FileStream: tFileStream);
+    function RestoreState(FileStream: tFileStream):integer;
   end;
 
   procedure WriteProgramLog(Log: string);
@@ -146,6 +147,9 @@ type
   function strf(x: longint): string;
   function valf(s: string): integer;
   function vald(s: string): double;
+
+  function CopyFromTo(Origin: string; Start, Stop: string): string;
+  function CopyFromTo(Origin: string; SearchStart: integer; Start, Stop: string): string;
  // function SubstrCount(const aString, aSubstring: string): Integer;
 
 const
@@ -181,6 +185,26 @@ end;
 function vald(s: string): double; inline;
 begin
   val(s, Result);
+end;
+
+function CopyFromTo(Origin: string; Start, Stop: string): string;
+var
+  p1, p2: integer;
+begin
+  p1:= Pos(Start, Origin) + 1;
+  p2:= Pos(Stop, Origin);
+  Result:= Copy(Origin, p1, p2 - p1);
+end;
+
+function CopyFromTo(Origin: string; SearchStart: integer; Start, Stop: string
+  ): string;
+var
+  p1, p2: integer;
+begin
+  Delete(Origin, 1, SearchStart - 1);
+  p1:= Pos(Start, Origin) + 1;
+  p2:= Pos(Stop, Origin);
+  Result:= Copy(Origin, p1, p2 - p1);
 end;
 
 {function SubstrCount(const aString, aSubstring: string): Integer;
@@ -275,7 +299,7 @@ begin
     exit;
   end;
 
-  TestResult:= RecvestIdentity(seRecvTimeout.Value);
+  TestResult:= RequestIdentity(seRecvTimeout.Value);
   if not IsEmptyStr(TestResult, [' ']) then
     ShowMessage('Подключено к ' + TestResult);
 end;
@@ -437,7 +461,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.RecvestIdentity(TimeOut: longword): string;
+function tSerConnectForm.RequestIdentity(TimeOut: longword): string;
 begin
   Purge;
   case ConnectionKind of
@@ -518,7 +542,7 @@ begin
 
           SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
           InitDevice;
-          TestResult:= RecvestIdentity(seRecvTimeout.Value);
+          TestResult:= RequestIdentity(seRecvTimeout.Value);
           WriteProgramLog('Ответ устройства: ' + TestResult);
 
           if not IsEmptyStr(TestResult, [' ']) then
@@ -637,7 +661,7 @@ begin
         TelNetClient.Login;
 
         InitDevice;
-        TestResult:= RecvestIdentity(seRecvTimeout.Value);
+        TestResult:= RequestIdentity(seRecvTimeout.Value);
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if not IsEmptyStr(TestResult, [' ']) then
@@ -696,7 +720,7 @@ begin
         Session.Active:= true;
 
         InitDevice;
-        TestResult:= RecvestIdentity;
+        TestResult:= RequestIdentity;
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if not IsEmptyStr(TestResult, [' ']) then
@@ -770,7 +794,7 @@ begin
         TelNetClient.Login;
 
         InitDevice;
-        TestResult:= RecvestIdentity;
+        TestResult:= RequestIdentity;
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if TestResult <> '' then
@@ -1095,101 +1119,165 @@ begin
   end
 end;
 
-procedure tSerConnectForm.SaveState;
+procedure tSerConnectForm.SaveState(FileStream: tFileStream);
 var
   i, j: integer;
-  FileStream: tFileStream;
   s: string;
 begin
-  FileStream:= tFileStream.Create(Name + '.prm', fmCreate);
-  for i:= 0 to ComponentCount - 1 do   { TODO 1 -cImprovement : Overhaul form params }
+  if not Assigned(FileStream) then
+    exit;
+  s:= Name + '(' + LineEnding;
+  FileStream.Write(s[1], length(s));
+  for i:= 0 to ComponentCount - 1 do
   begin
     if Components[i] is TComboBox then
     with TComboBox(Components[i]) do
     begin
       s:= Name + '=' + strf(ItemIndex) + LineEnding;
-      Filestream.WriteAnsiString(s);
+      FileStream.Write(s[1], length(s));
     end
     else
     if Components[i] is TSpinEdit then
     with TSpinEdit(Components[i]) do
     begin
       s:= Name + '=' + strf(Value) + LineEnding;
-      Filestream.WriteAnsiString(s);
+      FileStream.Write(s[1], length(s));
     end
     else
     if Components[i] is TFloatSpinEdit then
     with TFloatSpinEdit(Components[i]) do
     begin
       s:= Name + '=' + strf(Value) + LineEnding;
-      Filestream.WriteAnsiString(s);
+      FileStream.Write(s[1], length(s));
     end
     else
     if Components[i] is TCheckBox then
     with TCheckBox(Components[i]) do
     begin
       s:= Name + '=' + strf(integer(Checked)) + LineEnding;
-      Filestream.WriteAnsiString(s);
+      FileStream.Write(s[1], length(s));
     end
     else
     if Components[i] is TCheckGroup then
     with TCheckGroup(Components[i]) do
     begin
       s:= Name + '=' + strf(Items.Count) + LineEnding;
-      Filestream.WriteAnsiString(s);
+      FileStream.Write(s[1], length(s));
 
       for j:= 0 to Items.Count - 1 do
       begin
         s:= '#' + strf(j) + '=' + strf(integer(Checked[j])) + LineEnding;
-        Filestream.WriteAnsiString(s);
+        FileStream.Write(s[1], length(s));
       end;
     end
-    {else
-    if Components[i] is TComboBox then
-    with TComboBox(Components[i]) do
+    else
+    if Components[i] is TPageControl then
+    with TPageControl(Components[i]) do
     begin
-
-    end   }
+      s:= Name + '=' + strf(TabIndex) + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end;
   end;
+  s:= ')' + LineEnding;
+  FileStream.Write(s[1], length(s));
 end;
 
-procedure tSerConnectForm.RestoreState;
+function tSerConnectForm.RestoreState(FileStream: tFileStream): integer;
 var
-  i: integer;
-  FileStream: tFileStream;
+  i, j, p, v, e: integer;
+  d: double;
+  StringStream: tStringStream;
+  s: string;
 begin
+  if not Assigned(FileStream) then
+    exit(-1);
+  StringStream:= tStringStream.Create('');
+
+  StringStream.CopyFrom(FileStream, 0);    //0 = whole
+  //showmessage(strf(length(Stringstream.DataString)));
+ // showmessage(Stringstream.DataString);
+
+  p:= pos(Name, StringStream.DataString);
+
+  s:= CopyFromTo(StringStream.DataString, p, '(', ')');
+  //showmessage(s);
+  Result:= 0;
+
   for i:= 0 to ComponentCount - 1 do
   begin
     if Components[i] is TComboBox then
+    with TComboBox(Components[i]) do
     begin
-      showmessage(components[i].name);
+      p:= pos(Name, s);
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        ItemIndex:= v
+      else
+        Result:= -2;
     end
     else
     if Components[i] is TSpinEdit then
+    with TSpinEdit(Components[i]) do
     begin
-
+      p:= pos(Name, s);
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        Value:= v
+      else
+        Result:= -3;
     end
     else
     if Components[i] is TFloatSpinEdit then
+    with TFloatSpinEdit(Components[i]) do
     begin
-
+      p:= pos(Name, s);
+      val(CopyFromTo(s, p, '=', LineEnding), d, e);
+      if e = 0 then
+        Value:= d
+      else
+        Result:= -4;
     end
     else
     if Components[i] is TCheckBox then
+    with TCheckBox(Components[i]) do
     begin
-
+      p:= pos(Name, s);
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        Checked:= boolean(v)
+      else
+        Result:= -5;
     end
     else
     if Components[i] is TCheckGroup then
+    with TCheckGroup(Components[i]) do
     begin
+      p:= pos(Name, s);
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
 
+      for j:= 0 to v - 1 do
+      begin
+        p:= pos('#' + strf(j), s);
+        val(CopyFromTo(s, p, '=', LineEnding), v, e);
+        if e = 0 then
+          Checked[j]:= boolean(v)
+        else
+          Result:= -6
+      end;
     end
-    {else
-    if Components[i] is TComboBox then
+    else
+    if Components[i] is TPageControl then
+    with TPageControl(Components[i]) do
     begin
-
-    end   }
+      p:= pos(Name, s);
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        TabIndex:= v
+      else
+        Result:= -7;
+    end;
   end;
+  StringStream.Destroy;
 end;
 
 end.
