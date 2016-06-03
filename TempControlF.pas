@@ -32,7 +32,6 @@ type
     eAxisLimit: TFloatSpinEdit;
     eDelay: TSpinEdit;
     eUpdateInterval: TSpinEdit;
-    FileNameEdit1: TFileNameEdit;
     Label1: TLabel;
     Label13: TLabel;
     Label2: TLabel;
@@ -71,6 +70,15 @@ type
     procedure pmChartPopup(Sender: TObject);
   private
     { private declarations }
+    procedure BeforeStart(Sender: TObject);
+    procedure Start(Sender: TObject);
+    procedure Pause(Sender: TObject);
+    procedure Continue(Sender: TObject);
+    procedure Stop(Sender: TObject);
+    procedure AppendFileName(Sender: TObject);
+    procedure SaveLog(Sender: TObject);
+    procedure StateChange(Sender: TObject);
+    procedure ProcessBuffers(Sender: TObject);
   public
     { public declarations }
     Log: tLogModule;
@@ -122,6 +130,18 @@ begin
   if PortCount = 1 then
     StatusBar.Panels[spStatus].Text:= 'Нет доступных COM-портов';
 
+  Log:= tLogModule.Create;
+
+  Log.OnBeforeStart:= @BeforeStart;
+  Log.OnStart:= @Start;
+  Log.OnPause:= @Pause;
+  Log.OnContinue:= @Continue;
+  Log.OnStop:= @Stop;
+  Log.OnAppendFileName:= @AppendFileName;
+  Log.OnSaveLog:= @SaveLog;
+  Log.OnStateChange:= @StateChange;
+  Log.OnProcessBuffers:= @ProcessBuffers;
+
   //Threadlist:= TThreadList.Create;
   InitCriticalSection(CommCS);
   {InitCriticalSection(RNCS);
@@ -137,6 +157,7 @@ begin
   SerPort.Free;
   TelNetClient.Free;
   //ThreadList.Free;
+  Log.Free;
   DoneCriticalSection(CommCS);
   //DoneCriticalSection(RNCS);
   //DoneCriticalSection(TimeCS);
@@ -202,6 +223,51 @@ begin
       pmChart.Items[ItemIndex + 4].Checked:= true;
     end;
   end;
+end;
+
+procedure TTempControlForm.BeforeStart(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.Start(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.Pause(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.Continue(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.Stop(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.AppendFileName(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.SaveLog(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.StateChange(Sender: TObject);
+begin
+
+end;
+
+procedure TTempControlForm.ProcessBuffers(Sender: TObject);
+begin
+
 end;
 
 procedure TTempControlForm.EnableControls(Enable: boolean);

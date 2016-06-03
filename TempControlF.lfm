@@ -681,18 +681,6 @@ object TempControlForm: TTempControlForm
     ShowHint = True
     TabOrder = 9
   end
-  object FileNameEdit1: TFileNameEdit
-    Left = 383
-    Height = 23
-    Top = 456
-    Width = 103
-    FilterIndex = 0
-    HideDirectories = False
-    ButtonWidth = 23
-    NumGlyphs = 1
-    MaxLength = 0
-    TabOrder = 10
-  end
   object UpdateTimer: TTimer
     Enabled = False
     Interval = 5000

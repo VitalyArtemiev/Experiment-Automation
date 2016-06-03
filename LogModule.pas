@@ -5,7 +5,7 @@ unit LogModule;
 interface
 
 uses
-  Classes, SysUtils, AxisSource;
+  Classes, SysUtils, Dialogs, AxisSource;
 
 type
 
@@ -14,6 +14,14 @@ type
   { tLogModule }
 
   tLogModule = class
+  private
+    fOnAppendFileName: tNotifyEvent;
+    fOnSaveLog: tNotifyEvent;
+    fHeader: string;
+    fStub: string;
+    fTimeFormat: string;
+    function GetAndResetHeader: string;
+    procedure SetTimeFormat(AValue: string);
   protected//???
     FOnBeforeStart: tNotifyEvent;
     FOnContinue: tNotifyEvent;
@@ -32,11 +40,13 @@ type
     function GetTime: TDateTime;
     procedure SetState(AValue: eLogState);
   public
-    Filename: string;
+    Filename, Filepath: string;
     ReadingsThread: TThread;
     ThreadList: TThreadList;
+    constructor Create;
+    destructor Destroy; override;
 
-    procedure CreateFile;
+    function CreateFile: integer;
     function SaveFile: integer;
     procedure Toggle;
     procedure Start;
@@ -45,11 +55,17 @@ type
     procedure Continue;
     procedure ProcessBuffers;
 
+    property Header: string read GetAndResetHeader write fHeader;
+    property Stub: string read fStub write fStub;
+    property TimeFormat: string read fTimeFormat write SetTimeFormat;
+
     property OnBeforeStart: tNotifyEvent read FOnBeforeStart write FOnBeforeStart;
     property OnStart: tNotifyEvent read FOnStart write FOnStart;
     property OnPause: tNotifyEvent read FOnPause write FOnPause;
     property OnContinue: tNotifyEvent read FOnContinue write FOnContinue;
     property OnStop: tNotifyEvent read FOnStop write FOnStop;
+    property OnAppendFileName: tNotifyEvent read fOnAppendFileName write fOnAppendFileName;
+    property OnSaveLog: tNotifyEvent read fOnSaveLog write fOnSaveLog;
     property OnStateChange: tNotifyEvent read FOnStateChange write FOnStateChange;   //to manage interface
     property OnProcessBuffers: tNotifyEvent read FOnProcessBuffers write FOnProcessBuffers;
     property State: eLogState read FState write SetState;
@@ -61,16 +77,35 @@ implementation
 uses
   SerConF;
 
+const
+  DefaultLogExtension = '.log';
+  DefaultTimeFormat = 'yyyy_mm_dd';
+
 { tLogModule }
+
+function tLogModule.GetAndResetHeader: string;
+begin
+  Result:= fHeader;
+  fHeader:= '';
+end;
+
+procedure tLogModule.SetTimeFormat(AValue: string);
+begin
+  try
+    FormatDateTime(AValue, now);
+  except
+    on e: Exception do
+    begin
+      ShowMessage('Неверный формат даты');
+      exit
+    end;
+  end;
+  fTimeFormat:= AValue;
+end;
 
 function tLogModule.GetTime: TDateTime;
 begin
-  EnterCriticalSection(TimeCS);
-  try
-    Result:= Now - StartTime - PauseLength;
-  finally
-    LeaveCriticalSection(TimeCS);
-  end;
+  Result:= Now - StartTime - PauseLength;
 end;
 
 procedure tLogModule.SetState(AValue: eLogState);
@@ -80,14 +115,56 @@ begin
     onStateChange(Self);
 end;
 
-procedure tLogModule.CreateFile;
+constructor tLogModule.Create;
 begin
+  Threadlist:= TThreadList.Create;
+  TimeFormat:= DefaultTimeFormat;
+end;
 
+destructor tLogModule.Destroy;
+begin
+  ThreadList.Free;
+end;
+
+function tLogModule.CreateFile: integer;
+begin
+  if Header = '' then
+    Result:= 2
+  else
+    Result:= 0;
+
+  DateTimeToString(FileName, TimeFormat, Now);    //check???
+
+  if Stub <> '' then
+    FileName+= '_' + Stub;
+
+  if Assigned(OnAppendFileName) then
+    OnAppendFileName(Self);
+
+  if pos('.', Filename) = 0 then
+    FileName+= DefaultLogExtension;
+  //directoryexists
+  FileName:= FilePath + FileName;
+
+  try
+    ExperimentLog:= TFileStream.Create(FileName, fmCreate)
+  except
+    on E:Exception do
+    begin
+      showmessage('Файл ' + FileName + ' не создан: ' + E.Message);
+      exit(1);
+    end;
+  end;
+
+  ExperimentLog.Write(Header[1], length(Header));
 end;
 
 function tLogModule.SaveFile: integer;
 begin
+  if Assigned(OnSaveLog) then
+    OnSaveLog(Self);
 
+  freeandnil(ExperimentLog);
 end;
 
 procedure tLogModule.Toggle;
@@ -226,8 +303,6 @@ begin
   t:= 0;
   ReadPoints:= 0;
   }
-
-
 
   State:= lActive;
   CreateFile;

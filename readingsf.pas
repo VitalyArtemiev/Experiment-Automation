@@ -166,6 +166,16 @@ type
     procedure SetLogState(AValue: eLogState);
 
     function GetTime: TDateTime;
+
+    procedure BeforeStart(Sender: TObject);
+    procedure Start(Sender: TObject);
+    procedure Pause(Sender: TObject);
+    procedure Continue(Sender: TObject);
+    procedure Stop(Sender: TObject);
+    procedure AppendFileName(Sender: TObject);
+    procedure SaveLog(Sender: TObject);
+    procedure StateChange(Sender: TObject);
+    procedure ProcessBuffers(Sender: TObject);
   public
     { public declarations }
     Log: tLogModule;
@@ -175,21 +185,21 @@ type
     LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep, OffsetTracked: boolean;
     TimeStep: double;
 
-    CurrLogFileName: string;
+    //CurrLogFileName: string;
     ReadPoints: longint;
-    property LogState: eLogState read FLogState write SetLogState;
-    property ElapsedTime: TDateTime read GetTime;
+    //property LogState: eLogState read FLogState write SetLogState;
+    //property ElapsedTime: TDateTime read GetTime;
 
     procedure EnableControls(Enable: boolean); override;
 
-    procedure BeginLog;
+    {procedure BeginLog;
     procedure PauseLog;
     procedure ContinueLog;
     procedure StopLog(Force: boolean = false);
     function CreateLog: string;
     function SaveLog: integer;
+    procedure ProcessBuffers;   }
     function RecvSnap(p: array of shortint): PBuffer;
-    procedure ProcessBuffers;
   end;
 
 var
@@ -227,7 +237,7 @@ begin
     i:= cbChart1Show.ItemIndex;
 
   Src:= CoordinateSources[i];
-  try
+  try                          { TODO -cImprovement : Get rid of try and optimize in general }
   if Src <> nil then
     AItem.Y:= Src.Values[Aindex]
   else Source1.PointsNumber:= 0;
@@ -302,7 +312,19 @@ begin
   if PortCount = 1 then
     StatusBar.Panels[spStatus].Text:= 'Нет доступных COM-портов';
 
-  Threadlist:= TThreadList.Create;
+  //Threadlist:= TThreadList.Create;
+  Log:= tLogModule.Create;
+
+  Log.OnBeforeStart:= @BeforeStart;
+  Log.OnStart:= @Start;
+  Log.OnPause:= @Pause;
+  Log.OnContinue:= @Continue;
+  Log.OnStop:= @Stop;
+  Log.OnAppendFileName:= @AppendFileName;
+  Log.OnSaveLog:= @SaveLog;
+  Log.OnStateChange:= @StateChange;
+  Log.OnProcessBuffers:= @ProcessBuffers;
+
   InitCriticalSection(CommCS);
   InitCriticalSection(RNCS);
   InitCriticalSection(TimeCS);
@@ -317,6 +339,7 @@ begin
   SerPort.Free;
   TelNetClient.Free;
   ThreadList.Free;
+  Log.Free;
   DoneCriticalSection(CommCS);
   DoneCriticalSection(RNCS);
   DoneCriticalSection(TimeCS);
@@ -504,12 +527,52 @@ end;
 
 function tReadingsForm.GetTime: TDateTime;
 begin
-  EnterCriticalSection(TimeCS);
-  try
     Result:= Now - StartTime - PauseLength;
-  finally
-    LeaveCriticalSection(TimeCS);
-  end;
+end;
+
+procedure tReadingsForm.BeforeStart(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.Start(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.Pause(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.Continue(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.Stop(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.AppendFileName(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.SaveLog(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.StateChange(Sender: TObject);
+begin
+
+end;
+
+procedure tReadingsForm.ProcessBuffers(Sender: TObject);
+begin
+
 end;
 
 procedure tReadingsForm.BeginLog;
@@ -1313,9 +1376,12 @@ var
   DataList: TList;
   i: integer;
 begin
-  DataList:= ThreadList.LockList;
-    Datalist.Clear;
-  ThreadList.UnlockList;
+  if Assigned(ThreadList) then
+  begin
+    DataList:= ThreadList.LockList;
+      Datalist.Clear;
+    ThreadList.UnlockList;
+  end;
 
   Source1.PointsNumber:= 0;
   Source2.PointsNumber:= 0;

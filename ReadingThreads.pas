@@ -133,7 +133,7 @@ begin
   with ReadingsForm do
   repeat
     try
-     EnterCriticalSection(CommCS);
+      EnterCriticalSection(CommCS);
       AddCommand(dStoredPoints, true);               //paus+
       PassCommands;
       s:= RecvString;
