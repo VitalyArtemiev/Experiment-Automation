@@ -11,38 +11,45 @@ type
 
   eLogState = (lInActive, lActive, lPaused);
 
+  tLogModule = class;
+
+  tLogEvent = procedure(Sender: tLogModule) of object;
+  tLogEventEC = function(Sender: tLogModule): integer of object;   //Error code
+
   { tLogModule }
 
   tLogModule = class
   private
-    fOnAppendFileName: tNotifyEvent;
-    fOnSaveLog: tNotifyEvent;
+    fOnCreateFile: TLogEvent;
+    fOnSaveLog: TLogEventEC;
     fHeader: string;
     fStub: string;
     fTimeFormat: string;
     function GetAndResetHeader: string;
     procedure SetTimeFormat(AValue: string);
   protected//???
-    FOnBeforeStart: tNotifyEvent;
-    FOnContinue: tNotifyEvent;
-    FOnPause: tNotifyEvent;
-    FOnProcessBuffers: tNotifyEvent;
-    FOnStop: tNotifyEvent;
+    FOnBeforeStart: TLogEvent;
+    FOnContinue: TLogEvent;
+    FOnPause: TLogEvent;
+    FOnProcessBuffers: TLogEvent;
+    FOnStop: TLogEvent;
     FState: eLogState;
-    FOnStateChange, FOnStart: tNotifyEvent;
-    ProcessedPoints: longword;
+    FOnStateChange, FOnStart: TLogEvent;
     StartTime, PauseTime, PauseLength: TDateTime;
-    srcTime: TAxisSource;
     TimeCS: tRTLCriticalSection;
-    CoordinateSources: array of TAxisSource;
-    ExperimentLog: TFileStream;
 
     function GetTime: TDateTime;
     procedure SetState(AValue: eLogState);
   public
+    ExperimentLog: TFileStream;
+    CoordinateSources: array of TAxisSource;
+    srcTime: tAxisSource;
+    ReadPoints, ProcessedPoints: longword;
+
     Filename, Filepath: string;
     ReadingsThread: TThread;
     ThreadList: TThreadList;
+    DataList: TList;
     constructor Create;
     destructor Destroy; override;
 
@@ -54,20 +61,21 @@ type
     procedure Pause;
     procedure Continue;
     procedure ProcessBuffers;
+    procedure Clear;
 
     property Header: string read GetAndResetHeader write fHeader;
     property Stub: string read fStub write fStub;
     property TimeFormat: string read fTimeFormat write SetTimeFormat;
 
-    property OnBeforeStart: tNotifyEvent read FOnBeforeStart write FOnBeforeStart;
-    property OnStart: tNotifyEvent read FOnStart write FOnStart;
-    property OnPause: tNotifyEvent read FOnPause write FOnPause;
-    property OnContinue: tNotifyEvent read FOnContinue write FOnContinue;
-    property OnStop: tNotifyEvent read FOnStop write FOnStop;
-    property OnAppendFileName: tNotifyEvent read fOnAppendFileName write fOnAppendFileName;
-    property OnSaveLog: tNotifyEvent read fOnSaveLog write fOnSaveLog;
-    property OnStateChange: tNotifyEvent read FOnStateChange write FOnStateChange;   //to manage interface
-    property OnProcessBuffers: tNotifyEvent read FOnProcessBuffers write FOnProcessBuffers;
+    property OnBeforeStart: TLogEvent read FOnBeforeStart write FOnBeforeStart;
+    property OnStart: TLogEvent read FOnStart write FOnStart;
+    property OnPause: TLogEvent read FOnPause write FOnPause;
+    property OnContinue: TLogEvent read FOnContinue write FOnContinue;
+    property OnStop: TLogEvent read FOnStop write FOnStop;
+    property OnCreateFile: TLogEvent read fOnCreateFile write fOnCreateFile;
+    property OnSaveLog: TLogEventEC read fOnSaveLog write fOnSaveLog;
+    property OnStateChange: TLogEvent read FOnStateChange write FOnStateChange;   //to manage interface
+    property OnProcessBuffers: TLogEvent read FOnProcessBuffers write FOnProcessBuffers;
     property State: eLogState read FState write SetState;
     property ElapsedTime: TDateTime read GetTime;
   end;
@@ -117,16 +125,20 @@ end;
 
 constructor tLogModule.Create;
 begin
+  State:= lInActive;
   Threadlist:= TThreadList.Create;
   TimeFormat:= DefaultTimeFormat;
 end;
 
 destructor tLogModule.Destroy;
 begin
-  ThreadList.Free;
+  Clear;
+  freeandnil(ThreadList);
 end;
 
 function tLogModule.CreateFile: integer;
+var
+  s: string;   //crutch bc cant do header[1]
 begin
   if Header = '' then
     Result:= 2
@@ -138,8 +150,8 @@ begin
   if Stub <> '' then
     FileName+= '_' + Stub;
 
-  if Assigned(OnAppendFileName) then
-    OnAppendFileName(Self);
+  if Assigned(OnCreateFile) then
+    OnCreateFile(Self);
 
   if pos('.', Filename) = 0 then
     FileName+= DefaultLogExtension;
@@ -155,14 +167,15 @@ begin
       exit(1);
     end;
   end;
-
-  ExperimentLog.Write(Header[1], length(Header));
+  s:= Header;
+  if s <> '' then
+    ExperimentLog.Write(s[1], length(s));
 end;
 
 function tLogModule.SaveFile: integer;
 begin
   if Assigned(OnSaveLog) then
-    OnSaveLog(Self);
+    Result:= OnSaveLog(Self);
 
   freeandnil(ExperimentLog);
 end;
@@ -291,8 +304,6 @@ begin
     cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
   end;
 
-
-
   if SampleRate <> 0 then
     TimeStep:= 1/SampleRate
   else
@@ -307,11 +318,12 @@ begin
   State:= lActive;
   CreateFile;
   PauseLength:= 0;
+  ReadPoints:= 0;
+  ProcessedPoints:= 0;
   StartTime:= Now;
 
   if Assigned(OnStart) then
     OnStart(Self);
-
   {case ReadingMode of   //onstart
     rBuffer:
       ReadingsThread:= tBufferThread.Create(PointsInBuffer);
@@ -327,6 +339,9 @@ end;
 
 procedure tLogModule.Stop;
 begin
+  if State = lInActive then
+    exit;
+
   WriteProgramLog('Data collection end');
 
   if assigned(ReadingsThread) then
@@ -358,18 +373,15 @@ begin
   //btApply.Enabled:= true;
   }
 
-  if State <> lInActive then
-  begin
-   if assigned(ReadingsThread) then
-     ReadingsThread.WaitFor;
-   ProcessBuffers;
+  if assigned(ReadingsThread) then
+    ReadingsThread.WaitFor;
+  ProcessBuffers;
 
-   WriteProgramLog('Сохранение - результат: ' + strf(SaveFile));
+  WriteProgramLog('Сохранение - результат: ' + strf(SaveFile));
 
-   State:= lInActive;
-   freeandnil(ExperimentLog);
-   freeandnil(ReadingsThread);
-  end;
+  State:= lInActive;
+  freeandnil(ExperimentLog);
+  freeandnil(ReadingsThread);
 end;
 
 procedure tLogModule.Pause;
@@ -403,7 +415,7 @@ end;
 
 procedure tLogModule.Continue;
 begin
-  {btStartPauseLog.Caption:= 'Приостановить';
+  {btStartPauseLog.Caption:= 'Приостановить';  //oncontinue
   WriteProgramLog('Data collection resume');
 
   UpdateTimer.Enabled:= true;
@@ -435,10 +447,31 @@ end;
 
 procedure tLogModule.ProcessBuffers;
 begin
-  ThreadList.LockList;
-  if Assigned(OnProcessBuffers) then
-    OnProcessBuffers(Self);
+  DataList:= ThreadList.LockList;
+    if Assigned(OnProcessBuffers) then
+      OnProcessBuffers(Self);
   ThreadList.UnlockList;
+end;
+
+procedure tLogModule.Clear;
+var
+  i: Integer;
+begin
+  if State <> lInActive then
+    exit;
+
+  if Assigned(ThreadList) then
+  begin
+    DataList:= ThreadList.LockList;
+      Datalist.Clear;
+    ThreadList.UnlockList;
+  end;
+
+  ProcessedPoints:= 0;
+
+  freeandnil(srcTime);
+  for i:= 0 to high(CoordinateSources) do
+    freeandnil(CoordinateSources[i]);
 end;
 
 end.

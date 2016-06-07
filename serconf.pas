@@ -19,6 +19,9 @@ type
 
   eDeviceKind = (dGenerator, dDetector, dTempController);
 
+  Buffer = array of double;
+  pBuffer = ^Buffer;
+
   tSSA = array of ansistring;
   pSSA = ^tSSA;
 
@@ -115,12 +118,14 @@ type
     property CurrentDevice: pDevice read GetCurDev;
 
     procedure GetSupportedDevices(Kind: eDeviceKind);
+    procedure GetDeviceParams; virtual; abstract;
     procedure InitDevice;
     function RequestIdentity(TimeOut: longword): string;
     function ConnectSerial: longint; virtual;
     function ConnectTelNet: longint; virtual;
     function ConnectVXI: longint; virtual;
     function ConnectUSB: longint; virtual;
+    function AutoConnect: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
     function GetCommandName(c: variant): string;
     function CommandSupported(c: variant): boolean;
@@ -137,6 +142,7 @@ type
 
     procedure SaveState(FileStream: tFileStream);
     function RestoreState(FileStream: tFileStream):integer;
+    function RestoreState(FileName: string):integer;
   end;
 
   procedure WriteProgramLog(Log: string);
@@ -158,6 +164,10 @@ const
   spTimeOuts = 2;
   spStatus = 3;
 
+  StartCaption = 'Начать снятие';
+  PauseCaption = 'Приостановить';
+  ContinueCaption = 'Продолжить';
+
 var
   ProgramLog: TFileStream;
   LogCS: TRTLCriticalSection;
@@ -165,7 +175,7 @@ var
 implementation
 
 uses
-  Controls, StrUtils, DeviceF, MainF, OptionF;
+  Math, Controls, StrUtils, DeviceF, MainF, OptionF;
 
 function strf(x: double): string; inline;
 begin
@@ -243,21 +253,34 @@ begin
 end;
 
 procedure tSerConnectForm.btnConnectClick(Sender: TObject);
+var
+  Result: integer;
+  Crutch: integer absolute Result;
 begin
   Cursor:= crHourGlass;
   btnDisconnectClick(Sender);
   if cbPortSelect.ItemIndex >= 0 then
   begin
     if pos('Ethernet', cbPortSelect.Text) <> 0 then
-      ConnectTelNet
+      Result:= ConnectTelNet
     else
-      ConnectSerial;
+      Result:= ConnectSerial;
   end;
   if ConnectionKind <> cNone then
   begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
   end;
+
+  if Result = 0 then
+  begin
+    GetDeviceParams;
+    Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
+    RestoreState(Config.DefaultParams);
+    cbPortSelect.ItemIndex:= Crutch;
+  end
+  else
+    WriteProgramLog('Подключение - результат: ' + strf(Result));
   Cursor:= crDefault;
 end;
 
@@ -270,25 +293,20 @@ begin
     begin
       SerPort.Purge;
       SerPort.CloseSocket;
-
-      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-      EnableControls(false);
-      ConnectionKind:= cNone;
-      DeviceIndex:= iDefaultdevice;
     end;
     freeandnil(SerPort);
   end;
 
   if assigned(TelNetClient) then
   begin
-    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-    EnableControls(false);
-    ConnectionKind:= cNone;
-    DeviceIndex:= iDefaultDevice;
-
     freeandnil(TelNetClient);
   end;
-  StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
+
+  EnableControls(false);
+  ConnectionKind:= cNone;
+  DeviceIndex:= iDefaultDevice;
+  StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model; //why? iunno. whats yo case anyway, m8? why do you care? i dont. look at me, im nick wilde and i dont care. just look at how much i dont care. its astonishing. one could even say its un-'care'-cteristic of me to care so little. get it? actually, i dont care if you get it. buzz off. get off ma case, pal! or else!
+  StatusBar.Panels[spConnection].Text:= 'Нет подключения';
 end;
 
 procedure tSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
@@ -306,7 +324,8 @@ end;
 
 procedure tSerConnectForm.btStatusClick(Sender: TObject);
 begin
-  if StatusForm.Visible then StatusForm.Hide;
+  if StatusForm.Visible then
+    StatusForm.Hide;
   StatusForm.Form:= pointer(Self);
   StatusForm.Show;
 end;
@@ -511,6 +530,7 @@ begin
   WriteProgramLog('Подключение...');
 
   DeviceIndex:= iDefaultDevice;
+  TestResult:= '';
   ConnectionKind:= cSerial;
   SerPort:= TBlockSerial.Create;
   SerPort.RaiseExcept:= true;
@@ -549,17 +569,28 @@ begin
           begin
             if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
             begin
+              Result:= 0;
               WriteProgramLog('Успешно');
               break;
             end
             else
+            begin
+              Result:= -2; //not found
               DeviceIndex:= iDefaultDevice;
+            end;
           end
           else
+          begin
+            Result:= -1; //no answer
             DeviceIndex:= iDefaultDevice;
+          end;
+        end
+        else
+        begin
+          Result:= -3; //none with this interface
+          DeviceIndex:= iDefaultDevice;
         end;
     end;
-    if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
   end;
 
   if SerPort.LastError <> 0 then
@@ -572,42 +603,10 @@ begin
     SerPort.RaiseExcept:= true;
     ConnectionKind:= cNone;
     freeandnil(SerPort);
-    exit(-1)
+    exit(-4) //synaser error
   end;
-        {end
-        else
-        begin
-          ShowMessage('Устройство не оветило на запрос модели или неверны параметры подключения.'#13#10'Исправьте параметры или введите модель подключаемого прибора.');
-          OptionForm.ShowModal;
-          //OptionForm.ModalResult:=;
-          for i:= 1 to high(SupportedDevices) do
-          with SupportedDevices[i] do
-          begin
-            if (pos(PresumedDevice, Manufacturer) > 0) or (pos(PresumedDevice, Model) > 0) then
-            begin
-              DeviceIndex:= i;
-              break;
-            end;
-          end;
-        if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
-        end;
 
-      if (PresumedDevice <> '') and (TestResult <> '') and
-        (PresumedDevice <> TestResult) then
-        ShowMessage('Внимание! Текущая конфигурация создавалась для другого прибора.');
-
-    StatusBar1.Caption:= 'Готовность';
-      end;}
-        //After successfull connection the DTR signal is set
-  //DebugBox.Items.Strings[4]:= SerPort.Device;
-  {if serport.cts then DebugBox.Items.Strings[5]:= 'cts 1';
-  if serport.testdsr then DebugBox.Items.Strings[6]:= 'dsr 1';
-  if SerPort.CanRead(TestTimeOut) then DebugBox.Items.Strings[7]:= 'canread';
-  if SerPort.CanWrite(TestTimeOut) then DebugBox.Items.Strings[8]:= 'canwrite';   }
-
-     //TestDSR?
-
-  if (SerPort.InstanceActive) and (DeviceIndex <> iDefaultDevice) then
+  if SerPort.InstanceActive and (Result = 0) then
   begin
     StatusBar.Panels[spConnection].Text:= 'Подключено к ' + cbPortSelect.Text;
     Result:= 0;
@@ -623,13 +622,23 @@ begin
     CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
   end
   else
-    begin
-      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-      SerPort.CloseSocket;
-      ConnectionKind:= cNone;
-      freeandnil(SerPort);
-      Result:= -2;
+  begin
+    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+    case Result of
+      -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
+      -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
+      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств';
     end;
+
+    ShowMessage(StatusBar.Panels[spStatus].Text);
+
+    SerPort.CloseSocket;
+    ConnectionKind:= cNone;
+    freeandnil(SerPort);
+    if Result = 0 then
+      Result:= -5; //this should never happen; instance not active
+    exit;
+  end;
   SerPort.RaiseExcept:= true;
 end;
 
@@ -639,6 +648,7 @@ var
   s: string;
 begin
   DeviceIndex:= iDefaultDevice;
+  TestResult:= '';
   ConnectionKind:= cTelNet;
   TelNetClient:= tTelNetSend.Create;
   for i:= 1 to high(SupportedDevices) do
@@ -668,21 +678,32 @@ begin
         begin
           if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
           begin
+            Result:= 0;
             DeviceIndex:= i;
             break;
           end
           else
-            DeviceIndex:= 0;
+          begin
+            Result:= -2; //not found
+            DeviceIndex:= iDefaultDevice;
+          end;
         end
         else
-          DeviceIndex:= 0;
+        begin
+          Result:= -1; //no answer
+          DeviceIndex:= iDefaultDevice;
+        end;
+      end
+      else
+      begin
+        Result:= -3;  //no compatible devices
+        DeviceIndex:= iDefaultDevice;
       end;
   end;
 
-  if DeviceIndex <> iDefaultDevice then
+  if Result = 0 then
   begin
     StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
-    Result:= 0;
     TimeOutErrors:= 0;
     EnableControls(true);
 
@@ -695,11 +716,16 @@ begin
   end
   else
   begin
-    StatusBar.Panels[spStatus].Text:= 'Устройство не опознано';
-    ShowMessage('Устройство не опознано');
+    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+    case Result of
+      -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
+      -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
+      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств';
+    end;
+    ShowMessage(StatusBar.Panels[spStatus].Text);
+
     ConnectionKind:= cNone;
     freeandnil(TelNetClient);
-    Result:= -1;
   end;
 end;
 
@@ -773,11 +799,6 @@ begin
         Descriptor  := UsbContext.GetDeviceDescriptor(USBDevices[I]);
         writeprogramlog('Bus' + strf(Bus));
         writeprogramlog('Device'+strf(Address)+': ID ' +IntToHex(Descriptor.idVendor,4) +':' +IntToHex(Descriptor.idProduct,4));
-        {writeprogramlog();
-        writeprogramlog();
-        writeprogramlog();
-        writeprogramlog();
-        Write(); }
         Write(',  port: ',Port:3);
       end;
 
@@ -822,6 +843,11 @@ begin
     freeandnil(USBContext);
     Result:= -1;
   end; }
+end;
+
+function tSerConnectForm.AutoConnect: longint;
+begin
+
 end;
 
 function tSerConnectForm.GetCommandName(c: variant): string;
@@ -1209,6 +1235,11 @@ begin
     with TComboBox(Components[i]) do
     begin
       p:= pos(Name, s);
+      if p = 0 then
+      begin
+        ItemIndex:= 0;
+        continue;
+      end;
       val(CopyFromTo(s, p, '=', LineEnding), v, e);
       if e = 0 then
         ItemIndex:= v
@@ -1220,6 +1251,11 @@ begin
     with TSpinEdit(Components[i]) do
     begin
       p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Value:= 0;
+        continue;
+      end;
       val(CopyFromTo(s, p, '=', LineEnding), v, e);
       if e = 0 then
         Value:= v
@@ -1231,6 +1267,11 @@ begin
     with TFloatSpinEdit(Components[i]) do
     begin
       p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Value:= 0;
+        continue;
+      end;
       val(CopyFromTo(s, p, '=', LineEnding), d, e);
       if e = 0 then
         Value:= d
@@ -1242,6 +1283,11 @@ begin
     with TCheckBox(Components[i]) do
     begin
       p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Checked:= false;
+        continue;
+      end;
       val(CopyFromTo(s, p, '=', LineEnding), v, e);
       if e = 0 then
         Checked:= boolean(v)
@@ -1253,9 +1299,14 @@ begin
     with TCheckGroup(Components[i]) do
     begin
       p:= pos(Name, s);
+      if p = 0 then
+      begin
+        //
+        continue;
+      end;
       val(CopyFromTo(s, p, '=', LineEnding), v, e);
 
-      for j:= 0 to v - 1 do
+      for j:= 0 to min(v - 1, Items.Count - 1) do
       begin
         p:= pos('#' + strf(j), s);
         val(CopyFromTo(s, p, '=', LineEnding), v, e);
@@ -1270,6 +1321,11 @@ begin
     with TPageControl(Components[i]) do
     begin
       p:= pos(Name, s);
+      if p = 0 then
+      begin
+        TabIndex:= 0;
+        continue;
+      end;
       val(CopyFromTo(s, p, '=', LineEnding), v, e);
       if e = 0 then
         TabIndex:= v
@@ -1278,6 +1334,15 @@ begin
     end;
   end;
   StringStream.Destroy;
+end;
+
+function tSerConnectForm.RestoreState(FileName: string): integer;
+var
+  FileStream: tFileStream;
+begin
+  FileStream:= TFilestream.Create(FileName, fmOpenRead);
+  Result:= RestoreState(FileStream);
+  FileStream.Destroy;
 end;
 
 end.

@@ -14,6 +14,7 @@ type
 
   tMainForm = class(TSerConnectForm)
     btProgram: TSpeedButton;
+    btAutoConnect: TSpeedButton;
 
     btTrigger: TButton;
     cbFuncSelect: TComboBox;
@@ -63,6 +64,7 @@ type
     About: TMenuItem;
     Label29: TLabel;
     miShowTempControlF: TMenuItem;
+    pnConnection: TPanel;
     Separator1: TMenuItem;
     Separator2: TMenuItem;
     Separator3: TMenuItem;
@@ -107,14 +109,12 @@ type
     tsSweep: TTabSheet;
     tsStep: TTabSheet;
     procedure AboutClick(Sender: TObject);
+    procedure btAutoConnectClick(Sender: TObject);
     procedure cbPointPerStepChange(Sender: TObject);
     procedure cbAmplUnitChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
 
     procedure btnConnectClick(Sender: TObject); override;
-
-    procedure EnableControls(Enable: boolean); override;
-
     procedure btApplyClick(Sender: TObject);
     procedure btQueryClick(Sender: TObject); override;
     procedure btProgramClick(Sender: TObject);
@@ -156,6 +156,9 @@ type
     function SaveConfig(FileName: ansistring): integer;
     function LoadConfig(FileName: ansistring): integer;
     function ExportParams(Manual: boolean; Header: boolean = false): integer;
+
+    procedure EnableControls(Enable: boolean); override;
+    procedure GetDeviceParams; override;
   end;
 
 
@@ -173,11 +176,11 @@ const
 var
   AmplitudeUnit: eUnits;
   MainForm: TMainForm;
-  ExperimentLog: TFileStream;
   PortList: string;
   PortCount: integer = 0;
   ReportNumber: integer = 0;
   ExperimentNumber: integer = 1;
+  Debug: boolean;
 
   Config: RConfig;
   Params: RParams;
@@ -185,7 +188,7 @@ var
 implementation
 
 uses
-  Math, Variants, MemoF, StepF, OptionF, ReadingsF, TempControlF, OffsetF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, ReadingsF, TempControlF, LogModule, OffsetF, AboutF;
 
 {$R *.lfm}
 
@@ -405,7 +408,7 @@ begin
     writeln(f, 'Конечная амплитуда:   ' + s + ' В');
     str(eAStep.Value:0:2, s);
     writeln(f, 'Шаг:                  ' + s + ' В');
-    writeln(f, 'Данные в файле: ', ReadingsForm.CurrLogFileName);
+    writeln(f, 'Данные в файле: ', ReadingsForm.Log.FileName);  { TODO : test }
   end;
 
   with ReadingsForm do
@@ -465,6 +468,7 @@ begin
 
   Top:= Screen.Height div 2 - Height div 2;
   Left:= 8;
+  btAutoConnect.Caption:= 'Автомат.' + LineEnding + 'подключение';
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btProgram.Caption:= 'Включить' + LineEnding + 'управление';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -631,10 +635,24 @@ begin
   AboutForm.ShowModal;
 end;
 
+procedure tMainForm.btAutoConnectClick(Sender: TObject);
+begin
+                  Cursor:= crHourGlass;
+  ReadingsForm.   Cursor:= crHourGlass;
+  TempControlForm.Cursor:= crHourGlass;
+
+  AutoConnect;
+  ReadingsForm.AutoConnect;
+  TempControlForm.AutoConnect;
+
+                  Cursor:= crDefault;
+  ReadingsForm.   Cursor:= crDefault;
+  TempControlForm.Cursor:= crDefault;
+end;
+
 procedure tMainForm.miOptionsClick(Sender: TObject);
 begin
   OptionForm.ShowModal;
- // RestoreStatusBar;
 end;
 
 procedure tMainForm.miLoadCfgClick(Sender: TObject);
@@ -649,7 +667,6 @@ begin
     s:= UTF8toANSI(OpenDialog.FileName); //  проверить на доп символы
     LoadConfig(s);
   end;
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miSaveCfgClick(Sender: TObject);
@@ -665,7 +682,6 @@ begin
     SaveConfig(s);
   end;
   Config.WorkConfig:= s;
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miShowTempControlFClick(Sender: TObject);
@@ -689,8 +705,8 @@ end;
 
 procedure tMainForm.ReadingTimerTimer(Sender: TObject);
 begin
-  if ReadingsForm.LogState = lActive then
-    ReadingsForm.StopLog;
+  if ReadingsForm.Log.State = lActive then
+    ReadingsForm.Log.Stop;
   ReadingTimer.Enabled:= false;
 end;
 
@@ -698,11 +714,6 @@ procedure tMainForm.StatusBarHint(Sender: TObject);
 begin
 
 end;
-
-{procedure tMainForm.RestoreStatusBar;
-begin
-  StatusBar.SimplePanel:= false;
-end;  }
 
 procedure tMainForm.miLoadParClick(Sender: TObject);
 var
@@ -716,7 +727,6 @@ begin
     s:= UTF8toANSI(OpenDialog.FileName);
     LoadParams(s);
   end;
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miSaveParClick(Sender: TObject);
@@ -731,7 +741,6 @@ begin
     s:= UTF8toANSI(SaveDialog.FileName);
     SaveParams(s);
   end;
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miShowReadingsFClick(Sender: TObject);
@@ -892,7 +901,7 @@ begin
           Cursor:= crHourGlass;
           sleep(MinDelay);
           Cursor:= crDefault;
-          ReadingsForm.BeginLog;
+          ReadingsForm.Log.Start;
           if ReadingTime > 0 then
           begin
             ReadingTimer.Interval:= ReadingTime;
@@ -941,7 +950,7 @@ begin
           Cursor:= crHourGlass;
           sleep(MinDelay);
           Cursor:= crDefault;
-          ReadingsForm.BeginLog;
+          ReadingsForm.Log.Start;
           if ReadingTime > 0 then
           begin
             ReadingTimer.Interval:= ReadingTime;
@@ -987,6 +996,7 @@ begin
   tempcontrolform.enablecontrols(true);
   serport:= tblockserial.create;
   readingsform.serport:= tblockserial.create;
+  Debug:= true;
   //readingsform.btnConnectClick(self);
 end;
 
@@ -1145,9 +1155,6 @@ begin
 end;
 
 procedure tMainForm.btnConnectClick(Sender: TObject);
-var
-  s: string;
-  i: integer;
 begin
   if ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
   begin
@@ -1164,21 +1171,63 @@ begin
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 
-  {$IFOPT D+}
+  if debug then
   if DeviceIndex = 0 then
   begin
    deviceindex:= 1;
    connectionkind:= cserial;
   end;
-  {$ENDIF}
 
-  if DeviceIndex = iDefaultDevice then Exit;
+  if DeviceIndex = iDefaultDevice then
+    exit;
 
   FrequencyTabChange(Self);
 
   Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
   Params.LastGenerator:= MainForm.CurrentDevice^.Model;
+end;
 
+procedure tMainForm.EnableControls(Enable: boolean);
+begin
+  cbImpedance.Enabled:=      Enable;
+  cbFuncSelect.Enabled:=     Enable;
+  cbAmplUnit.Enabled:=       Enable;
+  eAmplitude.Enabled:=       Enable;
+  eOffset.Enabled:=          Enable;
+  eFrequency.Enabled:=       Enable;
+  cbSweepRate.Enabled:=      Enable;
+  eSweepRate.Enabled:=       Enable;
+  SweepRateReading.Enabled:= Enable;
+  cbSweepType.Enabled:=      Enable;
+  cbSweepDirection.Enabled:= Enable;
+  cbModulation.Enabled:=     Enable;
+  eSweepStartF.Enabled:=     Enable;
+  eSweepStopF.Enabled:=      Enable;
+  btApply.Enabled:=          Enable;
+  btTrigger.Enabled:=        Enable;
+  btQuery.Enabled:=          Enable;
+  btCustomCommand.Enabled:=  Enable;
+  btStop.Enabled:=           Enable;
+  btReset.Enabled:=          Enable;
+  btStatus.Enabled:=         Enable;
+  cbACEnable.Enabled:=       Enable;
+  eStepStartF.Enabled:=      Enable;
+  eStepStopF.Enabled:=       Enable;
+  eFStep.Enabled:=           Enable;
+  eStepStartA.Enabled:=      Enable;
+  eStepStopA.Enabled:=       Enable;
+  eAStep.Enabled:=           Enable;
+  eTimeStep.Enabled:=        Enable;
+  cbPointPerStep.Enabled:=   Enable;
+  miNewReport.Enabled:=        Enable;
+  miExportParams.Enabled:=   Enable;
+end;
+
+procedure tMainForm.GetDeviceParams;
+var
+  i: integer;
+  s: string;
+begin
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
   cbImpedance.Items.Clear;
   cbFuncSelect.Items.Clear;
@@ -1277,56 +1326,6 @@ begin
     cbSweepDirection.Width:= cbModulation.Width;
     cbSweepDirection.BorderSpacing.Left:= 4;
   end;
-
-  with Params do
-  begin
-    cbImpedance.ItemIndex:= Impedance;
-    cbImpedanceChange(Self);
-    cbFuncSelect.ItemIndex:= CurrFunc;
-    cbFuncSelectChange(Self);
-
-    cbAmplUnit.ItemIndex:= AmplUnit;
-    cbAmplUnitChange(Self);
-
-    cbSweepType.ItemIndex:= SweepType;
-    cbSweepDirection.ItemIndex:= SweepDir;
-  end;
-end;
-
-procedure tMainForm.EnableControls(Enable: boolean);
-begin
-  cbImpedance.Enabled:=      Enable;
-  cbFuncSelect.Enabled:=     Enable;
-  cbAmplUnit.Enabled:=       Enable;
-  eAmplitude.Enabled:=       Enable;
-  eOffset.Enabled:=          Enable;
-  eFrequency.Enabled:=       Enable;
-  cbSweepRate.Enabled:=      Enable;
-  eSweepRate.Enabled:=       Enable;
-  SweepRateReading.Enabled:= Enable;
-  cbSweepType.Enabled:=      Enable;
-  cbSweepDirection.Enabled:= Enable;
-  cbModulation.Enabled:=     Enable;
-  eSweepStartF.Enabled:=     Enable;
-  eSweepStopF.Enabled:=      Enable;
-  btApply.Enabled:=          Enable;
-  btTrigger.Enabled:=        Enable;
-  btQuery.Enabled:=          Enable;
-  btCustomCommand.Enabled:=  Enable;
-  btStop.Enabled:=           Enable;
-  btReset.Enabled:=          Enable;
-  btStatus.Enabled:=         Enable;
-  cbACEnable.Enabled:=       Enable;
-  eStepStartF.Enabled:=      Enable;
-  eStepStopF.Enabled:=       Enable;
-  eFStep.Enabled:=           Enable;
-  eStepStartA.Enabled:=      Enable;
-  eStepStopA.Enabled:=       Enable;
-  eAStep.Enabled:=           Enable;
-  eTimeStep.Enabled:=        Enable;
-  cbPointPerStep.Enabled:=   Enable;
-  miNewReport.Enabled:=        Enable;
-  miExportParams.Enabled:=   Enable;
 end;
 
 end.

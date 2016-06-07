@@ -130,7 +130,7 @@ object TempControlForm: TTempControlForm
     AnchorSideLeft.Control = pnConnection
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
-    AnchorSideBottom.Control = cbChart1Show
+    AnchorSideBottom.Control = cbChartShow
     Left = 4
     Height = 285
     Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
@@ -172,7 +172,7 @@ object TempControlForm: TTempControlForm
     ShowHint = True
     object Chart1LineSeries1: TLineSeries
       LinePen.Color = clBlue
-      Source = Source1
+      Source = Source
     end
   end
   object btApply: TButton
@@ -478,7 +478,7 @@ object TempControlForm: TTempControlForm
     Enabled = False
     OnClick = btStatusClick
   end
-  object cbChart1Show: TComboBox
+  object cbChartShow: TComboBox
     AnchorSideLeft.Control = Chart1
     AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Control = Chart1
@@ -506,7 +506,7 @@ object TempControlForm: TTempControlForm
       '3C'
       '3D'
     )
-    OnChange = cbChart1ShowChange
+    OnChange = cbChartShowChange
     ParentShowHint = False
     ShowHint = True
     TabOrder = 5
@@ -659,7 +659,6 @@ object TempControlForm: TTempControlForm
         '3C'
         '3D'
       )
-      OnClick = cgTransferClick
       TabOrder = 0
       Data = {
         09000000020202020202020202
@@ -684,15 +683,13 @@ object TempControlForm: TTempControlForm
   object UpdateTimer: TTimer
     Enabled = False
     Interval = 5000
+    OnTimer = UpdateTimerTimer
     left = 624
     top = 64
   end
-  object Source1: TUserDefinedChartSource
+  object Source: TUserDefinedChartSource
+    OnGetChartDataItem = SourceGetChartDataItem
     left = 688
-    top = 64
-  end
-  object Source2: TUserDefinedChartSource
-    left = 720
     top = 64
   end
   object pmChart: TPopupMenu
