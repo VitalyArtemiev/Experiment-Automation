@@ -24,8 +24,8 @@ type
     cbUseGenFreq: TCheckBox;
     cbXAxis: TComboBox;
     cgTransfer: TCheckGroup;
-    Chart1: TChart;
-    Chart1LineSeries1: TLineSeries;
+    Chart: TChart;
+    ChartLineSeries: TLineSeries;
     ChartToolset: TChartToolset;
     DataPointHintTool: TDataPointHintTool;
     Divider: TMenuItem;
@@ -33,6 +33,7 @@ type
     eDelay: TSpinEdit;
     eUpdateInterval: TSpinEdit;
     Label1: TLabel;
+    Label11: TLabel;
     Label13: TLabel;
     Label2: TLabel;
     Label29: TLabel;
@@ -57,6 +58,8 @@ type
     procedure btStartPauseLogClick(Sender: TObject);
     procedure btStopLogClick(Sender: TObject);
     procedure cbChartShowChange(Sender: TObject);
+    procedure cbShowPointsChange(Sender: TObject);
+    procedure cbUseGenFreqChange(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -66,12 +69,16 @@ type
     procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
     procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
     procedure pmChartPopup(Sender: TObject);
+    procedure RestoreScaleClick(Sender: TObject);
     procedure SourceGetChartDataItem(ASource: TUserDefinedChartSource;
       AIndex: Integer; var AItem: TChartDataItem);
     procedure UpdateTimerTimer(Sender: TObject);
+    procedure ZoomInClick(Sender: TObject);
+    procedure ZoomOutClick(Sender: TObject);
   private
     { private declarations }
     srcFreq, srcAmpl: TAxisSource;
+    t: double;
 
     procedure BeforeStart(Sender: tLogModule);
     procedure Start(Sender: tLogModule);
@@ -86,12 +93,13 @@ type
     { public declarations }
     Log: tLogModule;
 
+    ParToRead: array of shortint;
     LogTime, LogFreq, LogAmpl, OnePointPerStep: boolean;
 
     procedure EnableControls(Enable: boolean); override;
     procedure GetDeviceParams; override;
 
-    //function RecvSnap(p: array of shortint): PBuffer; //not really a snap since not guaranteed simult
+    function RecvSnap(p: array of shortint): PBuffer; //not really a snap since not guaranteed simult
   end;
 
 var
@@ -99,8 +107,9 @@ var
 
 implementation
 
-uses                                  //remove
-  DeviceF, MainF, ReadingsF, OptionF, tlntsend;
+uses
+  Dateutils, StrUtils, TAChartUtils, DeviceF, MainF, StepF, ReadingsF, OptionF,
+  {remove}tlntsend, ReadingThreads;
 
 {$R *.lfm}
 
@@ -158,8 +167,11 @@ procedure TTempControlForm.FormDestroy(Sender: TObject);
 begin
   Log.Stop;
   btClearClick(Self);
-  SerPort.Free;
-  TelNetClient.Free;
+
+  btnDisconnectClick(Self);
+
+  {SerPort.Free;
+  TelNetClient.Free;    }
   Log.Free;
   DoneCriticalSection(CommCS);
 end;
@@ -209,17 +221,15 @@ end;
 procedure TTempControlForm.pmChartPopup(Sender: TObject);
 var
   i: integer;
-  cb: tCombobox;
 begin
-  cb:= cbChartShow;
-
-  with cb do
+  with cbChartShow do
   begin
     if ItemIndex >= 0 then
     begin
       for i:= 0 to pmChart.Items.Count - 1 do
         pmChart.Items[i].Checked:= false;
-      pmChart.Items[ItemIndex + 4].Checked:= true;
+      if ItemIndex + 4 < pmChart.Items.Count then
+        pmChart.Items[ItemIndex + 4].Checked:= true;
     end;
   end;
 end;
@@ -244,13 +254,13 @@ begin
     i:= cbChartShow.ItemIndex;}
 
   Src:= Log.CoordinateSources[cbChartShow.ItemIndex];
-  try                          { TODO -cImprovement : Get rid of try and optimize in general }
+  //try
   if Src <> nil then
     AItem.Y:= Src.Values[Aindex]
   else ASource.PointsNumber:= 0;
-  except
+  {except
      on e:exception do writeprogramlog(e.message +' '+ strf(aindex)+' ' + strf(ASource.PointsNumber) +' '+ strf(src.count))
-  end;
+  end;}
 end;
 
 procedure TTempControlForm.UpdateTimerTimer(Sender: TObject);
@@ -258,14 +268,173 @@ begin
   Log.ProcessBuffers;
 end;
 
-procedure TTempControlForm.BeforeStart(Sender: tLogModule);
+procedure TTempControlForm.ZoomInClick(Sender: TObject);
+var
+  c: tChart;
+  Rect: tDoubleRect;
+  Center: tDoublePoint;
 begin
+  c:= tChart(pmChart.PopupComponent);
+  with c do
+  begin
+    Rect:= CurrentExtent;
 
+    Center.x:= (Rect.a.x + Rect.b.x) / 2;
+    Center.y:= (Rect.a.y + Rect.b.y) / 2;
+
+    Rect.a.x:= (Rect.a.x - Center.X) / ChartZoomFactor + Center.X;
+    Rect.b.x:= (Rect.b.x - Center.X) / ChartZoomFactor + Center.X;
+    Rect.a.y:= (Rect.a.y - Center.y) / ChartZoomFactor + Center.Y;
+    Rect.b.y:= (Rect.b.y - Center.y) / ChartZoomFactor + Center.Y;
+
+    LogicalExtent:= Rect;
+  end;
+end;
+
+procedure TTempControlForm.ZoomOutClick(Sender: TObject);
+var
+  c: tChart;
+  Rect: tDoubleRect;
+  Center: tDoublePoint;
+begin
+  c:= tChart(pmChart.PopupComponent);
+  with c do
+  begin
+    Rect:= CurrentExtent;
+
+    Center.x:= (Rect.a.x + Rect.b.x) / 2;
+    Center.y:= (Rect.a.y + Rect.b.y) / 2;
+
+    Rect.a.x:= (Rect.a.x - Center.X) * ChartZoomFactor + Center.X;
+    Rect.b.x:= (Rect.b.x - Center.X) * ChartZoomFactor + Center.X;
+    Rect.a.y:= (Rect.a.y - Center.y) * ChartZoomFactor + Center.Y;
+    Rect.b.y:= (Rect.b.y - Center.y) * ChartZoomFactor + Center.Y;
+
+    LogicalExtent:= Rect;
+  end;
+end;
+
+procedure TTempControlForm.RestoreScaleClick(Sender: TObject);
+begin
+  tChart(pmChart.PopupComponent).ZoomFull(true);
+end;
+
+procedure TTempControlForm.BeforeStart(Sender: tLogModule);
+var
+  i, j: integer;
+  //s: string;
+begin
+  with Sender do
+  begin
+    //btStartPauseLog.Caption:= 'Приостановить';  //to an event  onbeforestart
+    WriteProgramLog('Data collection start');
+    btClearClick(Self);
+
+    {if StepForm.Finished or not ReadingsForm.ParamsApplied then  //skip if stepf is already going
+    begin
+      Cursor:= crHourGlass;
+      ReadingsForm.btApplyClick(Self);
+      sleep(ReadingsForm.eDelay.Value);
+    end;
+    Cursor:= crDefault;
+
+    ReadingMode:= eReadMode(cbReadingsMode.ItemIndex);
+
+    case ReadingMode of
+      rSimultaneous:
+      begin }
+        LogTime:= true;
+
+        j:= 0;
+        with cgTransfer do
+        begin
+          for i:= 0 to Items.Count - 1 do
+            if Checked[i] then
+              inc(j);
+          setlength(ParToRead, j);
+          j:= 0;
+
+          for i:= 0 to Items.Count - 1 do
+          if Checked[i] then
+          begin
+            ParToRead[j]:= i;
+            inc(j);
+          end;
+        end;
+
+        setlength(CoordinateSources, cgTransfer.Items.Count);
+
+        for j:= 0 to high(ParToRead) do
+          CoordinateSources[ParToRead[j]]:= TAxisSource.Create(128);
+        {if CH1Index >= 0 then
+          srcCH1:= CoordinateSources[CH1Index];
+        if CH2Index >= 0 then
+          srcCH2:= CoordinateSources[CH2Index];
+      end;
+      rBuffer:
+      begin
+        LogTime:= true;  //???
+        if LogFreq then
+          cbUseGenFreq.Checked:= true;
+        cbUseGenFreqChange(Self);
+        setlength(CoordinateSources, 2);
+        CoordinateSources[0]:=  TAxisSource.Create(128);
+        CoordinateSources[1]:=  TAxisSource.Create(128);
+        srcCH1:= CoordinateSources[0];
+        srcCH2:= CoordinateSources[1];
+      end;
+    end;}
+
+    if LogTime then
+      srcTime:= TAxisSource.Create(128);
+    if LogFreq then
+      srcFreq:= TAxisSource.Create(128);
+    if LogAmpl then
+      srcAmpl:= TAxisSource.Create(128);
+
+    {if ReadingMode = rBuffer then
+    begin
+      EnterCriticalSection(CommCS);
+        AddCommand(dStartStorage);
+        PassCommands;
+      LeaveCriticalSection(CommCS);
+      cbChart1Show.ItemIndex:= cbChart1Show.Items.IndexOf(cbCH1.Text);
+      cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
+    end;
+
+    if SampleRate <> 0 then
+      TimeStep:= 1/SampleRate
+    else
+      TimeStep:= 1;}
+    if not OnePointPerStep then
+    begin
+      UpdateTimer.Interval:= eUpdateInterval.Value;
+      UpdateTimer.Enabled:= true;
+    end;
+
+    //t:= 0;
+  end;
+  {EnterCriticalSection(CommCS);  //dont even need it
+    AddCommand(tGetChannelNames);
+    PassCommands;
+    s:= RecvString;
+  LeaveCriticalSection(CommCS);}
 end;
 
 procedure TTempControlForm.Start(Sender: tLogModule);
 begin
-
+  with Sender do
+    {case ReadingMode of   //onstart
+      rBuffer:
+        ReadingsThread:= nil//tDetBufferThread.Create(PointsInBuffer);
+      rSimultaneous:
+      begin }
+        if OnePointPerStep then
+          ReadingsThread:= nil //Assigned in stepform
+        else
+          ReadingsThread:= tTempSimultaneousThread.Create;
+     { end;
+    end; }
 end;
 
 procedure TTempControlForm.Pause(Sender: tLogModule);
@@ -284,22 +453,177 @@ end;
 
 procedure TTempControlForm.Continue(Sender: tLogModule);
 begin
+  WriteProgramLog('Data collection resume');
 
+  UpdateTimer.Enabled:= true;
+
+  {if ReadingMode = rBuffer then
+  begin
+    EnterCriticalSection(CommCS);
+      AddCommand(dStartStorage);
+      PassCommands;
+    LeaveCriticalSection(CommCS);
+  end; }
+
+  with Sender do
+    {case ReadingMode of
+      rBuffer:
+        ReadingsThread:= tDetBufferThread.Create(PointsInBuffer);
+      rSimultaneous:
+      begin }
+        if OnePointPerStep then
+          ReadingsThread:= nil // Stepf
+        else
+          ReadingsThread:= tTempSimultaneousThread.Create;
+      {end;
+    end; }
 end;
 
 procedure TTempControlForm.Stop(Sender: tLogModule);
 begin
+  UpdateTimer.Enabled:= false;    //to event    OnStop
 
+  {if (ReadingMode = rBuffer) or (ForceStop and (Log.State = lInActive)) then
+  begin
+    EnterCriticalSection(CommCS);
+      AddCommand(dResetStorage);
+      PassCommands;
+    LeaveCriticalSection(CommCS);
+    ForceStop:= false;
+  end;   }
+
+  OnePointPerStep:= false;
+
+  {if Log.State <> lInActive then
+  begin
+    if Config.AutoExportParams then
+       MainForm.ExportParams(false, ReportHeader);
+    inc(ExperimentNumber);
+  end; }
 end;
 
 procedure TTempControlForm.CreateFile(Sender: tLogModule);
+var
+  s1, s2: string;
+  i: integer;
 begin
+  with Sender do
+  begin
+    if Config.AutoExportParams then
+    begin
+      if ReportNumber = 0 then
+      begin
+        inc(ReportNumber);
+        str(ReportNumber, s1);
+        while FileExists(FileName + '_' + s1 + '.txt') or
+              FileExists(FileName + '_' + s1 + '_1' + LogExtensions[integer(dTempController)]) do        //to cfg?
+        begin
+          inc(ReportNumber);
+          str(ReportNumber, s1);
+        end;
+      end;
 
+      //ReportHeader:= true;
+      str(ReportNumber, s1);
+      str(ExperimentNumber, s2);
+      FileName+= '_' + s1 + '_' + s2;
+    end
+    else
+    begin
+      str(ExperimentNumber, s1);
+      while FileExists(FileName + '_' + s1 + LogExtensions[integer(dTempController)]) do        //to cfg?
+      begin
+        inc(ExperimentNumber);
+        str(ExperimentNumber, s1);
+      end;
+
+      //ReportHeader:= false;
+      FileName+= '_' + s1;
+    end;
+    FileName+= LogExtensions[integer(dTempController)];
+
+    if LogTime then
+      Header:= Header + cbXAxis.Items.Strings[0] + HT;
+    if LogFreq then
+      Header:= Header + 'Частота (генератор)' + HT;
+    if LogAmpl then
+      Header:= Header + 'Амплитуда (генератор)' + HT;
+
+    {case ReadingMode of
+      rBuffer:
+        Header:= Header + cbCh1.Text + HT + cbCh2.Text;
+      rSimultaneous:
+      begin }
+        for i:= 0 to high(ParToRead) do
+          Header:= Header + cbChartShow.Items[ParToRead[i]] + HT;
+      {end;
+    end;}
+    Header:= Header + LineEnding;
+  end;
 end;
 
 function TTempControlForm.SaveLog(Sender: tLogModule): integer;
+var
+  i, j: integer;
+  s: string;
+  Sources: array of tAxisSource;
 begin
+  with Sender do
+  begin
+    if IsEmptyStr(FileName, [' ']) then
+      exit(-1);
 
+    if LogTime then
+    begin
+      setlength(Sources, length(Sources) + 1);
+      Sources[high(Sources)]:= SrcTime;
+    end;
+
+    if LogFreq then
+    begin
+      setlength(Sources, length(Sources) + 1);
+      Sources[high(Sources)]:= SrcFreq;
+    end;
+
+    if LogAmpl then
+    begin
+      setlength(Sources, length(Sources) + 1);
+      Sources[high(Sources)]:= SrcAmpl;
+    end;
+
+    {case ReadingMode of
+      rBuffer:
+      begin
+        setlength(Sources, length(Sources) + 2);
+        Sources[high(Sources) - 1]:= CoordinateSources[0];
+        Sources[high(Sources)]:= CoordinateSources[1];
+      end;
+      rSimultaneous:
+      begin }
+        j:= length(Sources);
+        setlength(Sources, length(Sources) + length(ParToRead));
+        for i:= 0 to length(ParToRead) - 1 do
+          Sources[j + i]:= CoordinateSources[ParToRead[i]];
+      {end;
+    end; }
+
+    Result:= length(Sources);
+
+    if assigned(ExperimentLog) then
+      for i:= 0 to ReadPoints - 1 do
+      begin
+        s:= '';
+        for j:= 0 to high(Sources) do
+          s+= strf(Sources[j].Values[i]) + HT;
+        s+= LineEnding;
+
+          ExperimentLog.Write(s[1], length(s))
+      end
+    else
+      exit(-2);
+
+    StatusBar.Panels[spStatus].Text:= 'Данные сохранены в ' + FileName;
+  end;
 end;
 
 procedure TTempControlForm.StateChange(Sender: tLogModule);
@@ -337,8 +661,137 @@ begin
 end;
 
 procedure TTempControlForm.ProcessBuffers(Sender: tLogModule);
+var
+  i, j, k, lk: longint;
+  l, c: longword;
+  v, f, a: double;
 begin
+  with Sender do
+  begin
+    if LogFreq then
+      f:= StepF.F;
+    if LogAmpl then
+      a:= StepF.A;
 
+    if DataList.Count > 0 then
+    {case ReadingMode of
+      rBuffer:
+      begin
+        for i:= 0 to (DataList.Count div 2) - 1 do
+        begin
+          l:= length(Buffer(DataList.Items[i * 2]^));
+          ProcessedPoints+= l;
+          c:= srcCh1.Count;
+          srcCH1.Add(Buffer(DataList.Items[i * 2]^));
+          srcCH2.Add(Buffer(DataList.Items[i * 2 + 1]^));
+
+          if LogFreq and UseGenFreq then
+          begin
+            srcFreq.Capacity:= srcFreq.Capacity + l;
+            srcFreq.Count:= srcFreq.Count + l;
+          end;
+
+          if LogAmpl then
+          begin
+            srcAmpl.Capacity:= srcAmpl.Capacity + l;
+            srcAmpl.Count:= srcAmpl.Count + l;
+          end;
+
+          if LogTime then
+          begin
+            srcTime.Capacity:= srcTime.Capacity + l;
+            srcTime.Count:= srcTime.Count + l;
+          end;
+
+          l:= c + l - 1;
+
+          for j:= c to l do
+          begin
+            if LogFreq and UseGenFreq then
+              srcFreq.Values[j]:= f;
+
+            if LogAmpl then
+              srcAmpl.Values[j]:= a;
+
+            srcTime.Values[j]:= t;
+            t+= TimeStep;
+          end;
+
+          dispose(PBuffer(DataList.Items[i * 2]));
+          dispose(PBuffer(DataList.Items[i * 2 + 1]));
+        end;
+          DataList.Clear;
+      end;
+
+      rSimultaneous:
+      begin }
+        for i:= 0 to (DataList.Count div 2) - 1 do
+        begin
+          lk:= -1;
+
+          if LogFreq then
+            srcFreq.Add(f);
+
+          if LogAmpl then
+            srcAmpl.Add(a);
+
+          t:= SecondSpan(TDateTime(DataList.Items[i * 2]^), 0);
+          dispose(PDateTime(DataList.Items[i * 2]));
+          if LogTime then
+            srcTime.Add(t);
+
+          for j:= 0 to high(Buffer(DataList.Items[i * 2 + 1]^)) do
+          begin
+            v:= Buffer(DataList.Items[i * 2 + 1]^)[j];
+
+            //WriteProgramLog('');
+            //WriteProgramLog('i ' + strf(i) + ' j ' + strf(j));
+            CoordinateSources[ParToRead[j]].Add(v);
+
+            {for k:= (lk + 1) to high(ReadPars) do
+            begin
+              //WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
+              if ReadPars[k] then
+              begin
+                //writeprogramlog('k' + strf(k));
+                CoordinateSources[k].Add(v);
+                lk:= k;
+                break;
+              end;
+            end;}
+          end;
+
+          dispose(PBuffer(DataList.Items[i * 2 + 1]));
+        end;
+        DataList.Clear;
+
+        if LogTime then
+          ProcessedPoints:= srcTime.Count
+        else
+        if LogFreq then
+          ProcessedPoints:= srcFreq.Count
+        else
+          ProcessedPoints:= srcAmpl.Count;
+      {end;
+    end;}
+
+    Source.PointsNumber:= ProcessedPoints;
+    //writeprogramlog('c ' + strf(srctime.count) + ' ' + strf(srctime.capacity));
+    //writeprogramlog('c ' + strf(srcref.count) + ' ' + strf(srcref.capacity));
+    //writeprogramlog('c ' + strf(srcdisp1.count) + ' ' + strf(srcdisp1.capacity));
+    //writeprogramlog('c ' + strf(srcdisp2.count) + ' ' + strf(srcdisp2.capacity));
+        //Log+= 'Processed' + LineEnding;
+        //ProgramLog.Write(Log[1], length(Log));
+      {  except
+       on E:Exception do
+       begin
+         WriteProgramLog(E.Message +'i' + strf(i) +'j' + strf(j)+'k' + strf(k)+'lk' + strf(lk)+'v' + strf(v));
+
+    end;
+        end;}
+        WriteProgramLog('pb done');
+    StatusBar.Panels[spStatus].Text:= 'Точек: ' + strf(ProcessedPoints);
+  end;
 end;
 
 procedure TTempControlForm.EnableControls(Enable: boolean);
@@ -419,9 +872,75 @@ begin
     btOffset.Hide;  }
 end;
 
-procedure TTempControlForm.btnConnectClick(Sender: TObject);
+function TTempControlForm.RecvSnap(p: array of shortint): PBuffer;
 var
-  i : word;
+  s: string;
+  i, j, k: integer;
+  v: double;
+begin
+  try
+    EnterCriticalSection(CommCS);
+      AddCommand(tReadSimultaneous, true);
+      PassCommands;
+      s:= RecvString;
+  finally
+    LeaveCriticalSection(CommCS);
+  end;
+
+  {if debug then
+  begin
+  s:= '25.25, 26.26, 30.30, Nan, 50.50';
+  sleep(60 + random(30));
+  end;    }
+
+  if s = '' then
+  begin
+    Result:= nil;
+    exit;
+  end;
+
+  new(Result);
+  setlength(Result^, Length(p));
+  i:= 0;
+  j:= 0;
+
+  k:= pos(CurrentDevice^.ParSeparator, s);
+  repeat
+    if i = p[j] then
+    begin
+      val(copy(s, 1, k - 1), v);
+      Result^[j]:= v;
+      inc(j);
+    end;
+    delete(s, 1, k);
+    k:= pos(CurrentDevice^.ParSeparator, s);
+    inc(i);
+  until (k = 0) or (j = length(p));
+  if j < length(p) then
+    val(s, Result^[j]);
+
+  {for i:= 0 to length(p) - 2 do
+  begin
+    k:= pos({CurrentDevice^.ParSeparator}',', s);
+    if i = p[j] then
+    begin
+      val(copy(s, 1, k - 1), v);
+      Result^[j]:= v;
+      inc(j);
+    end;
+    delete(s, 1, k);
+  end;
+  inc(i);
+  if i = p[j] then
+    val(s, Result^[j]); }
+  {writeprogramlog(result^[0]);
+  writeprogramlog(result^[1]);
+  writeprogramlog(result^[2]);
+  writeprogramlog(result^[3]);   }
+  //writeprogramlog(result^[4]);
+end;
+
+procedure TTempControlForm.btnConnectClick(Sender: TObject);
 begin
   if MainForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
   begin
@@ -460,7 +979,13 @@ end;
 
 procedure TTempControlForm.btClearClick(Sender: TObject);
 begin
+  Source.PointsNumber:= 0;
   Log.Clear;
+
+  freeandnil(srcFreq);
+  freeandnil(srcAmpl);
+
+  StatusBar.Panels[spStatus].Text:= '';
 end;
 
 procedure TTempControlForm.btStartPauseLogClick(Sender: TObject);
@@ -482,8 +1007,19 @@ begin
     if ItemIndex < 0 then
       ItemIndex:= CH1Index;
   end;
-  Source.PointsNumber:= ProcessedPoints;
-  Source.Reset;}
+  }
+  Source.PointsNumber:= Log.ProcessedPoints;
+  Source.Reset;
+end;
+
+procedure TTempControlForm.cbShowPointsChange(Sender: TObject);
+begin
+  ChartLineSeries.ShowPoints:= cbShowPoints.Checked;
+end;
+
+procedure TTempControlForm.cbUseGenFreqChange(Sender: TObject);
+begin
+  LogFreq:= cbUseGenFreq.Checked;
 end;
 
 procedure TTempControlForm.FormCloseQuery(Sender: TObject; var CanClose: boolean

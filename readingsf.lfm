@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 988
+  Left = 481
   Height = 600
-  Top = 188
+  Top = 168
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -65,7 +65,7 @@ object ReadingsForm: TReadingsForm
     Left = 660
     Height = 23
     Top = 204
-    Width = 130
+    Width = 136
     BorderSpacing.Top = 8
     Enabled = False
     ItemHeight = 15
@@ -180,6 +180,7 @@ object ReadingsForm: TReadingsForm
         Top = 308
         Width = 140
         Anchors = [akLeft, akBottom]
+        BorderSpacing.Left = 8
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (
@@ -209,7 +210,6 @@ object ReadingsForm: TReadingsForm
         Height = 15
         Top = 312
         Width = 92
-        BorderSpacing.Right = 8
         Caption = 'График 1 - Ось Y'
         ParentColor = False
       end
@@ -764,6 +764,7 @@ object ReadingsForm: TReadingsForm
       Top = 34
       Width = 104
       BorderSpacing.Top = 8
+      Increment = 50
       MaxValue = 90000
       ParentShowHint = False
       ShowHint = True
@@ -835,6 +836,7 @@ object ReadingsForm: TReadingsForm
       BorderSpacing.Left = 20
       BorderSpacing.Top = 3
       BorderSpacing.Right = 4
+      Increment = 50
       MaxValue = 10000
       ParentShowHint = False
       ShowHint = True

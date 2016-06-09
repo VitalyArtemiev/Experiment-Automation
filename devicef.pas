@@ -46,7 +46,7 @@ type
                  );
 
   eTempCommand = (
-    tError = integer(cTrigger) + 1, tPrint
+    tError = integer(cTrigger) + 1, tPrint, tGetChannelNames, tReadSimultaneous
                  );
 
   {type
@@ -394,6 +394,8 @@ begin
       1: FileName:= DefaultDet;
       2: FileName:= DefaultTemp;
     end;
+    InitialDir:= MainForm.FullCfgDir;
+    DefaultExt:= '.xml';
     Title:= 'Загрузить файл устройств';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
     if Execute then
@@ -449,7 +451,8 @@ begin
       1: FileName:= DefaultDet;
       2: FileName:= DefaultTemp;
     end;
-
+    InitialDir:= MainForm.FullCfgDir;
+    DefaultExt:= '.xml';
     Title:= 'Сохранить файл устройств как';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
     if Execute then
@@ -504,24 +507,24 @@ begin
 end;
 
 procedure tDeviceForm.FormCreate(Sender: TObject);
-begin                                                 //this is regulated by mainform.loadconfig
-  if FileExists(Config.DefaultGens) then
-    sgGenCommands.LoadFromFile(Config.DefaultGens)
-  else
-  if Config.DefaultGens <> DefaultGen then
-    ShowMessage('Не найден файл ' + Config.DefaultGens);
+begin                                                 //this is regulated by mainform.loadconfig   NOT ANYMORE THAT WAS STUPID
+  if Config.DefaultGens <> '' then
+    if FileExists(Config.DefaultGens) then
+      sgGenCommands.LoadFromFile(Config.DefaultGens)
+    else
+      ShowMessage('Не найден файл ' + Config.DefaultGens);
 
-  if FileExists(Config.DefaultDets) then
-    sgDetCommands.LoadFromFile(Config.DefaultDets)
-  else
-  if Config.DefaultDets <> DefaultDet then
-    ShowMessage('Не найден файл ' + Config.DefaultDets);
+  if Config.DefaultDets <> '' then
+    if FileExists(Config.DefaultDets) then
+      sgDetCommands.LoadFromFile(Config.DefaultDets)
+    else
+      ShowMessage('Не найден файл ' + Config.DefaultDets);
 
-  if FileExists(Config.DefaultTemps) then
-    sgTempCommands.LoadFromFile(Config.DefaultTemps)
-  else
-  if Config.DefaultTemps <> DefaultTemp then
-    ShowMessage('Не найден файл ' + Config.DefaultTemps);
+  if Config.DefaultTemps <> '' then
+    if FileExists(Config.DefaultTemps) then
+      sgTempCommands.LoadFromFile(Config.DefaultTemps)
+    else
+      ShowMessage('Не найден файл ' + Config.DefaultTemps);
 end;
 
 procedure tDeviceForm.FormShow(Sender: TObject);

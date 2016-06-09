@@ -126,7 +126,7 @@ object TempControlForm: TTempControlForm
       TabOrder = 0
     end
   end
-  object Chart1: TChart
+  object Chart: TChart
     AnchorSideLeft.Control = pnConnection
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
@@ -165,12 +165,12 @@ object TempControlForm: TTempControlForm
     )
     Toolset = ChartToolset
     Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Right = 44
+    BorderSpacing.Right = 38
     DoubleBuffered = True
     ParentShowHint = False
     PopupMenu = pmChart
     ShowHint = True
-    object Chart1LineSeries1: TLineSeries
+    object ChartLineSeries: TLineSeries
       LinePen.Color = clBlue
       Source = Source
     end
@@ -328,6 +328,7 @@ object TempControlForm: TTempControlForm
       BorderSpacing.Top = 1
       Caption = 'Показать точки'
       Color = clWhite
+      OnChange = cbShowPointsChange
       ParentColor = False
       TabOrder = 1
     end
@@ -479,19 +480,20 @@ object TempControlForm: TTempControlForm
     OnClick = btStatusClick
   end
   object cbChartShow: TComboBox
-    AnchorSideLeft.Control = Chart1
-    AnchorSideLeft.Side = asrCenter
-    AnchorSideTop.Control = Chart1
+    AnchorSideLeft.Control = Label11
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Chart
     AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Chart1
+    AnchorSideRight.Control = Chart
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = pnGraphControl
-    Left = 93
+    Left = 95
     Height = 23
     Hint = 'Что отображается на графике 1'
     Top = 419
     Width = 140
     Anchors = [akLeft, akBottom]
+    BorderSpacing.Left = 8
     BorderSpacing.Bottom = 8
     ItemHeight = 15
     ItemIndex = 0
@@ -516,7 +518,7 @@ object TempControlForm: TTempControlForm
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = btCustomCommand
     AnchorSideTop.Side = asrBottom
-    Left = 366
+    Left = 360
     Height = 15
     Top = 125
     Width = 78
@@ -528,10 +530,10 @@ object TempControlForm: TTempControlForm
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = Label13
     AnchorSideTop.Side = asrBottom
-    Left = 366
+    Left = 360
     Height = 23
     Top = 194
-    Width = 130
+    Width = 136
     BorderSpacing.Top = 4
     Enabled = False
     ItemHeight = 15
@@ -562,11 +564,11 @@ object TempControlForm: TTempControlForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 366
+    Left = 360
     Height = 23
     Hint = 'Использовать команду TRCL (быстрее, внутренний'#13#10'буфер, снимаются параметры только с Ch1 и Ch2),'#13#10'либо команду SNAP (снятие от 2 до 6 параметров в'#13#10'один момент времени)'
     Top = 144
-    Width = 130
+    Width = 136
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 4
     BorderSpacing.Right = 4
@@ -585,7 +587,7 @@ object TempControlForm: TTempControlForm
     AnchorSideLeft.Control = Label1
     AnchorSideTop.Control = cbReadingsMode
     AnchorSideTop.Side = asrBottom
-    Left = 366
+    Left = 360
     Height = 15
     Top = 175
     Width = 87
@@ -599,12 +601,12 @@ object TempControlForm: TTempControlForm
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideRight.Side = asrBottom
-    AnchorSideBottom.Control = Chart1
+    AnchorSideBottom.Control = Chart
     AnchorSideBottom.Side = asrBottom
-    Left = 366
+    Left = 360
     Height = 179
     Top = 240
-    Width = 130
+    Width = 136
     HorzScrollBar.Increment = 10
     HorzScrollBar.Page = 106
     HorzScrollBar.Smooth = True
@@ -616,7 +618,7 @@ object TempControlForm: TTempControlForm
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderStyle = bsNone
     ClientHeight = 179
-    ClientWidth = 130
+    ClientWidth = 136
     TabOrder = 8
     object cgTransfer: TCheckGroup
       AnchorSideLeft.Control = sbParamScroll
@@ -669,16 +671,28 @@ object TempControlForm: TTempControlForm
     AnchorSideLeft.Control = cbReadingsMode
     AnchorSideTop.Control = cbSampleRate
     AnchorSideTop.Side = asrBottom
-    Left = 366
+    Left = 360
     Height = 19
     Hint = 'Брать значение частоты входного сигнала с генератора'#13#10'(не всегда совпадает со значением на входе детектора)'
     Top = 221
     Width = 120
     BorderSpacing.Top = 4
     Caption = 'Частота с генерат.'
+    OnChange = cbUseGenFreqChange
     ParentShowHint = False
     ShowHint = True
     TabOrder = 9
+  end
+  object Label11: TLabel
+    AnchorSideLeft.Control = Chart
+    AnchorSideTop.Control = Chart
+    AnchorSideTop.Side = asrBottom
+    Left = 4
+    Height = 15
+    Top = 419
+    Width = 83
+    Caption = 'График - Ось Y'
+    ParentColor = False
   end
   object UpdateTimer: TTimer
     Enabled = False
@@ -698,12 +712,15 @@ object TempControlForm: TTempControlForm
     top = 64
     object ZoomIn: TMenuItem
       Caption = 'Увеличить'
+      OnClick = ZoomInClick
     end
     object ZoomOut: TMenuItem
       Caption = 'Уменьшить'
+      OnClick = ZoomOutClick
     end
     object RestoreScale: TMenuItem
       Caption = 'Сбросить масштаб'
+      OnClick = RestoreScaleClick
     end
     object Divider: TMenuItem
       Caption = '-'

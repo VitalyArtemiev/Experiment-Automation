@@ -29,7 +29,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Forms, menuh, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
   serconf, AxisSource, AboutF, DeviceF, dialogs, lazcontrols, ReadingThreads,
-  OffsetF, DevSession, TempControlF, LogModule;
+  OffsetF, DevSession, TempControlF, LogModule{, FileM};
 
 {$R *.res}
 

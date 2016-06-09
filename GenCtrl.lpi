@@ -19,7 +19,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="12"/>
       <Language Value="0419"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>
@@ -35,7 +35,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="synapse\source\lib;pas-libusb-libusb-1.0\src"/>
+            <OtherUnitFiles Value="pas-libusb-libusb-1.0\src;synapse\source\lib"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -73,7 +73,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
+            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -128,7 +128,7 @@
         <PackageName Value="LCL"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="24">
+    <Units Count="20">
       <Unit0>
         <Filename Value="GenCtrl.pas"/>
         <IsPartOfProject Value="True"/>
@@ -190,89 +190,71 @@
         <UnitName Value="StatusF"/>
       </Unit7>
       <Unit8>
-        <Filename Value="genconst.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="GenConst"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="detconst.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="DetConst"/>
-      </Unit9>
-      <Unit10>
         <Filename Value="serconf.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit10>
-      <Unit11>
+      </Unit8>
+      <Unit9>
         <Filename Value="axissource.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="AxisSource"/>
-      </Unit11>
-      <Unit12>
+      </Unit9>
+      <Unit10>
         <Filename Value="aboutf.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="AboutForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="AboutF"/>
-      </Unit12>
-      <Unit13>
+      </Unit10>
+      <Unit11>
         <Filename Value="devicef.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="DeviceForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="DeviceF"/>
-      </Unit13>
-      <Unit14>
-        <Filename Value="synapse\source\lib\dnssend.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit14>
-      <Unit15>
+      </Unit11>
+      <Unit12>
         <Filename Value="deviceparf.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="Form1"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit15>
-      <Unit16>
-        <Filename Value="ReadingThreads.inc"/>
-        <IsPartOfProject Value="True"/>
-      </Unit16>
-      <Unit17>
+      </Unit12>
+      <Unit13>
         <Filename Value="ReadingThreads.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit17>
-      <Unit18>
+      </Unit13>
+      <Unit14>
         <Filename Value="offsetf.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="OffsetForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="OffsetF"/>
-      </Unit18>
-      <Unit19>
+      </Unit14>
+      <Unit15>
         <Filename Value="DevSession.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit19>
-      <Unit20>
-        <Filename Value="visapreload.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit20>
-      <Unit21>
+      </Unit15>
+      <Unit16>
         <Filename Value="menuh.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit21>
-      <Unit22>
+      </Unit16>
+      <Unit17>
         <Filename Value="TempControlF.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="TempControlForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-      </Unit22>
-      <Unit23>
+      </Unit17>
+      <Unit18>
         <Filename Value="LogModule.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit23>
+      </Unit18>
+      <Unit19>
+        <Filename Value="FileM.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit19>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -283,7 +265,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
+      <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

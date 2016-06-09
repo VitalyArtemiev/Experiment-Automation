@@ -43,25 +43,58 @@ type
    constructor Create;
  end;
 
+ { tTempOnePerStepThread }
+
+ tTempOnePerStepThread = class(tThread)
+   DataList: TList;
+   procedure Execute; override;
+   constructor Create;
+ end;
+
 implementation
 
 uses math, DeviceF, ReadingsF, TempControlF;
+
+{ tTempOnePerStepThread }
+
+procedure tTempOnePerStepThread.Execute;
+var
+  pd: PBuffer;
+  pt: PDateTime;
+begin
+  with TempControlForm do
+  begin
+    pd:= RecvSnap(ParToRead);
+    writeprogramlog(pd^[0]);
+    if pd <> nil then
+    begin
+      new(pt);
+      pt^:= Log.ElapsedTime;
+      DataList:= Log.ThreadList.LockList;
+        DataList.Add(pt);
+        DataList.Add(pd);
+      Log.ThreadList.UnlockList;
+      inc(Log.ReadPoints);
+    end;
+  end;
+end;
+
+constructor tTempOnePerStepThread.Create;
+begin
+  inherited Create(false);
+  FreeOnTerminate:= false;
+end;
 
 { tTempSimultaneousThread }
 
 procedure tTempSimultaneousThread.Execute;
 var
   pd: PBuffer;
-  pt: ^TDateTime;
+  pt: PDateTime;
 begin
   with TempControlForm do
   repeat
-    try
-      //pd:= RecvSnap(ParToRead);
-
-    except on E:Exception do
-      writeprogramlog(E.Message);
-    end;
+    pd:= RecvSnap(ParToRead);
 
     if pd <> nil then
     begin
@@ -93,18 +126,13 @@ end;
 procedure tDetOnePerStepThread.Execute;
 var
   pd: PBuffer;
-  pt: ^TDateTime;
+  pt: PDateTime;
 begin
   with ReadingsForm do
   begin
-    try
-      pd:= RecvSnap(ParToRead);
+    pd:= RecvSnap(ParToRead);
 
-    except on E:Exception do
-      writeprogramlog(E.Message);
-    end;
-
-     if pd <> nil then
+    if pd <> nil then
     begin
       new(pt);
       pt^:= Log.ElapsedTime;

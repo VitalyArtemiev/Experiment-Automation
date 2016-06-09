@@ -83,12 +83,12 @@ object MainForm: TMainForm
     Height = 192
     Top = 324
     Width = 410
-    ActivePage = tsSweep
+    ActivePage = tsStep
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 16
     BorderSpacing.Right = 4
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 2
     OnChange = FrequencyTabChange
     object tsConstantFrequency: TTabSheet
@@ -680,7 +680,7 @@ object MainForm: TMainForm
         Caption = 'В'
         ParentColor = False
       end
-      object cbPointPerStep: TCheckBox
+      object cbPointPerStepDet: TCheckBox
         AnchorSideLeft.Control = Label19
         AnchorSideTop.Control = TotalTime
         AnchorSideTop.Side = asrBottom
@@ -689,13 +689,32 @@ object MainForm: TMainForm
         Left = 0
         Height = 19
         Top = 140
-        Width = 193
+        Width = 172
         Alignment = taLeftJustify
         BorderSpacing.Top = 16
-        Caption = 'Снимать только 1 точку на шаг'
+        Caption = '1 точка на шаг:      Детектор'
         Enabled = False
-        OnChange = cbPointPerStepChange
+        OnChange = cbPointPerStepDetChange
         TabOrder = 7
+      end
+      object cbPointPerStepTemp: TCheckBox
+        AnchorSideLeft.Control = cbPointPerStepDet
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = TotalTime
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = Label22
+        AnchorSideRight.Side = asrBottom
+        Left = 196
+        Height = 19
+        Top = 140
+        Width = 121
+        Alignment = taLeftJustify
+        BorderSpacing.Left = 24
+        BorderSpacing.Top = 16
+        Caption = 'Темп. контроллер'
+        Enabled = False
+        OnChange = cbPointPerStepDetChange
+        TabOrder = 8
       end
     end
   end

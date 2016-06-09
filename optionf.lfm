@@ -1,7 +1,7 @@
 object OptionForm: TOptionForm
-  Left = 583
+  Left = 805
   Height = 364
-  Top = 329
+  Top = 265
   Width = 350
   BorderStyle = bsToolWindow
   Caption = 'Настройки'
@@ -127,7 +127,7 @@ object OptionForm: TOptionForm
           AnchorSideRight.Side = asrBottom
           Left = 289
           Height = 34
-          Hint = 'Выбрать файл параметров по умолчанию'
+          Hint = 'Выбрать файл параметров по умолчанию;'#13#10'Все файлы конфигурации будут сохраняться'#13#10'в ту же папку'
           Top = 4
           Width = 43
           Anchors = [akTop, akRight]
@@ -220,10 +220,10 @@ object OptionForm: TOptionForm
         Height = 263
         Top = 37
         Width = 342
-        ActivePage = DetTab
+        ActivePage = TempTab
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 8
-        TabIndex = 1
+        TabIndex = 2
         TabOrder = 0
         object GenTab: TTabSheet
           AnchorSideTop.Side = asrBottom

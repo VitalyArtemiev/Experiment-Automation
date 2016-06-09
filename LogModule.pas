@@ -42,40 +42,47 @@ type
     procedure SetState(AValue: eLogState);
   public
     ExperimentLog: TFileStream;
+    //Data arrays
     CoordinateSources: array of TAxisSource;
-    srcTime: tAxisSource;
+    srcTime: tAxisSource;                                                       //not necessarily time, maybe # of point
+    //Points read by the working thread, points passed to data arrays
     ReadPoints, ProcessedPoints: longword;
-
-    Filename, Filepath: string;
+    //Set FilePath in OnCreateFile
+    Filename, FilePath: string;
+    //Assign the working thread to this
     ReadingsThread: TThread;
+    //Pass data through this
     ThreadList: TThreadList;
     DataList: TList;
+
+    function FullLogDir: string; inline;
+
     constructor Create;
     destructor Destroy; override;
-
+    //Methods you should call
     function CreateFile: integer;
     function SaveFile: integer;
-    procedure Toggle;
+    procedure Toggle;                                                           //convenient for start/pause buttons
     procedure Start;
     procedure Stop;
     procedure Pause;
     procedure Continue;
     procedure ProcessBuffers;
     procedure Clear;
-
-    property Header: string read GetAndResetHeader write fHeader;
-    property Stub: string read fStub write fStub;
-    property TimeFormat: string read fTimeFormat write SetTimeFormat;
-
-    property OnBeforeStart: TLogEvent read FOnBeforeStart write FOnBeforeStart;
-    property OnStart: TLogEvent read FOnStart write FOnStart;
+    //Set this in OnCreateFile, as well as FilePath
+    property TimeFormat: string read fTimeFormat write SetTimeFormat;           //this is always included into file name
+    property Stub: string read fStub write fStub;                               //this is added to file name
+    property Header: string read GetAndResetHeader write fHeader;               //this is written at the top of output file, it is reset every log automatically
+    //Events you should assign
+    property OnBeforeStart: TLogEvent read FOnBeforeStart write FOnBeforeStart; //apply settings, init data arrays
+    property OnStart: TLogEvent read FOnStart write FOnStart;                   //start threads
     property OnPause: TLogEvent read FOnPause write FOnPause;
     property OnContinue: TLogEvent read FOnContinue write FOnContinue;
     property OnStop: TLogEvent read FOnStop write FOnStop;
-    property OnCreateFile: TLogEvent read fOnCreateFile write fOnCreateFile;
+    property OnCreateFile: TLogEvent read fOnCreateFile write fOnCreateFile;    //here you can modify path, timeformat, stub, extension and header
     property OnSaveLog: TLogEventEC read fOnSaveLog write fOnSaveLog;
-    property OnStateChange: TLogEvent read FOnStateChange write FOnStateChange;   //to manage interface
-    property OnProcessBuffers: TLogEvent read FOnProcessBuffers write FOnProcessBuffers;
+    property OnStateChange: TLogEvent read FOnStateChange write FOnStateChange; //to manage interface
+    property OnProcessBuffers: TLogEvent read FOnProcessBuffers write FOnProcessBuffers;//receive data from threads and pass to data arrays
     property State: eLogState read FState write SetState;
     property ElapsedTime: TDateTime read GetTime;
   end;
@@ -86,6 +93,7 @@ uses
   SerConF;
 
 const
+  DefaultLogFolder = 'Data';
   DefaultLogExtension = '.log';
   DefaultTimeFormat = 'yyyy_mm_dd';
 
@@ -123,11 +131,20 @@ begin
     onStateChange(Self);
 end;
 
+function tLogModule.FullLogDir: string;
+begin
+  if FilePath <> '' then
+    Result:= GetCurrentDir + '\' + FilePath + '\'
+  else
+    Result:= GetCurrentDir + '\';
+end;
+
 constructor tLogModule.Create;
 begin
   State:= lInActive;
   Threadlist:= TThreadList.Create;
   TimeFormat:= DefaultTimeFormat;
+  FilePath:= DefaultLogFolder;
 end;
 
 destructor tLogModule.Destroy;
@@ -155,8 +172,13 @@ begin
 
   if pos('.', Filename) = 0 then
     FileName+= DefaultLogExtension;
-  //directoryexists
-  FileName:= FilePath + FileName;
+
+  if not DirectoryExists(FullLogDir) then
+    if not CreateDir(FullLogDir) then
+      FilePath:= '';
+
+  if FilePath <> '' then
+    FileName:= FilePath + '\' + FileName;
 
   try
     ExperimentLog:= TFileStream.Create(FileName, fmCreate)

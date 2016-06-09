@@ -12,6 +12,7 @@ object StepForm: TStepForm
   Constraints.MinWidth = 304
   FormStyle = fsStayOnTop
   OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
   OnHide = FormHide
   OnShow = FormShow
   Position = poOwnerFormCenter

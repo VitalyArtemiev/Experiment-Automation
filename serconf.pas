@@ -26,7 +26,7 @@ type
   pSSA = ^tSSA;
 
   rConfig = record
-    DefaultParams, WorkConfig, DefaultGens, DefaultDets, DefaultTemps: shortstring;
+    CfgFolder, WorkConfig, ParamFile, DefaultGens, DefaultDets, DefaultTemps: shortstring;
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
     AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
@@ -39,7 +39,7 @@ type
     Impedance, CurrFunc, AmplUnit, SweepType, SweepDir, Modulation, SampleRate, TimeConstant,
       Sensitivity, CloseReserve, WideReserve, InputRange,
       XAxis, ReadingsMode, Display1, Display2, Ratio1, Ratio2, Show1, Show2: shortint;
-    ACOn, AutoSweep, GenFreq, OnePoint: boolean;
+    ACOn, AutoSweep, GenFreq: boolean;
     TransferPars: array [0..19] of boolean;
     UpdateInterval, ReadingTime, TimeStep, Delay: longint;
     GeneratorPort, DetectorPort, LastGenerator, LastDetector: shortstring;
@@ -145,9 +145,9 @@ type
     function RestoreState(FileName: string):integer;
   end;
 
-  procedure WriteProgramLog(Log: string);
-  procedure WriteProgramLog(i: longint);
-  procedure WriteProgramLog(d: double);
+  procedure WriteProgramLog(Log: string; Force: boolean = false);
+  procedure WriteProgramLog(i: longint; Force: boolean = false);
+  procedure WriteProgramLog(d: double; Force: boolean = false);
 
   function strf(x: double): string;
   function strf(x: longint): string;
@@ -167,6 +167,9 @@ const
   StartCaption = 'Начать снятие';
   PauseCaption = 'Приостановить';
   ContinueCaption = 'Продолжить';
+
+  LogExtensions: array[0..2] of string = ('.genlog', '.detlog', '.templog');
+  ChartZoomFactor = 2;
 
 var
   ProgramLog: TFileStream;
@@ -230,9 +233,9 @@ begin
   end;
 end; }
 
-procedure WriteProgramLog(Log: string); inline;
+procedure WriteProgramLog(Log: string; Force: boolean = false); inline;
 begin
-  if Config.KeepLog then
+  if Config.KeepLog or Force then
   try
     EnterCriticalSection(LogCS);
       Log+= LineEnding;
@@ -242,14 +245,14 @@ begin
   end;
 end;
 
-procedure WriteProgramLog(i: longint); inline;
+procedure WriteProgramLog(i: longint; Force: boolean = false); inline;
 begin
-  WriteProgramLog(strf(i));
+  WriteProgramLog(strf(i), Force);
 end;
 
-procedure WriteProgramLog(d: double); inline;
+procedure WriteProgramLog(d: double; Force: boolean = false); inline;
 begin
-  WriteProgramLog(strf(d));
+  WriteProgramLog(strf(d), Force);
 end;
 
 procedure tSerConnectForm.btnConnectClick(Sender: TObject);
@@ -272,11 +275,17 @@ begin
     StatusBar.Panels[spStatus].Text:= '';
   end;
 
-  if Result = 0 then
+  if (Result = 0) or debug then
   begin
+   // if debug then deviceindex:= 1;
     GetDeviceParams;
     Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
-    RestoreState(Config.DefaultParams);
+    try
+      RestoreState(MainForm.FullCfgDir + Config.ParamFile);
+    except
+      on E: Exception do
+        ShowMessage(E.Message);
+    end;
     cbPortSelect.ItemIndex:= Crutch;
   end
   else
@@ -349,7 +358,7 @@ end;
 
 procedure tSerConnectForm.SetTOE(AValue: longword);
 begin
-  StatusBar.Panels[spTimeouts].Text:= 'Таймаутов:' + strf(AValue);
+  StatusBar.Panels[spTimeouts].Text:= 'Таймаутов: ' + strf(AValue);
   WriteProgramLog('Timeout receiving string');
   fTimeOuts:= AValue;
 end;
@@ -1090,19 +1099,21 @@ end;
 
 function tSerConnectForm.RecvString: string;
 begin
+  try
   case ConnectionKind of
     //cNone: ;
     cSerial:
       begin
         if (serport.instanceactive) and (serport.CTS) then
         begin
-          SerPort.RaiseExcept:= false;
+          SerPort.RaiseExcept:= false;  { TODO 1 -cImprovement : best to replace all of theese with try except, also add to telnet }
           Result:= SerPort.RecvString(CurrentDevice^.Timeout);
           SerPort.RaiseExcept:= true;
 
           writeprogramlog('Получена строка ' + Result);
 
-          if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+          if SerPort.LastError = ErrTimeOut then
+            TimeOutErrors:= TimeOutErrors + 1;
         end;
       end;
     cTelNet:
@@ -1117,9 +1128,15 @@ begin
 
       end
   end
+  except
+    on E: Exception do
+      writeprogramlog('recvstr ' + e.message);
+  end;
 end;
 
 function tSerConnectForm.RecvString(TimeOut: longword): string;
+var
+  t: longword;
 begin
   case ConnectionKind of
     //cNone: ;
@@ -1133,12 +1150,16 @@ begin
 
           writeprogramlog('Получена строка ' + Result);
 
-          if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+          if SerPort.LastError = ErrTimeOut then
+            TimeOutErrors:= TimeOutErrors + 1;
         end;
       end;
     cTelNet:
       begin;
+        t:= TelNetClient.Timeout;
+        TelNetClient.Timeout:= TimeOut;;
         Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+        TelNetClient.Timeout:= t;
 
         writeprogramlog('Получена строка ' + Result);
       end
@@ -1245,6 +1266,8 @@ begin
         ItemIndex:= v
       else
         Result:= -2;
+      if ItemIndex < 0 then
+        ItemIndex:= 0;
     end
     else
     if Components[i] is TSpinEdit then

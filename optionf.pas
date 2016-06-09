@@ -84,8 +84,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
-    Save: boolean;
     { private declarations }
+    Save: boolean;
+    NewParamFile, NewParamDir: string;
   public
     procedure GetOptions;
     procedure ReloadDeviceList;
@@ -95,11 +96,11 @@ type
 
 var
   OptionForm: TOptionForm;
-  NewDefaultParams: ansistring;
+  //NewDefaultParams: ansistring;
 
 implementation
 
-uses SynaIP, MainF, ReadingsF, TempControlF, SerConF, DeviceF;
+uses StrUtils, SynaIP, MainF, ReadingsF, TempControlF, SerConF, DeviceF;
 
 {$R *.lfm}
 
@@ -231,12 +232,20 @@ end;
 
 procedure TOptionForm.btConfDirClick(Sender: TObject);
 begin
-  MainForm.OpenDialog.FileName:= Config.DefaultParams;
-  MainForm.OpenDialog.Title:= 'Выбор файла конфигурации';
-  MainForm.OpenDialog.Filter:= 'Все файлы|*.*|Файлы конфигурации|*.cfg';
-  MainForm.OpenDialog.Execute;
-  NewDefaultParams:= UTF8toANSI(MainForm.OpenDialog.FileName);
-  MainForm.OpenDialog.FileName:= '';
+  with MainForm.OpenDialog do
+  begin
+    InitialDir:= MainForm.FullCfgDir;
+    DefaultExt:= '.prm';
+    FileName:= Config.ParamFile;
+    Title:= 'Выбор файла конфигурации';
+    Filter:= 'Все файлы|*.*|Файлы конфигурации|*.prm';
+    if Execute then
+      begin
+        NewParamFile:= ExtractFileName(FileName);
+        NewParamDir:= ExtractFileDir(FileName);
+      end;
+    FileName:= '';
+  end;
 end;
 
 procedure TOptionForm.btDefaultsClick(Sender: TObject);
@@ -279,6 +288,8 @@ end;
 
 procedure TOptionForm.FormCreate(Sender: TObject);
 begin
+  NewParamDir:= Config.CfgFolder;
+  NewParamFile:= Config.ParamFile;
   if MainForm.FileResult <> 0 then
     SaveOptions;
 end;
@@ -304,7 +315,8 @@ begin
       cgReadings.Checked[2]:= AutoReadingStep;
       eReadingTime.Value:= ReadingTime;
 
-      NewDefaultParams:= DefaultParams;
+      NewParamFile:= ParamFile;
+      NewParamDir:= CfgFolder;
     end;
 
   ReloadDeviceList;
@@ -313,48 +325,63 @@ begin
   begin
     if CurrentDevice^.Model <> '' then
       ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
-    if ItemIndex < 0 then ItemIndex:= 0;
+    if ItemIndex < 0 then
+      ItemIndex:= 0;
 
     eBaudRate.Value:= BaudRate;
     cbParity.ItemIndex:= Parity;
-    if not (SoftFlow or HardFlow) then cbHandShake.ItemIndex:= 0
+    if not (SoftFlow or HardFlow) then
+      cbHandShake.ItemIndex:= 0
     else
-    if SoftFlow and HardFlow then cbHandShake.ItemIndex:= 3
+    if SoftFlow and HardFlow then
+      cbHandShake.ItemIndex:= 3
     else
-    if SoftFlow then cbHandShake.ItemIndex:= 1
-    else cbHandShake.ItemIndex:= 2;
+    if SoftFlow then
+      cbHandShake.ItemIndex:= 1
+    else
+      cbHandShake.ItemIndex:= 2;
   end;
 
   with ReadingsForm, ReadingsForm.CurrentDevice^, eDevice1 do
   begin
     if CurrentDevice^.Model <> '' then
       ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
-    if ItemIndex < 0 then ItemIndex:= 0;
+    if ItemIndex < 0 then
+      ItemIndex:= 0;
 
     eBaudRate1.Value:= BaudRate;
     cbParity1.ItemIndex:= Parity;
-    if not (SoftFlow or HardFlow) then cbHandShake1.ItemIndex:= 0
+    if not (SoftFlow or HardFlow) then
+      cbHandShake1.ItemIndex:= 0
     else
-    if SoftFlow and HardFlow then cbHandShake1.ItemIndex:= 3
+    if SoftFlow and HardFlow then
+      cbHandShake1.ItemIndex:= 3
     else
-    if SoftFlow then cbHandShake1.ItemIndex:= 1
-    else cbHandShake1.ItemIndex:= 2;
+    if SoftFlow then
+      cbHandShake1.ItemIndex:= 1
+    else
+      cbHandShake1.ItemIndex:= 2;
   end;
 
   with TempControlForm, TempControlForm.CurrentDevice^, eDevice2 do
   begin
     if CurrentDevice^.Model <> '' then
       ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
-    if ItemIndex < 0 then ItemIndex:= 0;
+    if ItemIndex < 0 then
+      ItemIndex:= 0;
 
     eBaudRate2.Value:= BaudRate;
     cbParity2.ItemIndex:= Parity;
-    if not (SoftFlow or HardFlow) then cbHandShake2.ItemIndex:= 0
+    if not (SoftFlow or HardFlow) then
+      cbHandShake2.ItemIndex:= 0
     else
-    if SoftFlow and HardFlow then cbHandShake2.ItemIndex:= 3
+    if SoftFlow and HardFlow then
+      cbHandShake2.ItemIndex:= 3
     else
-    if SoftFlow then cbHandShake2.ItemIndex:= 1
-    else cbHandShake2.ItemIndex:= 2;
+    if SoftFlow then
+      cbHandShake2.ItemIndex:= 1
+    else
+      cbHandShake2.ItemIndex:= 2;
   end;
 
   eDeviceChange(Self);
@@ -413,7 +440,11 @@ begin
     AutoReadingStep:=  cgReadings.Checked[2];
     ReadingTime:=      eReadingTime.Value;
 
-    DefaultParams:= NewDefaultParams;
+    ParamFile:= NewParamFile;
+    s:= NewParamDir;
+    while pos('\', s) <> 0 do  { TODO 1 -cBug : this is wrong bc not necessarily 1 level down }
+      Copy2SymbDel(s, '\');
+    CfgFolder:= s;
     OnConnect:= ConnectAction(rgOnConnect.ItemIndex);
   end;
 

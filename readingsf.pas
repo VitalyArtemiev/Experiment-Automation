@@ -172,11 +172,8 @@ var
 
 implementation
 
-uses
-  Dateutils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, OffsetF;
-
-const
-  ChartZoomFactor = 2;
+uses                                                                    //remove
+  DateUtils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, OffsetF, synaser;
 
 procedure tReadingsForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -204,13 +201,9 @@ begin
     i:= cbChart1Show.ItemIndex;
 
   Src:= Log.CoordinateSources[i];
-  try                          { TODO -cImprovement : Get rid of try and optimize in general }
   if Src <> nil then
     AItem.Y:= Src.Values[Aindex]
   else Source1.PointsNumber:= 0;
-  except
-     on e:exception do writeprogramlog(e.message +' '+ strf(aindex)+' ' + strf(Source2.PointsNumber) +' '+ strf(src.count))
-  end;
 end;
 
 procedure tReadingsForm.Source2GetChartDataItem(
@@ -239,13 +232,9 @@ begin
     i:= cbChart2Show.ItemIndex;
 
   Src:= Log.CoordinateSources[i];
-  try
   if Src <> nil then
     AItem.Y:= Src.Values[Aindex]
   else Source2.PointsNumber:= 0;
-  except
-     on e:exception do writeprogramlog(e.message +' '+ strf(aindex)+' ' + strf(Source2.PointsNumber) +' '+ strf(src.count))
-  end;
 end;
 
 procedure tReadingsForm.FormCreate(Sender: TObject);
@@ -301,8 +290,10 @@ procedure tReadingsForm.FormDestroy(Sender: TObject);
 begin
   Log.Stop;
   btClearClick(Self); //log stops here
-  SerPort.Free;
-  TelNetClient.Free;
+  btnDisconnectClick(Self);
+
+  {SerPort.Free;
+  TelNetClient.Free; }
   Log.Free;
 
   DoneCriticalSection(CommCS);
@@ -340,14 +331,10 @@ begin
     begin
       for i:= 0 to pmChart.Items.Count - 1 do
         pmChart.Items[i].Checked:= false;
-      pmChart.Items[ItemIndex + 4].Checked:= true;
+      if ItemIndex + 4 < pmChart.Items.Count then
+        pmChart.Items[ItemIndex + 4].Checked:= true;
     end;
   end;
-end;
-
-procedure tReadingsForm.RestoreScaleClick(Sender: TObject);
-begin
-  tChart(pmChart.PopupComponent).ZoomFull(true);
 end;
 
 procedure tReadingsForm.EnableControls(Enable: boolean);    //+++
@@ -465,7 +452,7 @@ begin
   else
     btOffset.Hide;
 
-  RestoreState(Config.DefaultParams);
+  RestoreState(Config.ParamFile);
 
   if cbRatio1.ItemIndex < 0 then
   begin
@@ -587,6 +574,11 @@ begin
   end;
 end;
 
+procedure tReadingsForm.RestoreScaleClick(Sender: TObject);
+begin
+  tChart(pmChart.PopupComponent).ZoomFull(true);
+end;
+
 procedure tReadingsForm.BeforeStart(Sender: tLogModule);
 var
   i, j: integer;
@@ -597,7 +589,7 @@ begin
     WriteProgramLog('Data collection start');
     btClearClick(Self);
 
-    if Finished or not ReadingsForm.ParamsApplied then  //skip if stepf is already going
+    if StepForm.Finished or not ReadingsForm.ParamsApplied then  //skip if stepf is already going
     begin
       Cursor:= crHourGlass;
       ReadingsForm.btApplyClick(Self);
@@ -642,11 +634,9 @@ begin
           for i:= 0 to high(ReadPars) do
           begin
             ReadPars[i]:= false;
-            Params.TransferPars[i]:= false;
             if Checked[i] then
             begin
               ReadPars[i]:= true;
-              Params.TransferPars[i]:= true;
               ParToRead[j]:= i;
               inc(j);
             end;
@@ -704,8 +694,12 @@ begin
       TimeStep:= 1/SampleRate
     else
       TimeStep:= 1;
-    UpdateTimer.Interval:= eUpdateInterval.Value;
-    UpdateTimer.Enabled:= true;
+
+    if not OnePointPerStep then
+    begin
+      UpdateTimer.Interval:= eUpdateInterval.Value;
+      UpdateTimer.Enabled:= true;
+    end;
 
     t:= 0;
   end;
@@ -810,8 +804,8 @@ begin
       begin
         inc(ReportNumber);
         str(ReportNumber, s1);
-        while FileExists(FileName + '_' + s1 + '.txt') or
-              FileExists(FileName + '_' + s1 + '_1' + '.log') do        //to cfg?
+        while FileExists(FilePath + '\' + FileName + '_' + s1 + '.txt') or
+              FileExists(FilePath + '\' + FileName + '_' + s1 + '_1' + LogExtensions[integer(dDetector)]) do
         begin
           inc(ReportNumber);
           str(ReportNumber, s1);
@@ -826,7 +820,7 @@ begin
     else
     begin
       str(ExperimentNumber, s1);
-      while FileExists(FileName + '_' + s1 + '.log') do        //to cfg?
+      while FileExists(FilePath + '\' + FileName + '_' + s1 + LogExtensions[integer(dDetector)]) do
       begin
         inc(ExperimentNumber);
         str(ExperimentNumber, s1);
@@ -835,10 +829,14 @@ begin
       ReportHeader:= false;
       FileName+= '_' + s1;
     end;
+    FileName+= LogExtensions[integer(dDetector)];
 
-    if LogTime then Header:= Header + cbXAxis.Items.Strings[0] + HT;
-    if LogFreq and UseGenFreq then Header:= Header + 'Частота (генератор)' + HT;
-    if LogAmpl then Header:= Header + 'Амплитуда (генератор)' + HT;
+    if LogTime then
+      Header:= Header + cbXAxis.Items.Strings[0] + HT;
+    if LogFreq and UseGenFreq then
+      Header:= Header + 'Частота (генератор)' + HT;
+    if LogAmpl then
+      Header:= Header + 'Амплитуда (генератор)' + HT;
 
     case ReadingMode of
       rBuffer:
@@ -873,7 +871,7 @@ begin
   begin
     if IsEmptyStr(FileName, [' ']) then
       exit(-1);
-                                       { TODO 1 -cFeature : log path }
+
     if LogTime then
     begin
       setlength(Sources, length(Sources) + 1);
@@ -999,8 +997,10 @@ var
 begin
   with Sender do
   begin
-    if LogFreq and UseGenFreq then f:= StepF.F;
-    if LogAmpl then a:= StepF.A;
+    if LogFreq and UseGenFreq then
+      f:= StepF.F;
+    if LogAmpl then
+      a:= StepF.A;
 
     if DataList.Count > 0 then
     case ReadingMode of
@@ -1076,7 +1076,7 @@ begin
             //WriteProgramLog('');
             //WriteProgramLog('i ' + strf(i) + ' j ' + strf(j));
 
-            for k:= (lk + 1) to high(ReadPars) do
+            for k:= (lk + 1) to high(ReadPars) do        { TODO 1 -cImprovement : can optimize with partoread since threads only read }
             begin
               //WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
               if ReadPars[k] then
@@ -1131,7 +1131,7 @@ end;
 
 function tReadingsForm.RecvSnap(p: array of shortint): PBuffer;
 var
-  num, i: integer;
+  num, i, j: integer;
   ParamArr: tIntegerArray; //CONSTRUCTOR!!!
   s: string;
 begin
@@ -1171,7 +1171,7 @@ begin
   //sleep(60 + random(30));
   //s:= strf(random)+',' +strf(random)+',' + strf(random);
   //writeprogramlog(s);
-  if IsEmptyStr(s, [' ']) then
+  if s = '' then
   begin
     Result:= nil;
     exit;
@@ -1182,8 +1182,9 @@ begin
 
   for i:= 0 to num - 2 do
   begin
-    val(copy(s, 1, pos(CurrentDevice^.ParSeparator, s) - 1), Result^[i]);
-    delete(s, 1, pos(CurrentDevice^.ParSeparator, s));
+    j:= pos(CurrentDevice^.ParSeparator, s);
+    val(copy(s, 1, j - 1), Result^[i]);
+    delete(s, 1, j);
   end;
   val(s, Result^[i + 1]);
 end;
@@ -1229,6 +1230,7 @@ begin
   begin
    deviceindex:= 2;
    connectionkind:= cserial;
+   readingsform.serport:= tblockserial.create;
   end;
 
   if DeviceIndex = iDefaultDevice then
@@ -1483,9 +1485,8 @@ end;
 
 procedure tReadingsForm.btStopLogClick(Sender: TObject);
 begin
-  Log.Stop;   { TODO 1 -cBug : force luke }
   ForceStop:= true;
-  //StopLog(true);
+  Log.Stop;
 end;
 
 procedure tReadingsForm.cbChart1ShowChange(Sender: TObject); //FIXIT  how what even wtf
@@ -1528,7 +1529,7 @@ begin
      end;
     else
     begin
-      MainForm.cbPointPerStep.Checked:= false;
+      MainForm.cbPointPerStepDet.Checked:= false;
       cgTransfer.Enabled:= false;
       Label13.Show;
       cbSampleRate.Show;

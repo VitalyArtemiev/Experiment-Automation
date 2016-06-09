@@ -1391,7 +1391,7 @@ object DeviceForm: TDeviceForm
           70
         )
         Cells = (
-          56
+          62
           0
           0
           'Модель'
@@ -1488,6 +1488,18 @@ object DeviceForm: TDeviceForm
           0
           47
           'Триггер'
+          0
+          48
+          'Ошибки'
+          0
+          49
+          'Вывести'
+          0
+          50
+          'Получить список каналов'
+          0
+          51
+          'Одновр. запрос'
           1
           0
           'PTC10'
@@ -1560,6 +1572,12 @@ object DeviceForm: TDeviceForm
           1
           47
           '*TRG'
+          1
+          50
+          'getoutput.names'
+          1
+          51
+          'getoutput'
         )
       end
     end

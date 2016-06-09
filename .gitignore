@@ -69,3 +69,5 @@ Default.cfg
 *.cfg
 *.prm
 ProgramLog.txt
+*.templog
+*.detlog
