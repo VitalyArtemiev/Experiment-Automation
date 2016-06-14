@@ -21,7 +21,6 @@ type
     cbReadingsMode: TComboBox;
     cbSampleRate: TComboBox;
     cbShowPoints: TCheckBox;
-    cbUseGenFreq: TCheckBox;
     cbXAxis: TComboBox;
     cgTransfer: TCheckGroup;
     Chart: TChart;
@@ -29,9 +28,9 @@ type
     ChartToolset: TChartToolset;
     DataPointHintTool: TDataPointHintTool;
     Divider: TMenuItem;
-    eAxisLimit: TFloatSpinEdit;
     eDelay: TSpinEdit;
     eUpdateInterval: TSpinEdit;
+    fneDataFileStub: TFileNameEdit;
     Label1: TLabel;
     Label11: TLabel;
     Label13: TLabel;
@@ -59,7 +58,8 @@ type
     procedure btStopLogClick(Sender: TObject);
     procedure cbChartShowChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
-    procedure cbUseGenFreqChange(Sender: TObject);
+    procedure fneDataFileStubAcceptFileName(Sender: TObject; var Value: String);
+    procedure fneDataFileStubEditingDone(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -91,6 +91,7 @@ type
     procedure ProcessBuffers(Sender: tLogModule);
   public
     { public declarations }
+    LogStub, LogExtension, DataFolder: string;
     Log: tLogModule;
 
     ParToRead: array of shortint;
@@ -100,6 +101,7 @@ type
     procedure GetDeviceParams; override;
 
     function RecvSnap(p: array of shortint): PBuffer; //not really a snap since not guaranteed simult
+    function WaitForPoints(Number: integer): PBuffer; //only for telnet?
   end;
 
 var
@@ -133,12 +135,13 @@ begin
   DeviceKind:= dTempController;
   DeviceIndex:= iDefaultDevice;
   ConnectionKind:= cNone;
+  LogStub:= '';
+  t:= 0;
+  DataFolder:= DefaultLogFolder;
   //DrawnBuffers:= 0;
-  //t:= 0;
-
-  //LogFreq:= false;
-  //LogTime:= true;
-  //LogAmpl:= false;
+  LogFreq:= false;
+  LogTime:= true;
+  LogAmpl:= false;
 
   for i:= 0 to PortCount - 1 do
     cbPortSelect.AddItem(MainForm.cbPortSelect.Items[i], nil);
@@ -170,8 +173,6 @@ begin
 
   btnDisconnectClick(Self);
 
-  {SerPort.Free;
-  TelNetClient.Free;    }
   Log.Free;
   DoneCriticalSection(CommCS);
 end;
@@ -412,7 +413,7 @@ begin
       UpdateTimer.Enabled:= true;
     end;
 
-    //t:= 0;
+    t:= 0;
   end;
   {EnterCriticalSection(CommCS);  //dont even need it
     AddCommand(tGetChannelNames);
@@ -542,6 +543,9 @@ begin
     end;
     FileName+= LogExtensions[integer(dTempController)];
 
+    Stub:= LogStub;
+    FilePath:= DataFolder;
+
     if LogTime then
       Header:= Header + cbXAxis.Items.Strings[0] + HT;
     if LogFreq then
@@ -636,7 +640,6 @@ begin
       cbReadingsMode.Enabled:=    false;
       cbSampleRate.Enabled:=      false;
       cgTransfer.Enabled:=        false;
-      cbUseGenFreq.Enabled:=      false;
       btClear.Enabled:=           false;
       btApply.Enabled:=           false;
       pnConnection.Enabled:=      false;
@@ -647,7 +650,6 @@ begin
       cbReadingsMode.Enabled:=    true;
       cbSampleRate.Enabled:=      true;
       cgTransfer.Enabled:=        true;
-      cbUseGenFreq.Enabled:=      true;
       btApply.Enabled:=           true;
       if State = lInActive then
       begin
@@ -820,7 +822,7 @@ begin
   begin
     cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hChannelList)]);
 
-    if cgTransfer.Width < 90 then
+    if cgTransfer.Width < 120 then
     begin
       cgTransfer.Columns:= 2;
     end
@@ -870,6 +872,7 @@ begin
     btOffset.Show
   else
     btOffset.Hide;  }
+  fneDataFileStubEditingDone(Self);
 end;
 
 function TTempControlForm.RecvSnap(p: array of shortint): PBuffer;
@@ -918,41 +921,54 @@ begin
   until (k = 0) or (j = length(p));
   if j < length(p) then
     val(s, Result^[j]);
+end;
 
-  {for i:= 0 to length(p) - 2 do
-  begin
-    k:= pos({CurrentDevice^.ParSeparator}',', s);
-    if i = p[j] then
+function TTempControlForm.WaitForPoints(Number: integer): PBuffer;
+begin
+  Result:= nil;
+  case ConnectionKind of
+    cNone:
+      WriteProgramLog('WaitForPoints called without connection');
+    cSerial:
+      WriteProgramLog('WaitForPoints unsopported for Serial');
+    cUSB:
+      WriteProgramLog('WaitForPoints for USB under construction');
+    cTelNet:
     begin
-      val(copy(s, 1, k - 1), v);
-      Result^[j]:= v;
-      inc(j);
+     // Socket.;
+
     end;
-    delete(s, 1, k);
+    cVXI:
+      WriteProgramLog('WaitForPoints for VXI under construction');
   end;
-  inc(i);
-  if i = p[j] then
-    val(s, Result^[j]); }
-  {writeprogramlog(result^[0]);
-  writeprogramlog(result^[1]);
-  writeprogramlog(result^[2]);
-  writeprogramlog(result^[3]);   }
-  //writeprogramlog(result^[4]);
 end;
 
 procedure TTempControlForm.btnConnectClick(Sender: TObject);
 begin
-  if MainForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
+  with MainForm do
+  if cbPortSelect.ItemIndex = TempControlForm.cbPortSelect.ItemIndex then
   begin
-    if MainForm.ConnectionKind = cSerial then
+    if ConnectionKind = cSerial then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
     end
     else
-    if MainForm.ConnectionKind = cTelNet then
+    if ConnectionKind = cTelNet then
       showmessage('check ip');
-       { TODO 2 -cImprovement : check ip }
+  end;
+
+  with ReadingsForm do
+  if cbPortSelect.ItemIndex = TempControlForm.cbPortSelect.ItemIndex then
+  begin
+    if ConnectionKind = cSerial then
+    begin
+      showmessage('К данному порту уже осуществляется подключение');
+      exit
+    end
+    else
+    if ConnectionKind = cTelNet then
+      showmessage('check ip');
   end;
 
   OptionForm.TabControl.TabIndex:= 1;
@@ -1017,9 +1033,35 @@ begin
   ChartLineSeries.ShowPoints:= cbShowPoints.Checked;
 end;
 
-procedure TTempControlForm.cbUseGenFreqChange(Sender: TObject);
+procedure TTempControlForm.fneDataFileStubAcceptFileName(Sender: TObject;
+  var Value: String);
 begin
-  LogFreq:= cbUseGenFreq.Checked;
+  LogStub:= ExtractFileName(Value);
+  if pos('.', LogStub) <> 0 then
+  begin
+    LogExtension:= LogStub;
+    LogStub:= Copy2SymbDel(LogExtension, '.');
+    LogExtension:= '.' + LogExtension;
+  end;
+  DataFolder:= ExtractFileDir(Value);
+  pos(GetCurrentDir, DataFolder);
+  delete(DataFolder, 1, length(GetCurrentDir) + 1);
+  Value:= LogStub;
+end;
+
+procedure TTempControlForm.fneDataFileStubEditingDone(Sender: TObject);
+var
+  s: string;
+begin
+  with fneDataFileStub do
+  if (pos('.', Text) = 0) and
+     (pos('\', Text) = 0) then
+    LogStub:= Text
+  else
+  begin
+    s:= Text;
+    fneDataFileStubAcceptFileName(fneDataFileStub, s);
+  end;
 end;
 
 procedure TTempControlForm.FormCloseQuery(Sender: TObject; var CanClose: boolean

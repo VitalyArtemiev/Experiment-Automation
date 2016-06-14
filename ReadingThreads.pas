@@ -35,6 +35,15 @@ type
    constructor Create;
  end;
 
+ { tTempRealTimeThread }
+
+ tTempRealTimeThread = class(tThread)
+   DataList: TList;
+   procedure Execute; override;
+   constructor Create;
+   destructor Destroy; override;
+ end;
+
  { tTempSimultaneousThread }
 
  tTempSimultaneousThread = class(tThread)
@@ -55,6 +64,39 @@ implementation
 
 uses math, DeviceF, ReadingsF, TempControlF;
 
+{ tTempRealTimeThread }
+
+procedure tTempRealTimeThread.Execute;
+var
+  pd: PBuffer;
+begin
+  with TempControlForm do
+  repeat
+    pd:= WaitForPoints(RealTimeWaitPoints);
+
+    if pd <> nil then
+    begin
+      DataList:= Log.ThreadList.LockList;
+        DataList.Add(pd);
+      Log.ThreadList.UnlockList;
+      Log.ReadPoints+= length(pd^);  //add storedpoints field like in buffer?
+    end
+  until Terminated;
+end;
+
+constructor tTempRealTimeThread.Create;
+begin
+  inherited Create(false);
+  FreeOnTerminate:= false;
+  TempControlForm.Socket:= TempControlForm.TelNetClient.Sock;
+end;
+
+destructor tTempRealTimeThread.Destroy;
+begin
+  inherited Destroy;
+  TempControlForm.Socket:= nil;
+end;
+
 { tTempOnePerStepThread }
 
 procedure tTempOnePerStepThread.Execute;
@@ -65,7 +107,7 @@ begin
   with TempControlForm do
   begin
     pd:= RecvSnap(ParToRead);
-    writeprogramlog(pd^[0]);
+
     if pd <> nil then
     begin
       new(pt);

@@ -253,7 +253,7 @@ begin
   with MainForm do
   begin
     LoadConfig(DefaultConfig);
-    LoadParams(DefaultParams);
+    LoadProfile(DefaultParams);
   end;
   GetOptions;
   ShowMessage('Загружено:' + LineEnding + DefaultConfig

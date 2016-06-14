@@ -72,8 +72,8 @@ type
 
     miShowReadingsF: TMenuItem;
 
-    miSavePar: TMenuItem;
-    miLoadPar: TMenuItem;
+    miSaveProfile: TMenuItem;
+    miLoadProfile: TMenuItem;
     miOptions: TMenuItem;
     OpenDialog: TOpenDialog;
     pnBaseParams: TPanel;
@@ -133,9 +133,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FrequencyTabChange(Sender: TObject);
-    procedure miLoadParClick(Sender: TObject);
+    procedure miLoadProfileClick(Sender: TObject);
     procedure miOptionsClick(Sender: TObject);
-    procedure miSaveParClick(Sender: TObject);
+    procedure miSaveProfileClick(Sender: TObject);
     procedure miShowReadingsFClick(Sender: TObject);
     procedure miNewReportClick(Sender: TObject);
     procedure miExportParamsClick(Sender: TObject);
@@ -153,8 +153,8 @@ type
     FileResult: integer;
 
     function FullCfgDir: string; inline;
-    function SaveParams(FileName: ansistring): integer;
-    function LoadParams(FileName: ansistring): integer;
+    function SaveProfile(FileName: ansistring): integer;
+    function LoadProfile(FileName: ansistring): integer;
     function SaveConfig(FileName: ansistring): integer;
     function LoadConfig(FileName: ansistring): integer;
     function ExportParams(Manual: boolean; Header: boolean = false): integer;
@@ -200,10 +200,12 @@ uses
 
 { TMainForm }
 
-function tMainForm.LoadParams(FileName: ansistring): integer;
+function tMainForm.LoadProfile(FileName: ansistring): integer;
 var
   FileStream: TFileStream;
+  StringStream: TStringStream;
   s: string;
+  p: integer;
 begin
   if FileExists(FileName) then
   begin
@@ -212,6 +214,26 @@ begin
       Result:= RestoreState(FileStream);
       Result+= ReadingsForm.RestoreState(FileStream);
       Result+= TempControlForm.RestoreState(FileStream);
+      StringStream:= tStringStream.Create('');
+
+      StringStream.CopyFrom(FileStream, 0);    //0 = whole
+
+      p:= pos('Internal', StringStream.DataString);
+      s:= CopyFromTo(StringStream.DataString, p, '(', ')');
+
+      p:= pos('DetLogDir', s);
+      if p = 0 then
+        ReadingsForm.DataFolder:= DefaultLogFolder
+      else
+        ReadingsForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+
+      p:= pos('TempLogDir', s);
+      if p = 0 then
+        TempControlForm.DataFolder:= DefaultLogFolder
+      else
+        TempControlForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+
+      StringStream.Destroy;
       FileStream.Destroy;
       if Result < 0 then s:= 'неверный параметр ' + strf(Result);
     except
@@ -238,7 +260,7 @@ begin
   end;
 end;
 
-function tMainForm.SaveParams(FileName: ansistring): integer;
+function tMainForm.SaveProfile(FileName: ansistring): integer;
 var
   FileStream: TFileStream;
   s: string;
@@ -256,6 +278,17 @@ begin
   SaveState(FileStream);
   ReadingsForm.SaveState(FileStream);
   TempControlForm.SaveState(FileStream);
+  s:= 'Internal' + '(' + LineEnding;
+  FileStream.Write(s[1], length(s));
+
+  s:= 'DetLogDir' + '=' + ReadingsForm.DataFolder + LineEnding;
+  FileStream.Write(s[1], length(s));
+
+  s:= 'TempLogDir' + '=' + TempControlForm.DataFolder + LineEnding;
+  FileStream.Write(s[1], length(s));
+
+  s:= ')' + LineEnding;
+  FileStream.Write(s[1], length(s));
   FileStream.Free;
 
   if Result <> 0 then
@@ -343,8 +376,10 @@ begin
 
     {$I-}
     system.assign(f, FileName);
-    if FileExists(Filename) then append(f)
-    else rewrite(f);
+    if FileExists(Filename) then
+      append(f)
+    else
+      rewrite(f);
     {$I+}
   end;
 
@@ -569,13 +604,11 @@ begin
   ReportNumber:= 0; //so that it checks for existing file internally?
   ExperimentNumber:= 1;
   ExportParams(true);
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miExportParamsClick(Sender: TObject);
 begin
   ExportParams(true);
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.eAmplitudeChange(Sender: TObject);
@@ -597,7 +630,7 @@ procedure tMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
   if Config.SaveParamsOnExit then
   begin
-    FileResult:= SaveParams(FullCfgDir + Config.ParamFile);
+    FileResult:= SaveProfile(FullCfgDir + Config.ParamFile);
     WriteProgramLog('Сохранение параметров в ' + FullCfgDir + Config.ParamFile +
                     '; Результат: ' + strf(FileResult));
   end;
@@ -694,10 +727,10 @@ begin
   with OpenDialog do
   begin
     InitialDir:= FullCfgDir;
-    DefaultExt:= '.cfg';
+    DefaultExt:= CfgExt;
     FileName:= '';
     Title:= 'Загрузить файл конфигурации';
-    Filter:= 'Файлы конфигурации|*.cfg|Все файлы|*.*';
+    Filter:= 'Файлы конфигурации|*' + CfgExt + '|Все файлы|*.*';
     if Execute then
     begin
       s:= UTF8toANSI(FileName); //  проверить на доп символы
@@ -713,10 +746,10 @@ begin
   with SaveDialog do
   begin
     InitialDir:= FullCfgDir;
-    DefaultExt:= '.cfg';
+    DefaultExt:= CfgExt;
     FileName:= '';
     Title:= 'Сохранить файл конфигурации как';
-    Filter:= 'Файлы конфигурации|*.cfg|Все файлы|*.*';
+    Filter:= 'Файлы конфигурации|*' + CfgExt + '|Все файлы|*.*';
     if Execute then
     begin
       s:= UTF8toANSI(FileName);
@@ -771,40 +804,40 @@ begin
     Result:= GetCurrentDir + '\';
 end;
 
-procedure tMainForm.miLoadParClick(Sender: TObject);
+procedure tMainForm.miLoadProfileClick(Sender: TObject);
 var
   s: ansistring;
 begin
   with OpenDialog do
   begin
     InitialDir:= FullCfgDir;
-    DefaultExt:= '.prm';
+    DefaultExt:= PrExt;
     FileName:= '';
     Title:= 'Загрузить файл параметров';
-    Filter:= 'Файлы параметров|*.prm|Все файлы|*.*';
+    Filter:= 'Файлы параметров|*' + PrExt + '|Все файлы|*.*';
     if Execute then
     begin
       s:= UTF8toANSI(FileName);
-      LoadParams(s);
+      LoadProfile(s);
     end;
   end;
 end;
 
-procedure tMainForm.miSaveParClick(Sender: TObject);
+procedure tMainForm.miSaveProfileClick(Sender: TObject);
 var
   s: ansistring;
 begin
   with SaveDialog do
   begin
     InitialDir:= FullCfgDir;
-    DefaultExt:= '.prm';
+    DefaultExt:= PrExt;
     FileName:= '';
     Title:= 'Сохранить файл параметров как';
-    Filter:= 'Файлы параметров|*.prm|Все файлы|*.*';
+    Filter:= 'Файлы параметров|*' + PrExt + '|Все файлы|*.*';
     if Execute then
     begin
       s:= UTF8toANSI(FileName);
-      SaveParams(s);
+      SaveProfile(s);
     end;
   end;
 end;
@@ -1223,7 +1256,7 @@ begin
   if not FileExists(FullCfgDir + Config.ParamFile) then
     Config.ParamFile:= DefaultParams;
   if (Config.LoadParamsOnStart) and (FileResult = 0) then
-    LoadParams(FullCfgDir + Config.ParamFile);
+    LoadProfile(FullCfgDir + Config.ParamFile);
 
   cbImpedanceChange(Self);
   if cbImpedance.ItemIndex < 0 then
@@ -1237,18 +1270,33 @@ end;
 
 procedure tMainForm.btnConnectClick(Sender: TObject);
 begin
-  if ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
+  with ReadingsForm do
+  if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
   begin
-    if ReadingsForm.ConnectionKind = cSerial then
+    if ConnectionKind = cSerial then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
     end
     else
-    if ReadingsForm.ConnectionKind = cTelNet then
+    if ConnectionKind = cTelNet then
       showmessage('check ip');
        { TODO 2 -cImprovement : check ip }
   end;
+
+  with TempControlForm do
+  if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
+  begin
+    if ConnectionKind = cSerial then
+    begin
+      showmessage('К данному порту уже осуществляется подключение');
+      exit
+    end
+    else
+    if ConnectionKind = cTelNet then
+      showmessage('check ip');
+  end;
+
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 

@@ -1228,15 +1228,15 @@ object MainForm: TMainForm
       object Separator1: TMenuItem
         Caption = '-'
       end
-      object miSavePar: TMenuItem
-        Caption = 'Сохранить параметры'
+      object miSaveProfile: TMenuItem
+        Caption = 'Сохранить профиль'
         Hint = 'Сохранение параметров эксперимента'
-        OnClick = miSaveParClick
+        OnClick = miSaveProfileClick
       end
-      object miLoadPar: TMenuItem
-        Caption = 'Загрузить параметры'
+      object miLoadProfile: TMenuItem
+        Caption = 'Загрузить профиль'
         Hint = 'Загрузка параметров эксперимента'
-        OnClick = miLoadParClick
+        OnClick = miLoadProfileClick
       end
       object Separator2: TMenuItem
         Caption = '-'

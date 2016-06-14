@@ -1,7 +1,7 @@
 object TempControlForm: TTempControlForm
-  Left = 983
+  Left = 1009
   Height = 600
-  Top = 193
+  Top = 168
   Width = 500
   Caption = 'Управление температурным контроллером'
   ClientHeight = 600
@@ -134,7 +134,7 @@ object TempControlForm: TTempControlForm
     Left = 4
     Height = 285
     Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
-    Top = 134
+    Top = 131
     Width = 318
     AxisList = <    
       item
@@ -222,13 +222,13 @@ object TempControlForm: TTempControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
-      AnchorSideTop.Control = eAxisLimit
+      AnchorSideTop.Control = fneDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
       Top = 100
-      Width = 66
-      Caption = 'Секунд по Х'
+      Width = 83
+      Caption = 'Шаблон файла'
       Color = clWhite
       ParentColor = False
       Transparent = False
@@ -266,35 +266,15 @@ object TempControlForm: TTempControlForm
       TabOrder = 4
       Text = 'Время, с'
     end
-    object eAxisLimit: TFloatSpinEdit
-      AnchorSideLeft.Control = eDelay
-      AnchorSideTop.Control = cbXAxis
-      AnchorSideTop.Side = asrBottom
-      Left = 98
-      Height = 23
-      Hint = 'Максимальный интервал времени,'#13#10'отображающийся на графиках'
-      Top = 96
-      Width = 104
-      BorderSpacing.Top = 8
-      BorderSpacing.Bottom = 8
-      Increment = 1
-      MaxValue = 100
-      MinValue = 0
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 6
-      Value = 0
-    end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
-      AnchorSideTop.Control = eAxisLimit
       Left = 222
       Height = 23
       Top = 96
       Width = 90
       Caption = 'Очистить'
       OnClick = btClearClick
-      TabOrder = 7
+      TabOrder = 6
     end
     object eUpdateInterval: TSpinEdit
       AnchorSideLeft.Control = eDelay
@@ -310,7 +290,7 @@ object TempControlForm: TTempControlForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 2
-      Value = 500
+      Value = 1000
     end
     object cbShowPoints: TCheckBox
       AnchorSideLeft.Control = pnGraphControl
@@ -398,6 +378,27 @@ object TempControlForm: TTempControlForm
       Color = clWhite
       ParentColor = False
       Transparent = False
+    end
+    object fneDataFileStub: TFileNameEdit
+      AnchorSideLeft.Control = eDelay
+      AnchorSideTop.Control = cbXAxis
+      AnchorSideTop.Side = asrBottom
+      Left = 98
+      Height = 23
+      Hint = 'Указать папку для сохранения и шаблон '#13#10'для имени файла'
+      Top = 96
+      Width = 104
+      OnAcceptFileName = fneDataFileStubAcceptFileName
+      FilterIndex = 0
+      HideDirectories = False
+      ButtonWidth = 23
+      NumGlyphs = 1
+      BorderSpacing.Top = 8
+      MaxLength = 0
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 7
+      OnEditingDone = fneDataFileStubEditingDone
     end
   end
   object StatusBar: TStatusBar
@@ -490,11 +491,11 @@ object TempControlForm: TTempControlForm
     Left = 95
     Height = 23
     Hint = 'Что отображается на графике 1'
-    Top = 419
+    Top = 416
     Width = 140
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 8
-    BorderSpacing.Bottom = 8
+    BorderSpacing.Bottom = 11
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -575,13 +576,13 @@ object TempControlForm: TTempControlForm
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
-      'Внутренний буфер'
+      'В реальном времени'
       'Одновременный запрос'
     )
     ParentShowHint = False
     ShowHint = True
     TabOrder = 7
-    Text = 'Внутренний буфер'
+    Text = 'В реальном времени'
   end
   object Label13: TLabel
     AnchorSideLeft.Control = Label1
@@ -597,15 +598,15 @@ object TempControlForm: TTempControlForm
   end
   object sbParamScroll: TScrollBox
     AnchorSideLeft.Control = cbReadingsMode
-    AnchorSideTop.Control = cbUseGenFreq
+    AnchorSideTop.Control = cbSampleRate
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = Chart
     AnchorSideBottom.Side = asrBottom
     Left = 360
-    Height = 179
-    Top = 240
+    Height = 199
+    Top = 217
     Width = 136
     HorzScrollBar.Increment = 10
     HorzScrollBar.Page = 106
@@ -617,7 +618,7 @@ object TempControlForm: TTempControlForm
     VertScrollBar.Tracking = True
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderStyle = bsNone
-    ClientHeight = 179
+    ClientHeight = 199
     ClientWidth = 136
     TabOrder = 8
     object cgTransfer: TCheckGroup
@@ -667,29 +668,13 @@ object TempControlForm: TTempControlForm
       }
     end
   end
-  object cbUseGenFreq: TCheckBox
-    AnchorSideLeft.Control = cbReadingsMode
-    AnchorSideTop.Control = cbSampleRate
-    AnchorSideTop.Side = asrBottom
-    Left = 360
-    Height = 19
-    Hint = 'Брать значение частоты входного сигнала с генератора'#13#10'(не всегда совпадает со значением на входе детектора)'
-    Top = 221
-    Width = 120
-    BorderSpacing.Top = 4
-    Caption = 'Частота с генерат.'
-    OnChange = cbUseGenFreqChange
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 9
-  end
   object Label11: TLabel
     AnchorSideLeft.Control = Chart
     AnchorSideTop.Control = Chart
     AnchorSideTop.Side = asrBottom
     Left = 4
     Height = 15
-    Top = 419
+    Top = 416
     Width = 83
     Caption = 'График - Ось Y'
     ParentColor = False

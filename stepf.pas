@@ -284,7 +284,7 @@ begin
         Log.ReadingsThread:= tDetOnePerStepThread.Create;
     with TempControlForm do
       if OnePointPerStep and (ConnectionKind <> cNone) then
-        Log.ReadingsThread:= tDetOnePerStepThread.Create;
+        Log.ReadingsThread:= tTempOnePerStepThread.Create;
 
     ElapsedTime:= Now - StartTime - PauseLength;
     DateTimeToString(s, 'hh:mm:ss', ElapsedTime);

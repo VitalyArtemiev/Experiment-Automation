@@ -71,3 +71,4 @@ Default.cfg
 ProgramLog.txt
 *.templog
 *.detlog
+*.txt

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, variants, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, {visa, session,}
+  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, blcksock, {visa, session,}
   {libusboop, libusb,} StatusF, CustomCommandF, MenuH;
 
 type
@@ -28,7 +28,7 @@ type
   rConfig = record
     CfgFolder, WorkConfig, ParamFile, DefaultGens, DefaultDets, DefaultTemps: shortstring;
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
-    AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
+      AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
     ReadingTime: longint;
   end;
@@ -103,6 +103,7 @@ type
 
     SerPort: tBlockSerial;
     TelNetClient: tTelNetSend;
+    Socket: tTCPBlockSocket;
     //Session: tVisaSession;
     //UsbContext : tLibUsbContext;
 
@@ -112,7 +113,7 @@ type
     DeviceKind: eDeviceKind;
     SupportedDevices: array of tDevice;
     AmplitudeUnits: array [-1..2] of string;
-    MinDelay: longword;
+    MinDelay, RealTimeWaitPoints: longword;
 
     property TimeOutErrors: longword read fTimeOuts write SetTOE;
     property CurrentDevice: pDevice read GetCurDev;
@@ -141,8 +142,8 @@ type
     function RecvString(TimeOut: longword): string;
 
     procedure SaveState(FileStream: tFileStream);
-    function RestoreState(FileStream: tFileStream):integer;
-    function RestoreState(FileName: string):integer;
+    function RestoreState(FileStream: tFileStream): integer;
+    function RestoreState(FileName: string): integer;
   end;
 
   procedure WriteProgramLog(Log: string; Force: boolean = false);
@@ -168,6 +169,8 @@ const
   PauseCaption = 'Приостановить';
   ContinueCaption = 'Продолжить';
 
+  CfgExt = '.cfg';
+  PrExt = '.pr';
   LogExtensions: array[0..2] of string = ('.genlog', '.detlog', '.templog');
   ChartZoomFactor = 2;
 
@@ -178,7 +181,7 @@ var
 implementation
 
 uses
-  Math, Controls, StrUtils, DeviceF, MainF, OptionF;
+  Math, Controls, EditBtn, StrUtils, DeviceF, MainF, OptionF;
 
 function strf(x: double): string; inline;
 begin
@@ -274,14 +277,16 @@ begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
   end;
-
   if (Result = 0) or debug then
   begin
    // if debug then deviceindex:= 1;
     GetDeviceParams;
     Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
     try
-      RestoreState(MainForm.FullCfgDir + Config.ParamFile);
+      if FileExists(MainForm.FullCfgDir + Config.ParamFile) then
+        RestoreState(MainForm.FullCfgDir + Config.ParamFile)
+      else
+        writeprogramlog('File ' + MainForm.FullCfgDir + Config.ParamFile + ' not found');
     except
       on E: Exception do
         ShowMessage(E.Message);
@@ -636,7 +641,7 @@ begin
     case Result of
       -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
       -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
-      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств';
+      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - COM';
     end;
 
     ShowMessage(StatusBar.Panels[spStatus].Text);
@@ -729,7 +734,7 @@ begin
     case Result of
       -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
       -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
-      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств';
+      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - TelNet';
     end;
     ShowMessage(StatusBar.Panels[spStatus].Text);
 
@@ -1223,6 +1228,13 @@ begin
     begin
       s:= Name + '=' + strf(TabIndex) + LineEnding;
       FileStream.Write(s[1], length(s));
+    end
+    else
+    if Components[i] is TFileNameEdit then
+    with TFileNameEdit(Components[i]) do
+    begin
+      s:= Name + '=' + Text + LineEnding;
+      FileStream.Write(s[1], length(s));
     end;
   end;
   s:= ')' + LineEnding;
@@ -1241,8 +1253,6 @@ begin
   StringStream:= tStringStream.Create('');
 
   StringStream.CopyFrom(FileStream, 0);    //0 = whole
-  //showmessage(strf(length(Stringstream.DataString)));
- // showmessage(Stringstream.DataString);
 
   p:= pos(Name, StringStream.DataString);
 
@@ -1354,6 +1364,18 @@ begin
         TabIndex:= v
       else
         Result:= -7;
+    end
+    else
+    if Components[i] is TFileNameEdit then
+    with TFileNameEdit(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Text:= '';
+        continue;
+      end;
+      Text:= CopyFromTo(s, p, '=', LineEnding);
     end;
   end;
   StringStream.Destroy;

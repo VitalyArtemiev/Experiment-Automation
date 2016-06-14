@@ -87,15 +87,15 @@ type
     property ElapsedTime: TDateTime read GetTime;
   end;
 
-implementation
-
-uses
-  SerConF;
-
 const
   DefaultLogFolder = 'Data';
   DefaultLogExtension = '.log';
   DefaultTimeFormat = 'yyyy_mm_dd';
+
+implementation
+
+uses
+  SerConF;
 
 { tLogModule }
 
@@ -164,18 +164,21 @@ begin
 
   DateTimeToString(FileName, TimeFormat, Now);    //check???
 
-  if Stub <> '' then
-    FileName+= '_' + Stub;
-
   if Assigned(OnCreateFile) then
     OnCreateFile(Self);
+
+  if Stub <> '' then
+    FileName:= Stub + '_' + FileName;
 
   if pos('.', Filename) = 0 then
     FileName+= DefaultLogExtension;
 
   if not DirectoryExists(FullLogDir) then
     if not CreateDir(FullLogDir) then
+    begin
+      WriteProgramLog('Could not create path');
       FilePath:= '';
+    end;
 
   if FilePath <> '' then
     FileName:= FilePath + '\' + FileName;

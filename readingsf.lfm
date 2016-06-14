@@ -1,7 +1,7 @@
 object ReadingsForm: TReadingsForm
-  Left = 481
+  Left = 444
   Height = 600
-  Top = 168
+  Top = 206
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -676,13 +676,12 @@ object ReadingsForm: TReadingsForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
-      AnchorSideTop.Control = eAxisLimit
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
       Top = 100
-      Width = 66
-      Caption = 'Секунд по Х'
+      Width = 83
+      Caption = 'Шаблон файла'
       Color = clWhite
       ParentColor = False
       Transparent = False
@@ -721,29 +720,8 @@ object ReadingsForm: TReadingsForm
       TabOrder = 4
       Text = 'Время, с'
     end
-    object eAxisLimit: TFloatSpinEdit
-      AnchorSideLeft.Control = eDelay
-      AnchorSideTop.Control = cbXAxis
-      AnchorSideTop.Side = asrBottom
-      AnchorSideBottom.Control = StatusBar
-      Left = 98
-      Height = 23
-      Hint = 'Максимальный интервал времени,'#13#10'отображающийся на графиках'
-      Top = 96
-      Width = 104
-      BorderSpacing.Top = 8
-      BorderSpacing.Bottom = 8
-      Increment = 1
-      MaxValue = 100
-      MinValue = 0
-      ParentShowHint = False
-      ShowHint = True
-      TabOrder = 6
-      Value = 0
-    end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
-      AnchorSideTop.Control = eAxisLimit
       AnchorSideBottom.Control = StatusBar
       Left = 222
       Height = 23
@@ -752,7 +730,7 @@ object ReadingsForm: TReadingsForm
       BorderSpacing.Bottom = 9
       Caption = 'Очистить'
       OnClick = btClearClick
-      TabOrder = 7
+      TabOrder = 6
     end
     object eUpdateInterval: TSpinEdit
       AnchorSideLeft.Control = eDelay
@@ -769,7 +747,7 @@ object ReadingsForm: TReadingsForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 2
-      Value = 500
+      Value = 1000
     end
     object cbShowPoints: TCheckBox
       AnchorSideLeft.Control = pnGraphControl
@@ -858,6 +836,27 @@ object ReadingsForm: TReadingsForm
       Color = clWhite
       ParentColor = False
       Transparent = False
+    end
+    object fneDataFileStub: TFileNameEdit
+      AnchorSideLeft.Control = eDelay
+      AnchorSideTop.Control = cbXAxis
+      AnchorSideTop.Side = asrBottom
+      Left = 98
+      Height = 23
+      Hint = 'Указать папку для сохранения и шаблон '#13#10'для имени файла'
+      Top = 96
+      Width = 104
+      OnAcceptFileName = fneDataFileStubAcceptFileName
+      FilterIndex = 0
+      HideDirectories = False
+      ButtonWidth = 23
+      NumGlyphs = 1
+      BorderSpacing.Top = 8
+      MaxLength = 0
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 7
+      OnEditingDone = fneDataFileStubEditingDone
     end
   end
   object sbParamScroll: TScrollBox

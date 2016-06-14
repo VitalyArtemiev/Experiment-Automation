@@ -6,9 +6,9 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
-  TATransformations, TADbSource, Forms, Controls, Graphics,
-  Dialogs, StdCtrls, ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus,
-  MainF, SerConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
+  TATransformations, TADbSource, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus, EditBtn, MainF,
+  SerConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
 
 type
   //eLogState = (lInActive, lActive, lPaused);
@@ -46,9 +46,9 @@ type
     cbRatio2: TComboBox;
     ChartToolset: TChartToolset;
     DataPointHintTool: TDataPointHintTool;
+    fneDataFileStub: TFileNameEdit;
     ZoomDragTool: TZoomDragTool;
     PanDragTool: TPanDragTool;
-    eAxisLimit: TFloatSpinEdit;
     eDelay: TSpinEdit;
     Label1: TLabel;
     Label10: TLabel;
@@ -109,6 +109,8 @@ type
     procedure ChartMenuItemClick(Sender: TObject);
     procedure DataPointHintToolHint(ATool: TDataPointHintTool;
       const APoint: TPoint; var AHint: String);
+    procedure fneDataFileStubAcceptFileName(Sender: TObject; var Value: String);
+    procedure fneDataFileStubEditingDone(Sender: TObject);
     procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
     procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
     procedure ParamsChange(Sender: TObject);
@@ -155,6 +157,7 @@ type
     procedure ProcessBuffers(Sender: tLogModule);
   public
     { public declarations }
+    LogStub, LogExtension, DataFolder: string;
     Log: tLogModule;
 
     ParToRead: array of shortint;
@@ -172,8 +175,9 @@ var
 
 implementation
 
-uses                                                                    //remove
-  DateUtils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, OffsetF, synaser;
+uses
+  DateUtils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, TempControlF,
+  OffsetF, synaser{remove};
 
 procedure tReadingsForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -257,6 +261,8 @@ begin
   ConnectionKind:= cNone;
   DrawnBuffers:= 0;
   t:= 0;
+  DataFolder:= DefaultLogFolder;
+  LogStub:= '';
 
   LogFreq:= false;
   LogTime:= true;
@@ -452,8 +458,6 @@ begin
   else
     btOffset.Hide;
 
-  RestoreState(Config.ParamFile);
-
   if cbRatio1.ItemIndex < 0 then
   begin
     cbRatio1.Hide;
@@ -521,6 +525,7 @@ begin
       cgTransfer.Checked[CH2Index]:= true;
   end;
 
+  fneDataFileStubEditingDone(Self);
 end;
 
 procedure tReadingsForm.UpdateTimerTimer(Sender: TObject);
@@ -830,6 +835,9 @@ begin
       FileName+= '_' + s1;
     end;
     FileName+= LogExtensions[integer(dDetector)];
+
+    Stub:= LogStub;
+    FilePath:= DataFolder;
 
     if LogTime then
       Header:= Header + cbXAxis.Items.Strings[0] + HT;
@@ -1207,17 +1215,30 @@ end;
 
 procedure tReadingsForm.btnConnectClick(Sender: TObject);
 begin
-  if MainForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
+  with MainForm do
+  if cbPortSelect.ItemIndex = ReadingsForm.cbPortSelect.ItemIndex then
   begin
-    if MainForm.ConnectionKind = cSerial then
+    if ConnectionKind = cSerial then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
     end
     else
-    if MainForm.ConnectionKind = cTelNet then
+    if ConnectionKind = cTelNet then
       showmessage('check ip');
-       { TODO 2 -cImprovement : check ip }
+  end;
+
+  with TempControlForm do
+  if cbPortSelect.ItemIndex = ReadingsForm.cbPortSelect.ItemIndex then
+  begin
+    if ConnectionKind = cSerial then
+    begin
+      showmessage('К данному порту уже осуществляется подключение');
+      exit
+    end
+    else
+    if ConnectionKind = cTelNet then
+      showmessage('check ip');
   end;
 
   OptionForm.TabControl.TabIndex:= 1;
@@ -1356,7 +1377,7 @@ begin
 
     Delay:= eDelay.Value;
     UpdateInterval:= eUpdateInterval.Value;
-    AxisLimit:= eAxisLimit.Value;
+    //AxisLimit:= eAxisLimit.Value;
     XAxis:= cbXAxis.ItemIndex;
     ReadingsMode:= cbReadingsMode.ItemIndex;
 
@@ -1575,6 +1596,37 @@ begin
     'Chart2': s:= cbChart2Show.Text;
   end;
   AHint:= ' ' + cbXAxis.Text + ': ' + strf(APoint.x) + '; ' + s + ': ' + strf(APoint.Y);
+end;
+
+procedure tReadingsForm.fneDataFileStubAcceptFileName(Sender: TObject;
+  var Value: String);
+begin
+  LogStub:= ExtractFileName(Value);
+  if pos('.', LogStub) <> 0 then
+  begin
+    LogExtension:= LogStub;
+    LogStub:= Copy2SymbDel(LogExtension, '.');
+    LogExtension:= '.' + LogExtension;
+  end;
+  DataFolder:= ExtractFileDir(Value);
+  pos(GetCurrentDir, DataFolder);
+  delete(DataFolder, 1, length(GetCurrentDir) + 1);
+  Value:= LogStub;
+end;
+
+procedure tReadingsForm.fneDataFileStubEditingDone(Sender: TObject);
+var
+  s: string;
+begin
+  with fneDataFileStub do
+  if (pos('.', Text) = 0) and
+     (pos('\', Text) = 0) then
+    LogStub:= Text
+  else
+  begin
+    s:= Text;
+    fneDataFileStubAcceptFileName(fneDataFileStub, s);
+  end;
 end;
 
 procedure tReadingsForm.PanDragToolAfterMouseDown(ATool: TChartTool;
