@@ -72,3 +72,4 @@ ProgramLog.txt
 *.templog
 *.detlog
 *.txt
+*.lps

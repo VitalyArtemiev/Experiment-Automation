@@ -1358,6 +1358,7 @@ object ReadingsForm: TReadingsForm
       RestoreExtentOn = [zreClick]
     end
     object DataPointHintTool: TDataPointHintTool
+      GrabRadius = 8
       OnHint = DataPointHintToolHint
     end
   end

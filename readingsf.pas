@@ -329,6 +329,7 @@ begin
     case Name of
       'Chart1': cb:= cbChart1Show;
       'Chart2': cb:= cbChart2Show;
+      else cb:= cbChart1Show;
     end;
 
   with cb do
@@ -1176,8 +1177,8 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  //sleep(60 + random(30));
-  //s:= strf(random)+',' +strf(random)+',' + strf(random);
+  sleep(60 + random(30));
+  s:= strf(random)+',' +strf(random)+',' + strf(random);
   //writeprogramlog(s);
   if s = '' then
   begin
