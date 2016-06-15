@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, variants, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, {visa, session,}
+  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, blcksock, {visa, session,}
   {libusboop, libusb,} StatusF, CustomCommandF, MenuH;
 
 type
@@ -19,14 +19,18 @@ type
 
   eDeviceKind = (dGenerator, dDetector, dTempController);
 
+  Buffer = array of double;
+  pBuffer = ^Buffer;
+
   tSSA = array of ansistring;
   pSSA = ^tSSA;
 
   rConfig = record
-    DefaultParams, WorkConfig, DefaultGens, DefaultDets: shortstring;
+    CfgFolder, WorkConfig, ParamFile, DefaultGens, DefaultDets, DefaultTemps: shortstring;
     LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
-    AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
+      AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
+    ReadingTime: longint;
   end;
 
   rParams = record
@@ -35,7 +39,7 @@ type
     Impedance, CurrFunc, AmplUnit, SweepType, SweepDir, Modulation, SampleRate, TimeConstant,
       Sensitivity, CloseReserve, WideReserve, InputRange,
       XAxis, ReadingsMode, Display1, Display2, Ratio1, Ratio2, Show1, Show2: shortint;
-    ACOn, AutoSweep, GenFreq, OnePoint: boolean;
+    ACOn, AutoSweep, GenFreq: boolean;
     TransferPars: array [0..19] of boolean;
     UpdateInterval, ReadingTime, TimeStep, Delay: longint;
     GeneratorPort, DetectorPort, LastGenerator, LastDetector: shortstring;
@@ -99,26 +103,30 @@ type
 
     SerPort: tBlockSerial;
     TelNetClient: tTelNetSend;
+    Socket: tTCPBlockSocket;
     //Session: tVisaSession;
     //UsbContext : tLibUsbContext;
 
     ParamsApplied: boolean;
-    CommandString, PresumedDevice: shortstring;
+    CommandString: shortstring;
     DeviceIndex: longint;
     DeviceKind: eDeviceKind;
     SupportedDevices: array of tDevice;
     AmplitudeUnits: array [-1..2] of string;
+    MinDelay, RealTimeWaitPoints: longword;
 
     property TimeOutErrors: longword read fTimeOuts write SetTOE;
     property CurrentDevice: pDevice read GetCurDev;
 
     procedure GetSupportedDevices(Kind: eDeviceKind);
+    procedure GetDeviceParams; virtual; abstract;
     procedure InitDevice;
-    function RecvestIdentity(TimeOut: longword): string;
+    function RequestIdentity(TimeOut: longword): string;
     function ConnectSerial: longint; virtual;
     function ConnectTelNet: longint; virtual;
     function ConnectVXI: longint; virtual;
     function ConnectUSB: longint; virtual;
+    function AutoConnect: longint; virtual;
     procedure EnableControls(Enable: boolean); virtual; abstract;
     function GetCommandName(c: variant): string;
     function CommandSupported(c: variant): boolean;
@@ -132,16 +140,23 @@ type
     procedure Purge;
     function RecvString: string;
     function RecvString(TimeOut: longword): string;
+
+    procedure SaveState(FileStream: tFileStream);
+    function RestoreState(FileStream: tFileStream): integer;
+    function RestoreState(FileName: string): integer;
   end;
 
-  procedure WriteProgramLog(Log: string);
-  procedure WriteProgramLog(i: longint);
-  procedure WriteProgramLog(d: double);
+  procedure WriteProgramLog(Log: string; Force: boolean = false);
+  procedure WriteProgramLog(i: longint; Force: boolean = false);
+  procedure WriteProgramLog(d: double; Force: boolean = false);
 
   function strf(x: double): string;
   function strf(x: longint): string;
   function valf(s: string): integer;
   function vald(s: string): double;
+
+  function CopyFromTo(Origin: string; Start, Stop: string): string;
+  function CopyFromTo(Origin: string; SearchStart: integer; Start, Stop: string): string;
  // function SubstrCount(const aString, aSubstring: string): Integer;
 
 const
@@ -150,6 +165,15 @@ const
   spTimeOuts = 2;
   spStatus = 3;
 
+  StartCaption = 'Начать снятие';
+  PauseCaption = 'Приостановить';
+  ContinueCaption = 'Продолжить';
+
+  CfgExt = '.cfg';
+  PrExt = '.pr';
+  LogExtensions: array[0..2] of string = ('.genlog', '.detlog', '.templog');
+  ChartZoomFactor = 2;
+
 var
   ProgramLog: TFileStream;
   LogCS: TRTLCriticalSection;
@@ -157,7 +181,7 @@ var
 implementation
 
 uses
-  Controls, StrUtils, DeviceF, MainF, OptionF;
+  Math, Controls, EditBtn, StrUtils, DeviceF, MainF, OptionF;
 
 function strf(x: double): string; inline;
 begin
@@ -179,6 +203,26 @@ begin
   val(s, Result);
 end;
 
+function CopyFromTo(Origin: string; Start, Stop: string): string;
+var
+  p1, p2: integer;
+begin
+  p1:= Pos(Start, Origin) + 1;
+  p2:= Pos(Stop, Origin);
+  Result:= Copy(Origin, p1, p2 - p1);
+end;
+
+function CopyFromTo(Origin: string; SearchStart: integer; Start, Stop: string
+  ): string;
+var
+  p1, p2: integer;
+begin
+  Delete(Origin, 1, SearchStart - 1);
+  p1:= Pos(Start, Origin) + 1;
+  p2:= Pos(Stop, Origin);
+  Result:= Copy(Origin, p1, p2 - p1);
+end;
+
 {function SubstrCount(const aString, aSubstring: string): Integer;
 var
   lPosition: Integer;
@@ -192,9 +236,9 @@ begin
   end;
 end; }
 
-procedure WriteProgramLog(Log: string); inline;
+procedure WriteProgramLog(Log: string; Force: boolean = false); inline;
 begin
-  if Config.KeepLog then
+  if Config.KeepLog or Force then
   try
     EnterCriticalSection(LogCS);
       Log+= LineEnding;
@@ -204,32 +248,53 @@ begin
   end;
 end;
 
-procedure WriteProgramLog(i: longint); inline;
+procedure WriteProgramLog(i: longint; Force: boolean = false); inline;
 begin
-  WriteProgramLog(strf(i));
+  WriteProgramLog(strf(i), Force);
 end;
 
-procedure WriteProgramLog(d: double); inline;
+procedure WriteProgramLog(d: double; Force: boolean = false); inline;
 begin
-  WriteProgramLog(strf(d));
+  WriteProgramLog(strf(d), Force);
 end;
 
 procedure tSerConnectForm.btnConnectClick(Sender: TObject);
+var
+  Result: integer;
+  Crutch: integer absolute Result;
 begin
   Cursor:= crHourGlass;
   btnDisconnectClick(Sender);
   if cbPortSelect.ItemIndex >= 0 then
   begin
     if pos('Ethernet', cbPortSelect.Text) <> 0 then
-      ConnectTelNet
+      Result:= ConnectTelNet
     else
-      ConnectSerial;
+      Result:= ConnectSerial;
   end;
   if ConnectionKind <> cNone then
   begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
   end;
+  if (Result = 0) or debug then
+  begin
+   // if debug then deviceindex:= 1;
+    GetDeviceParams;
+    Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
+    try
+      if FileExists(MainForm.FullCfgDir + Config.ParamFile) then
+        RestoreState(MainForm.FullCfgDir + Config.ParamFile)
+      else
+        writeprogramlog('File ' + MainForm.FullCfgDir + Config.ParamFile + ' not found');
+    except
+      on E: Exception do
+        ShowMessage(E.Message);
+    end;
+    cbPortSelect.ItemIndex:= Crutch;
+  end
+  else
+    WriteProgramLog('Подключение - результат: ' + strf(Result));
   Cursor:= crDefault;
 end;
 
@@ -242,25 +307,20 @@ begin
     begin
       SerPort.Purge;
       SerPort.CloseSocket;
-
-      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-      EnableControls(false);
-      ConnectionKind:= cNone;
-      DeviceIndex:= iDefaultdevice;
     end;
     freeandnil(SerPort);
   end;
 
   if assigned(TelNetClient) then
   begin
-    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-    EnableControls(false);
-    ConnectionKind:= cNone;
-    DeviceIndex:= iDefaultdevice;
-
     freeandnil(TelNetClient);
   end;
-  StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
+
+  EnableControls(false);
+  ConnectionKind:= cNone;
+  DeviceIndex:= iDefaultDevice;
+  StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model; //why? iunno. whats yo case anyway, m8? why do you care? i dont. look at me, im nick wilde and i dont care. just look at how much i dont care. its astonishing. one could even say its un-'care'-cteristic of me to care so little. get it? actually, i dont care if you get it. buzz off. get off ma case, pal! or else!
+  StatusBar.Panels[spConnection].Text:= 'Нет подключения';
 end;
 
 procedure tSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
@@ -271,14 +331,15 @@ begin
     exit;
   end;
 
-  TestResult:= RecvestIdentity(seRecvTimeout.Value);
+  TestResult:= RequestIdentity(seRecvTimeout.Value);
   if not IsEmptyStr(TestResult, [' ']) then
     ShowMessage('Подключено к ' + TestResult);
 end;
 
 procedure tSerConnectForm.btStatusClick(Sender: TObject);
 begin
-  if StatusForm.Visible then StatusForm.Hide;
+  if StatusForm.Visible then
+    StatusForm.Hide;
   StatusForm.Form:= pointer(Self);
   StatusForm.Show;
 end;
@@ -302,7 +363,7 @@ end;
 
 procedure tSerConnectForm.SetTOE(AValue: longword);
 begin
-  StatusBar.Panels[spTimeouts].Text:= 'Таймаутов:' + strf(AValue);
+  StatusBar.Panels[spTimeouts].Text:= 'Таймаутов: ' + strf(AValue);
   WriteProgramLog('Timeout receiving string');
   fTimeOuts:= AValue;
 end;
@@ -318,8 +379,9 @@ var
   sg: tStringGrid;
 begin
   case Kind of
-    dGenerator: sg:= DeviceForm.sgGenCommands;
-    dDetector:  sg:= DeviceForm.sgDetCommands;
+    dGenerator:      sg:= DeviceForm.sgGenCommands;
+    dDetector:       sg:= DeviceForm.sgDetCommands;
+    dTempController: sg:= DeviceForm.sgTempCommands;
   end;
 
   with sg do
@@ -396,8 +458,9 @@ begin
         for j:= 0 to RowCount - SGHeaderLength  - 1 do
           Commands[j]:= Cells[i, j + SGHeaderLength];
 
-        {for j:= 0 to high(Commands) do
-          writeProgramLog(getcommandname(j) + '  ' + Commands[j]); }
+        {writeprogramlog(model);
+        for j:= 0 to high(Commands) do
+          writeProgramLog(getcommandname(j) + '  ' + Commands[j]);}
       end;
     end;
   end;
@@ -415,10 +478,23 @@ begin
   WriteProgramLog('Строка на устройство ' + TestResult);
   WriteProgramLog(s);
   WriteProgramLog('');
-  SerPort.SendString(s);        //cts????
+
+  case ConnectionKind of
+    //cNone: ;
+    cSerial:
+      begin
+        SerPort.SendString(s);  //cts????
+      end;
+    cUSB: ;
+    cTelNet:
+      begin
+
+      end;
+    cVXI: ;
+  end;
 end;
 
-function tSerConnectForm.RecvestIdentity(TimeOut: longword): string;
+function tSerConnectForm.RequestIdentity(TimeOut: longword): string;
 begin
   Purge;
   case ConnectionKind of
@@ -468,6 +544,7 @@ begin
   WriteProgramLog('Подключение...');
 
   DeviceIndex:= iDefaultDevice;
+  TestResult:= '';
   ConnectionKind:= cSerial;
   SerPort:= TBlockSerial.Create;
   SerPort.RaiseExcept:= true;
@@ -497,28 +574,37 @@ begin
             4: P:= 'S';
           end;
 
-          writeprogramlog('config' + strf(baudrate) + strf(databits) + p + strf(stopbits));
           SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
-          writeprogramlog('sucess');
           InitDevice;
-          TestResult:= RecvestIdentity(seRecvTimeout.Value);
+          TestResult:= RequestIdentity(seRecvTimeout.Value);
           WriteProgramLog('Ответ устройства: ' + TestResult);
 
           if not IsEmptyStr(TestResult, [' ']) then
           begin
             if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
             begin
+              Result:= 0;
               WriteProgramLog('Успешно');
               break;
             end
             else
+            begin
+              Result:= -2; //not found
               DeviceIndex:= iDefaultDevice;
+            end;
           end
           else
+          begin
+            Result:= -1; //no answer
             DeviceIndex:= iDefaultDevice;
+          end;
+        end
+        else
+        begin
+          Result:= -3; //none with this interface
+          DeviceIndex:= iDefaultDevice;
         end;
     end;
-    if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
   end;
 
   if SerPort.LastError <> 0 then
@@ -531,42 +617,10 @@ begin
     SerPort.RaiseExcept:= true;
     ConnectionKind:= cNone;
     freeandnil(SerPort);
-    exit(-1)
+    exit(-4) //synaser error
   end;
-        {end
-        else
-        begin
-          ShowMessage('Устройство не оветило на запрос модели или неверны параметры подключения.'#13#10'Исправьте параметры или введите модель подключаемого прибора.');
-          OptionForm.ShowModal;
-          //OptionForm.ModalResult:=;
-          for i:= 1 to high(SupportedDevices) do
-          with SupportedDevices[i] do
-          begin
-            if (pos(PresumedDevice, Manufacturer) > 0) or (pos(PresumedDevice, Model) > 0) then
-            begin
-              DeviceIndex:= i;
-              break;
-            end;
-          end;
-        if DeviceIndex = iDefaultDevice then ShowMessage('Устройство не опознано');
-        end;
 
-      if (PresumedDevice <> '') and (TestResult <> '') and
-        (PresumedDevice <> TestResult) then
-        ShowMessage('Внимание! Текущая конфигурация создавалась для другого прибора.');
-
-    StatusBar1.Caption:= 'Готовность';
-      end;}
-        //After successfull connection the DTR signal is set
-  //DebugBox.Items.Strings[4]:= SerPort.Device;
-  {if serport.cts then DebugBox.Items.Strings[5]:= 'cts 1';
-  if serport.testdsr then DebugBox.Items.Strings[6]:= 'dsr 1';
-  if SerPort.CanRead(TestTimeOut) then DebugBox.Items.Strings[7]:= 'canread';
-  if SerPort.CanWrite(TestTimeOut) then DebugBox.Items.Strings[8]:= 'canwrite';   }
-
-     //TestDSR?
-
-  if (SerPort.InstanceActive) and (DeviceIndex <> iDefaultDevice) then
+  if SerPort.InstanceActive and (Result = 0) then
   begin
     StatusBar.Panels[spConnection].Text:= 'Подключено к ' + cbPortSelect.Text;
     Result:= 0;
@@ -582,28 +636,48 @@ begin
     CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
   end
   else
-    begin
-      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-      SerPort.CloseSocket;
-      ConnectionKind:= cNone;
-      freeandnil(SerPort);
-      Result:= -2;
+  begin
+    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+    case Result of
+      -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
+      -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
+      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - COM';
     end;
+
+    ShowMessage(StatusBar.Panels[spStatus].Text);
+
+    SerPort.CloseSocket;
+    ConnectionKind:= cNone;
+    freeandnil(SerPort);
+    if Result = 0 then
+      Result:= -5; //this should never happen; instance not active
+    exit;
+  end;
   SerPort.RaiseExcept:= true;
 end;
 
 function tSerConnectForm.ConnectTelNet: longint;
 var
   i: integer;
+  s: string;
 begin
   DeviceIndex:= iDefaultDevice;
+  TestResult:= '';
   ConnectionKind:= cTelNet;
   TelNetClient:= tTelNetSend.Create;
   for i:= 1 to high(SupportedDevices) do
-    with SupportedDevices[i] do
+  begin
+    DeviceIndex:= i;
+    with CurrentDevice^ do
       if Connection = cTelNet then
       begin
-        WriteProgramLog('Попытка подключения к ' + Manufacturer + ' ' + Model);
+        s:= 'Попытка подключения к ' + Model;
+        StatusBar.Panels[spStatus].Text:= s;
+        StatusBar.Update;
+        WriteProgramLog(s);
+        WriteProgramLog(Host + ':' + Port);
+
+        TelNetClient.TermType:= '';
         TelNetClient.TargetHost:= Host;
         TelNetClient.TargetPort:= Port;
         TelNetClient.Timeout:= TimeOut;
@@ -611,33 +685,61 @@ begin
         TelNetClient.Login;
 
         InitDevice;
-        TestResult:= RecvestIdentity(seRecvTimeout.Value);
+        TestResult:= RequestIdentity(seRecvTimeout.Value);
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if not IsEmptyStr(TestResult, [' ']) then
+        begin
           if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
           begin
+            Result:= 0;
             DeviceIndex:= i;
             break;
+          end
+          else
+          begin
+            Result:= -2; //not found
+            DeviceIndex:= iDefaultDevice;
           end;
+        end
+        else
+        begin
+          Result:= -1; //no answer
+          DeviceIndex:= iDefaultDevice;
+        end;
+      end
+      else
+      begin
+        Result:= -3;  //no compatible devices
+        DeviceIndex:= iDefaultDevice;
       end;
-  if DeviceIndex <> iDefaultDevice then
+  end;
+
+  if Result = 0 then
   begin
     StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
-    Result:= 0;
+    TimeOutErrors:= 0;
+    EnableControls(true);
+
     case Config.OnConnect of
       AQuery: btQueryClick(Self);
       AReset: btResetClick(Self);
     end;
+
     CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
   end
   else
   begin
-    StatusBar.Panels[spStatus].Text:= 'Устройство не опознано';
-    ShowMessage('Устройство не опознано');
+    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+    case Result of
+      -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
+      -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
+      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - TelNet';
+    end;
+    ShowMessage(StatusBar.Panels[spStatus].Text);
+
     ConnectionKind:= cNone;
     freeandnil(TelNetClient);
-    Result:= -1;
   end;
 end;
 
@@ -658,7 +760,7 @@ begin
         Session.Active:= true;
 
         InitDevice;
-        TestResult:= RecvestIdentity;
+        TestResult:= RequestIdentity;
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if not IsEmptyStr(TestResult, [' ']) then
@@ -711,11 +813,6 @@ begin
         Descriptor  := UsbContext.GetDeviceDescriptor(USBDevices[I]);
         writeprogramlog('Bus' + strf(Bus));
         writeprogramlog('Device'+strf(Address)+': ID ' +IntToHex(Descriptor.idVendor,4) +':' +IntToHex(Descriptor.idProduct,4));
-        {writeprogramlog();
-        writeprogramlog();
-        writeprogramlog();
-        writeprogramlog();
-        Write(); }
         Write(',  port: ',Port:3);
       end;
 
@@ -732,7 +829,7 @@ begin
         TelNetClient.Login;
 
         InitDevice;
-        TestResult:= RecvestIdentity;
+        TestResult:= RequestIdentity;
         WriteProgramLog('Ответ устройства: ' + TestResult);
 
         if TestResult <> '' then
@@ -762,6 +859,11 @@ begin
   end; }
 end;
 
+function tSerConnectForm.AutoConnect: longint;
+begin
+
+end;
+
 function tSerConnectForm.GetCommandName(c: variant): string;
 begin
   case c of
@@ -783,12 +885,19 @@ begin
           else
             str(eDetCommand(c),Result);
         end;
+        dTempController:
+        begin
+          if c > integer(high(eTempCommand)) then
+            Result:= 'Invalid command'
+          else
+            str(eDetCommand(c),Result);
+        end;
       end;
   end;
 end;
 
-function tSerConnectForm.CommandSupported(c: variant): boolean;
-begin
+function tSerConnectForm.CommandSupported(c: variant): boolean; { TODO 1 -cImprovement : change some visibility stuff to this? }
+begin                                                              //currently only used in offsetf
   if (c > high(CurrentDevice^.Commands)) or
      (CurrentDevice^.Commands[c] = '') then
     Result:= false
@@ -798,54 +907,63 @@ end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then  //time critical so no complicated checks???
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then  //time critical so no complicated checks???
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + strf(deviceindex){Model});
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; s: string);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then  //time critical so no complicated checks???
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then  //time critical so no complicated checks???
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    CommandString+= s;
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  CommandString+= s;
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; i: longint);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    CommandString+= strf(i);
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  CommandString+= strf(i);
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
@@ -853,23 +971,26 @@ procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
 var
   i: longint;
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
-  end;
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
 
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
+    if CommandString <> '' then CommandString+= CommSeparator;
 
-  CommandString+= CurrentDevice^.Commands[c];
+    CommandString+= Commands[c];
 
-  if Query then CommandString+= '?';
+    if Query then CommandString+= '?';
 
-  for i:= 0 to high(a) do
-  begin
-    if i <> 0 then CommandString+= CurrentDevice^.ParSeparator;
-    CommandString+= strf(a[i]);
+    for i:= 0 to high(a) do
+    begin
+      if i <> 0 then CommandString+= ParSeparator;
+      CommandString+= strf(a[i]);
+    end;
   end;
 end;
 
@@ -878,51 +999,57 @@ procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
 var
   i: longint;
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by this device');
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    for i:= 0 to high(a) do
+    begin
+      if i <> 0 then CommandString+= ParSeparator;
+
+      if VarIsOrdinal(a[i]) then
+        CommandString+= strf(integer(a[i]))
+      else
+      if VarIsFloat(a[i]) then
+        CommandString+= strf(double(a[i]))
+      else
+      if VarIsStr(a[i]) then
+        CommandString+= a[i];
+    end
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  for i:= 0 to high(a) do
-  begin
-    if i <> 0 then CommandString+= CurrentDevice^.ParSeparator;
-
-    if VarIsOrdinal(a[i]) then
-      CommandString+= strf(integer(a[i]))
-    else
-    if VarIsFloat(a[i]) then
-      CommandString+= strf(double(a[i]))
-    else
-    if VarIsStr(a[i]) then
-      CommandString+= a[i];
-  end
 end;
 
 procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: double;
   Units: eUnits = uNone);
 begin
-  if (c > high(CurrentDevice^.Commands)) or
-    (CurrentDevice^.Commands[c] = '') then
+  with CurrentDevice^ do
   begin
-    WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Currentdevice^.Model);
-    exit
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    CommandString+= strf(x) + AmplitudeUnits[integer(Units)]; //does this work ???
   end;
-
-  if CommandString <> '' then CommandString+= CurrentDevice^.CommSeparator;
-
-  CommandString+= CurrentDevice^.Commands[c];
-
-  if Query then CommandString+= '?';
-
-  CommandString+= strf(x) + AmplitudeUnits[integer(Units)]; //does this work ???
 end;
 
 procedure tSerConnectForm.PassCommands;
@@ -965,7 +1092,7 @@ begin
       end;
     cTelNet:
       begin
-        TelNetClient.RecvString //??????
+        //TelNetClient.RecvString //?????? { TODO 1 -cBug : check }
       end;
 
     cVXI:
@@ -977,19 +1104,21 @@ end;
 
 function tSerConnectForm.RecvString: string;
 begin
+  try
   case ConnectionKind of
     //cNone: ;
     cSerial:
       begin
         if (serport.instanceactive) and (serport.CTS) then
         begin
-          SerPort.RaiseExcept:= false;
+          SerPort.RaiseExcept:= false;  { TODO 1 -cImprovement : best to replace all of theese with try except, also add to telnet }
           Result:= SerPort.RecvString(CurrentDevice^.Timeout);
           SerPort.RaiseExcept:= true;
 
           writeprogramlog('Получена строка ' + Result);
 
-          if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+          if SerPort.LastError = ErrTimeOut then
+            TimeOutErrors:= TimeOutErrors + 1;
         end;
       end;
     cTelNet:
@@ -1004,9 +1133,15 @@ begin
 
       end
   end
+  except
+    on E: Exception do
+      writeprogramlog('recvstr ' + e.message);
+  end;
 end;
 
 function tSerConnectForm.RecvString(TimeOut: longword): string;
+var
+  t: longword;
 begin
   case ConnectionKind of
     //cNone: ;
@@ -1020,16 +1155,239 @@ begin
 
           writeprogramlog('Получена строка ' + Result);
 
-          if SerPort.LastError = ErrTimeOut then TimeOutErrors:= TimeOutErrors + 1;
+          if SerPort.LastError = ErrTimeOut then
+            TimeOutErrors:= TimeOutErrors + 1;
         end;
       end;
     cTelNet:
       begin;
+        t:= TelNetClient.Timeout;
+        TelNetClient.Timeout:= TimeOut;;
         Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+        TelNetClient.Timeout:= t;
 
         writeprogramlog('Получена строка ' + Result);
       end
   end
+end;
+
+procedure tSerConnectForm.SaveState(FileStream: tFileStream);
+var
+  i, j: integer;
+  s: string;
+begin
+  if not Assigned(FileStream) then
+    exit;
+  s:= Name + '(' + LineEnding;
+  FileStream.Write(s[1], length(s));
+  for i:= 0 to ComponentCount - 1 do
+  begin
+    if Components[i] is TComboBox then
+    with TComboBox(Components[i]) do
+    begin
+      s:= Name + '=' + strf(ItemIndex) + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end
+    else
+    if Components[i] is TSpinEdit then
+    with TSpinEdit(Components[i]) do
+    begin
+      s:= Name + '=' + strf(Value) + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end
+    else
+    if Components[i] is TFloatSpinEdit then
+    with TFloatSpinEdit(Components[i]) do
+    begin
+      s:= Name + '=' + strf(Value) + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end
+    else
+    if Components[i] is TCheckBox then
+    with TCheckBox(Components[i]) do
+    begin
+      s:= Name + '=' + strf(integer(Checked)) + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end
+    else
+    if Components[i] is TCheckGroup then
+    with TCheckGroup(Components[i]) do
+    begin
+      s:= Name + '=' + strf(Items.Count) + LineEnding;
+      FileStream.Write(s[1], length(s));
+
+      for j:= 0 to Items.Count - 1 do
+      begin
+        s:= '#' + strf(j) + '=' + strf(integer(Checked[j])) + LineEnding;
+        FileStream.Write(s[1], length(s));
+      end;
+    end
+    else
+    if Components[i] is TPageControl then
+    with TPageControl(Components[i]) do
+    begin
+      s:= Name + '=' + strf(TabIndex) + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end
+    else
+    if Components[i] is TFileNameEdit then
+    with TFileNameEdit(Components[i]) do
+    begin
+      s:= Name + '=' + Text + LineEnding;
+      FileStream.Write(s[1], length(s));
+    end;
+  end;
+  s:= ')' + LineEnding;
+  FileStream.Write(s[1], length(s));
+end;
+
+function tSerConnectForm.RestoreState(FileStream: tFileStream): integer;
+var
+  i, j, p, v, e: integer;
+  d: double;
+  StringStream: tStringStream;
+  s: string;
+begin
+  if not Assigned(FileStream) then
+    exit(-1);
+  StringStream:= tStringStream.Create('');
+
+  StringStream.CopyFrom(FileStream, 0);    //0 = whole
+
+  p:= pos(Name, StringStream.DataString);
+
+  s:= CopyFromTo(StringStream.DataString, p, '(', ')');
+  //showmessage(s);
+  Result:= 0;
+
+  for i:= 0 to ComponentCount - 1 do
+  begin
+    if Components[i] is TComboBox then
+    with TComboBox(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        ItemIndex:= 0;
+        continue;
+      end;
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        ItemIndex:= v
+      else
+        Result:= -2;
+      if ItemIndex < 0 then
+        ItemIndex:= 0;
+    end
+    else
+    if Components[i] is TSpinEdit then
+    with TSpinEdit(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Value:= 0;
+        continue;
+      end;
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        Value:= v
+      else
+        Result:= -3;
+    end
+    else
+    if Components[i] is TFloatSpinEdit then
+    with TFloatSpinEdit(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Value:= 0;
+        continue;
+      end;
+      val(CopyFromTo(s, p, '=', LineEnding), d, e);
+      if e = 0 then
+        Value:= d
+      else
+        Result:= -4;
+    end
+    else
+    if Components[i] is TCheckBox then
+    with TCheckBox(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Checked:= false;
+        continue;
+      end;
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        Checked:= boolean(v)
+      else
+        Result:= -5;
+    end
+    else
+    if Components[i] is TCheckGroup then
+    with TCheckGroup(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        //
+        continue;
+      end;
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+
+      for j:= 0 to min(v - 1, Items.Count - 1) do
+      begin
+        p:= pos('#' + strf(j), s);
+        val(CopyFromTo(s, p, '=', LineEnding), v, e);
+        if e = 0 then
+          Checked[j]:= boolean(v)
+        else
+          Result:= -6
+      end;
+    end
+    else
+    if Components[i] is TPageControl then
+    with TPageControl(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        TabIndex:= 0;
+        continue;
+      end;
+      val(CopyFromTo(s, p, '=', LineEnding), v, e);
+      if e = 0 then
+        TabIndex:= v
+      else
+        Result:= -7;
+    end
+    else
+    if Components[i] is TFileNameEdit then
+    with TFileNameEdit(Components[i]) do
+    begin
+      p:= pos(Name, s);
+      if p = 0 then
+      begin
+        Text:= '';
+        continue;
+      end;
+      Text:= CopyFromTo(s, p, '=', LineEnding);
+    end;
+  end;
+  StringStream.Destroy;
+end;
+
+function tSerConnectForm.RestoreState(FileName: string): integer;
+var
+  FileStream: tFileStream;
+begin
+  FileStream:= TFilestream.Create(FileName, fmOpenRead);
+  Result:= RestoreState(FileStream);
+  FileStream.Destroy;
 end;
 
 end.

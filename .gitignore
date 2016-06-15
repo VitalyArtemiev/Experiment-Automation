@@ -66,3 +66,10 @@ local
 Synapse
 ProgramLog.txt
 Default.cfg
+*.cfg
+*.prm
+ProgramLog.txt
+*.templog
+*.detlog
+*.txt
+*.lps

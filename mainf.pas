@@ -5,25 +5,27 @@ unit MainF;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, DividerBevel, StrUtils, Forms, Controls,
-  Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin, ExtCtrls,
-  Buttons, ActnList, Synaser, SerConF, DeviceF;
+  Classes, SysUtils, FileUtil, DividerBevel, IDEWindowIntf, StrUtils, Forms,
+  Controls, Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin,
+  ExtCtrls, Buttons, ActnList, Synaser, SerConF, DeviceF;
 
 type
   { TMainForm }
 
   tMainForm = class(TSerConnectForm)
     btProgram: TSpeedButton;
+    btAutoConnect: TSpeedButton;
 
     btTrigger: TButton;
     cbFuncSelect: TComboBox;
     cbImpedance: TComboBox;
     cbACEnable: TCheckBox;
+    cbPointPerStepTemp: TCheckBox;
 
     cbSweepRate: TCheckBox;
     cbSweepType: TComboBox;
     cbSweepDirection: TComboBox;
-    cbPointPerStep: TCheckBox;
+    cbPointPerStepDet: TCheckBox;
     cbAmplUnit: TComboBox;
     cbModulation: TComboBox;
     DividerBevel1: TDividerBevel;
@@ -62,14 +64,16 @@ type
 
     About: TMenuItem;
     Label29: TLabel;
+    miShowTempControlF: TMenuItem;
+    pnConnection: TPanel;
     Separator1: TMenuItem;
     Separator2: TMenuItem;
     Separator3: TMenuItem;
 
     miShowReadingsF: TMenuItem;
 
-    miSavePar: TMenuItem;
-    miLoadPar: TMenuItem;
+    miSaveProfile: TMenuItem;
+    miLoadProfile: TMenuItem;
     miOptions: TMenuItem;
     OpenDialog: TOpenDialog;
     pnBaseParams: TPanel;
@@ -106,14 +110,13 @@ type
     tsSweep: TTabSheet;
     tsStep: TTabSheet;
     procedure AboutClick(Sender: TObject);
-    procedure cbPointPerStepChange(Sender: TObject);
+    procedure btAutoConnectClick(Sender: TObject);
+    procedure cbPointPerStepDetChange(Sender: TObject);
     procedure cbAmplUnitChange(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
 
     procedure btnConnectClick(Sender: TObject); override;
-
-    procedure EnableControls(Enable: boolean); override;
-
     procedure btApplyClick(Sender: TObject);
     procedure btQueryClick(Sender: TObject); override;
     procedure btProgramClick(Sender: TObject);
@@ -127,17 +130,18 @@ type
     procedure eStepChange(Sender: TObject);
     procedure eSweepStartFChange(Sender: TObject);
     procedure eSweepStopFChange(Sender: TObject);
-    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure miLoadParClick(Sender: TObject);
+    procedure FrequencyTabChange(Sender: TObject);
+    procedure miLoadProfileClick(Sender: TObject);
     procedure miOptionsClick(Sender: TObject);
-    procedure miSaveParClick(Sender: TObject);
+    procedure miSaveProfileClick(Sender: TObject);
     procedure miShowReadingsFClick(Sender: TObject);
     procedure miNewReportClick(Sender: TObject);
     procedure miExportParamsClick(Sender: TObject);
     procedure miLoadCfgClick(Sender: TObject);
     procedure miSaveCfgClick(Sender: TObject);
+    procedure miShowTempControlFClick(Sender: TObject);
     procedure ReadingTimerStartTimer(Sender: TObject);
     procedure ReadingTimerTimer(Sender: TObject);
     procedure StatusBarHint(Sender: TObject);
@@ -147,13 +151,16 @@ type
   public
     { public declarations }
     FileResult: integer;
-    MinDelay: longword;
 
-    function SaveParams(FileName: ansistring): word;
-    function LoadParams(FileName: ansistring): word;
-    function SaveConfig(FileName: ansistring): word;
-    function LoadConfig(FileName: ansistring): word;
-    function ExportParams(Manual: boolean; Header: boolean = false): word;
+    function FullCfgDir: string; inline;
+    function SaveProfile(FileName: ansistring): integer;
+    function LoadProfile(FileName: ansistring): integer;
+    function SaveConfig(FileName: ansistring): integer;
+    function LoadConfig(FileName: ansistring): integer;
+    function ExportParams(Manual: boolean; Header: boolean = false): integer;
+
+    procedure EnableControls(Enable: boolean); override;
+    procedure GetDeviceParams; override;
   end;
 
 
@@ -161,275 +168,138 @@ const
 
   iDefaultDevice = 0;
 
-  TestTimeOut = 2000;
+  ConstFTab = 0;
+  SweepTab = 1;
+  StepTab = 2;
 
+  TestTimeOut = 2000;
+  DefaultCfgFolder = 'Config';
   DefaultConfig = 'Default.cfg';
   DefaultParams = 'Last.prm';
 
   HT = #09;
 
 var
- // CurrFunction: FunctionType;
   AmplitudeUnit: eUnits;
   MainForm: TMainForm;
-  ExperimentLog: TFileStream;
   PortList: string;
   PortCount: integer = 0;
   ReportNumber: integer = 0;
   ExperimentNumber: integer = 1;
+  Debug: boolean;
 
   Config: RConfig;
   Params: RParams;
 
-  //ParamArr: array of longint;
-
 implementation
 
 uses
-  Math, Variants, MemoF, StepF, OptionF, ReadingsF, OffsetF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, ReadingsF, TempControlF, LogModule, OffsetF, AboutF;
 
 {$R *.lfm}
 
 { TMainForm }
 
-function tMainForm.LoadParams(FileName: ansistring): word;
+function tMainForm.LoadProfile(FileName: ansistring): integer;
 var
-  f: file;
-  i: longint;
-  s: shortstring;
-  LastPortExists: boolean = false;
+  FileStream: TFileStream;
+  StringStream: TStringStream;
+  s: string;
+  p: integer;
 begin
-  system.assign(f, FileName);
-  {$I-}
-  reset(f, sizeof(RParams));
-  blockread(f, Params, 1);
-  LoadParams := IOResult;
-  if LoadParams = 0 then
+  if FileExists(FileName) then
   begin
-    with Params do
-    begin
-      cbPortSelect.Text:= GeneratorPort;
-      PresumedDevice:= LastGenerator;
+    try
+      FileStream:= TFilestream.Create(FileName, fmOpenRead);
+      Result:= RestoreState(FileStream);
+      Result+= ReadingsForm.RestoreState(FileStream);
+      Result+= TempControlForm.RestoreState(FileStream);
+      StringStream:= tStringStream.Create('');
 
-      cbImpedance.ItemIndex:= Impedance;
-      cbFuncSelect.ItemIndex:= CurrFunc;
-      cbAmplUnit.ItemIndex:= AmplUnit;
-      cbAmplUnitChange(Self);
+      StringStream.CopyFrom(FileStream, 0);    //0 = whole
 
-      eAmplitude.Value:= Amplitude;
-      eOffset.Value:= Offset;
-      cbACEnable.Checked:= ACOn;
+      p:= pos('Internal', StringStream.DataString);
+      s:= CopyFromTo(StringStream.DataString, p, '(', ')');
 
-      eFrequency.Value:= Frequency;
+      p:= pos('DetLogDir', s);
+      if p = 0 then
+        ReadingsForm.DataFolder:= DefaultLogFolder
+      else
+        ReadingsForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
 
-      eSweepStartF.Value:= SweepStartF;
-      eSweepStopF.Value:= SweepStopF;
-      eSweepRate.Value:= SweepRate;
-      cbSweepRate.Checked:= AutoSweep;
-      cbSweepType.ItemIndex:= SweepType;
-      cbSweepDirection.ItemIndex:= SweepDir;
-      cbModulation.ItemIndex:= Modulation;
+      p:= pos('TempLogDir', s);
+      if p = 0 then
+        TempControlForm.DataFolder:= DefaultLogFolder
+      else
+        TempControlForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
 
-      eFStep.Value:= StepF;
-      eStepStartF.Value:= StepStartF;
-      eStepStopF.Value:= StepStopF;
-      eAStep.Value:= StepA;
-      eStepStartA.Value:= StepStartA;
-      eStepStopA.Value:= StepStopA;
-      eTimeStep.Value:= TimeStep;
-
-      ReadingTimer.Interval:= ReadingTime;
-
-      with ReadingsForm do
+      StringStream.Destroy;
+      FileStream.Destroy;
+      if Result < 0 then s:= 'неверный параметр ' + strf(Result);
+    except
+      on e:Exception do
       begin
-        cbPortSelect.Text:= DetectorPort;
-        PresumedDevice:= LastDetector;
-
-        cbReadingsMode.ItemIndex:= ReadingsMode;
-        cbUseGenFreq.Checked:= GenFreq;
-
-        cbSampleRate.ItemIndex:= SampleRate;
-        cbTimeConstant.ItemIndex:= TimeConstant;
-        cbSensitivity.ItemIndex:= Sensitivity;
-        cbReserve1.ItemIndex:= CloseReserve;
-        cbReserve2.ItemIndex:= WideReserve;
-        cbInputRange.ItemIndex:= InputRange;
-
-        cbCh1.ItemIndex:= Display1;
-        cbCh2.ItemIndex:= Display2;
-        cbRatio1.ItemIndex:= Ratio1;
-        cbRatio2.ItemIndex:= Ratio2;
-        cbChart1Show.ItemIndex:= Show1;
-        cbChart2Show.ItemIndex:= Show2;
-
-        eDelay.Value:= Delay;
-        eUpdateInterval.Value:= UpdateInterval;
-        eAxisLimit.Value:= AxisLimit;
-        cbXAxis.ItemIndex:= XAxis;
+        Result:= 1;
+        s:= e.Message;
       end;
-
-      cbPointPerStep.Checked:= OnePoint;
-
-      for i:= 0 to PortCount - 1 do
-        if cbPortSelect.Items.Strings[i] = cbPortSelect.Text then
-          LastPortExists:= true;
-      if not LastPortExists then
-      begin
-        if not IsEmptyStr(cbPortSelect.Text, [' ']) then
-          ShowMessage('Сохраненный порт недоступен');
-        if not IsEmptyStr(PortList, [' ']) then
-          cbPortSelect.ItemIndex:= 0;
-      end;
-    end
+    end;
   end
   else
   begin
-    str(LoadParams, s);
-    ShowMessage('Ошибка загрузки параметров. Код ошибки ' + s);
-    with Params do
-    begin
-      GeneratorPort       := cbPortSelect.Text;
-      LastGenerator       := PresumedDevice;
-      Impedance           := cbImpedance.ItemIndex;
-      CurrFunc            := cbFuncSelect.ItemIndex;
-      Amplitude           := eAmplitude.Value;
-      Offset              := eOffset.Value;
-      ACOn                := cbACEnable.Checked;
-      Frequency           := eFrequency.Value;
-      SweepStartF         := eSweepStartF.Value;
-      SweepStopF          := eSweepStopF.Value;
-      SweepRate           := eSweepRate.Value;
-      AutoSweep           := cbSweepRate.Checked;
-      SweepType           := cbSweepType.ItemIndex;
-      SweepDir            := cbSweepDirection.ItemIndex;
-      Modulation          := cbModulation.ItemIndex;
-      StepF               := eFStep.Value;
-      StepStartF          := eStepStartF.Value;
-      StepStopF           := eStepStopF.Value;
-      StepA               := eAStep.Value;
-      StepStartA          := eStepStartA.Value;
-      StepStopA           := eStepStopA.Value;
-      TimeStep            := eTimeStep.Value;
-      ReadingTime         := ReadingTimer.Interval;
-
-      with ReadingsForm do
-      begin
-        DetectorPort        := cbPortSelect.Text;
-        LastDetector        := PresumedDevice;
-        ReadingsMode        := cbReadingsMode.ItemIndex;
-        GenFreq             := cbUseGenFreq.Checked;
-        SampleRate          := cbSampleRate.ItemIndex;
-        TimeConstant        := cbTimeConstant.ItemIndex;
-        Sensitivity         := cbSensitivity.ItemIndex;
-        CloseReserve        := cbReserve1.ItemIndex;
-        WideReserve         := cbReserve2.ItemIndex;
-        InputRange          := cbInputRange.ItemIndex;
-        Display1            := cbCh1.ItemIndex;
-        Display2            := cbCh2.ItemIndex;
-        Ratio1              := cbRatio1.ItemIndex;
-        Ratio2              := cbRatio2.ItemIndex;
-        Show1               := cbChart1Show.ItemIndex;
-        Show2               := cbChart2Show.ItemIndex;
-        Delay               := eDelay.Value;
-        UpdateInterval      := eUpdateInterval.Value;
-        AxisLimit           := eAxisLimit.Value;
-        XAxis               := cbXAxis.ItemIndex;
-      end;
-    end;
+    Result:= 2;
+    s:= 'не найден файл ' + FileName;
   end;
 
-  MainForm.CurrentDevice^.Port:= Params.GeneratorPort;
-  ReadingsForm.CurrentDevice^.Port:= Params.DetectorPort;
-  MainForm.PresumedDevice:= Params.LastGenerator;
-  ReadingsForm.PresumedDevice:= Params.LastDetector;
+  if Result <> 0 then
+    ShowMessage('Ошибка загрузки параметров: ' + s);
 
-  system.close(f);
-  {$I+}
+  if cbPortSelect.ItemIndex < 0 then
+  begin
+    ShowMessage('Сохраненный порт недоступен');
+    cbPortSelect.ItemIndex:= 0;
+  end;
 end;
 
-function tMainForm.SaveParams(FileName: ansistring): word;
+function tMainForm.SaveProfile(FileName: ansistring): integer;
 var
-  f: file;
+  FileStream: TFileStream;
+  s: string;
 begin
-  if not FileExists(FileName) then
-  with Params do
-  begin
-    if not ParamsApplied then
+  Result:= 0;
+  try
+    FileStream:= TFilestream.Create(FileName, fmCreate);
+  except
+    on e: Exception do
     begin
-      GeneratorPort       := cbPortSelect.Text;
-      LastGenerator       := PresumedDevice;
-      Impedance           := cbImpedance.ItemIndex;
-      CurrFunc            := cbFuncSelect.ItemIndex;
-      AmplUnit            := cbAmplUnit.ItemIndex;
-      Amplitude           := eAmplitude.Value;
-      Offset              := eOffset.Value;
-      ACOn                := cbACEnable.Checked;
-      Frequency           := eFrequency.Value;
-      SweepStartF         := eSweepStartF.Value;
-      SweepStopF          := eSweepStopF.Value;
-      SweepRate           := eSweepRate.Value;
-      AutoSweep           := cbSweepRate.Checked;
-      SweepType           := cbSweepType.ItemIndex;
-      SweepDir            := cbSweepDirection.ItemIndex;
-      Modulation          := cbModulation.ItemIndex;
-      StepF               := eFStep.Value;
-      StepStartF          := eStepStartF.Value;
-      StepStopF           := eStepStopF.Value;
-      StepA               := eAStep.Value;
-      StepStartA          := eStepStartA.Value;
-      StepStopA           := eStepStopA.Value;
-      TimeStep            := eTimeStep.Value;
-      ReadingTime         := ReadingTimer.Interval;
-    end;
-
-    with ReadingsForm do
-    if not ParamsApplied then
-    begin
-      DetectorPort        := cbPortSelect.Text;
-      LastDetector        := PresumedDevice;
-      ReadingsMode        := cbReadingsMode.ItemIndex;
-      GenFreq             := cbUseGenFreq.Checked;
-      SampleRate          := cbSampleRate.ItemIndex;
-      TimeConstant        := cbTimeConstant.ItemIndex;
-      Sensitivity         := cbSensitivity.ItemIndex;
-      CloseReserve        := cbReserve1.ItemIndex;
-      WideReserve         := cbReserve2.ItemIndex;
-      InputRange          := cbInputRange.ItemIndex;
-      Display1            := cbCh1.ItemIndex;
-      Display2            := cbCh2.ItemIndex;
-      Ratio1              := cbRatio1.ItemIndex;
-      Ratio2              := cbRatio2.ItemIndex;
-      Show1               := cbChart1Show.ItemIndex;
-      Show2               := cbChart2Show.ItemIndex;
-      Delay               := eDelay.Value;
-      UpdateInterval      := eUpdateInterval.Value;
-      AxisLimit           := eAxisLimit.Value;
-      XAxis               := cbXAxis.ItemIndex;
+      Result:= 1;
+      s:= e.Message;
     end;
   end;
+  SaveState(FileStream);
+  ReadingsForm.SaveState(FileStream);
+  TempControlForm.SaveState(FileStream);
+  s:= 'Internal' + '(' + LineEnding;
+  FileStream.Write(s[1], length(s));
 
-  system.assign(f, FileName);
-  writeprogramlog(Ioresult);
-  {$I-}
-  rewrite(f, sizeof(RParams));
-  writeprogramlog(Ioresult);
-  blockwrite(f, Params, 1);
+  s:= 'DetLogDir' + '=' + ReadingsForm.DataFolder + LineEnding;
+  FileStream.Write(s[1], length(s));
 
-  SaveParams:= IOResult;
-  system.close(f);
-  {$I+}
-  begin
-    if SaveParams <> 0 then ShowMessage('Ошибка сохранения параметров. Код ошибки ' + strf(SaveParams));
-  end;
+  s:= 'TempLogDir' + '=' + TempControlForm.DataFolder + LineEnding;
+  FileStream.Write(s[1], length(s));
+
+  s:= ')' + LineEnding;
+  FileStream.Write(s[1], length(s));
+  FileStream.Free;
+
+  if Result <> 0 then
+      ShowMessage('Ошибка сохранения параметров: ' + s);
 end;
 
-function tMainForm.SaveConfig(FileName: ansistring): word;
+function tMainForm.SaveConfig(FileName: ansistring): integer;
 var
   f: file;
   s: string;
 begin
-  if IsEmptyStr(Config.WorkConfig, [' ']) then
-    Config.WorkConfig:= DefaultConfig;
   system.assign(f, FileName);
   {$I-}
   rewrite(f, sizeof(RConfig));
@@ -438,15 +308,18 @@ begin
 
   system.close(f);
   {$I+}
-  SaveConfig:= IOResult;
-  str(SaveConfig, s);
-  if SaveConfig <> 0 then ShowMessage('Ошибка сохранения конфигурации. Код ошибки ' + s);
+  Result:= IOResult;
+
+  str(Result, s);
+  if Result <> 0 then
+    ShowMessage('Ошибка сохранения конфигурации. Код ошибки ' + s);
 end;
 
-function tMainForm.LoadConfig(FileName: ansistring): word;
+function tMainForm.LoadConfig(FileName: ansistring): integer;
 var
   f: file;
   s: string;
+  cfg: rConfig;
 begin
   if FileExists(FileName) then
   begin
@@ -454,25 +327,23 @@ begin
     {$I-}
     reset(f, sizeof(RConfig));
 
-    blockread(f, Config, 1);
+    blockread(f, cfg, 1);
 
     system.close(f);
     {$I+}
-    LoadConfig:= IOResult;
+    Result:= IOResult;
   end
   else
-    LoadConfig:= 2;
-  str(LoadConfig, s);
-  if LoadConfig <> 0 then ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
-  if (LoadConfig <> 0) or IsEmptyStr(Config.DefaultGens, [' ']) or
-                          IsEmptyStr(Config.DefaultDets, [' ']) then
-  begin
-    Config.DefaultGens:= DefaultGen;
-    Config.DefaultDets:= DefaultDet;
-  end;
+    Result:= 2;
+
+  str(Result, s);
+  if Result = 0 then
+    Config:= cfg
+  else
+    ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
 end;
 
-function tMainForm.ExportParams(Manual: boolean; Header: boolean): word;
+function tMainForm.ExportParams(Manual: boolean; Header: boolean): integer;
 var
   i: integer;
   f: system.text;
@@ -505,8 +376,10 @@ begin
 
     {$I-}
     system.assign(f, FileName);
-    if FileExists(Filename) then append(f)
-    else rewrite(f);
+    if FileExists(Filename) then
+      append(f)
+    else
+      rewrite(f);
     {$I+}
   end;
 
@@ -573,7 +446,7 @@ begin
     writeln(f, 'Конечная амплитуда:   ' + s + ' В');
     str(eAStep.Value:0:2, s);
     writeln(f, 'Шаг:                  ' + s + ' В');
-    writeln(f, 'Данные в файле: ', ReadingsForm.CurrLogFileName);
+    writeln(f, 'Данные в файле: ', ReadingsForm.Log.FileName);  { TODO : test }
   end;
 
   with ReadingsForm do
@@ -632,7 +505,8 @@ begin
   {$ENDIF}
 
   Top:= Screen.Height div 2 - Height div 2;
-  Left:= Screen.Width div 2 - Width - 8;
+  Left:= 8;
+  btAutoConnect.Caption:= 'Автомат.' + LineEnding + 'подключение';
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btProgram.Caption:= 'Включить' + LineEnding + 'управление';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -673,33 +547,56 @@ begin
   cbPortSelect.AddItem('Ethernet', nil);
   inc(PortCount);
 
-  if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
+  if cbPortSelect.ItemIndex < 0 then
+    cbPortSelect.ItemIndex:= 0;
 
-  FileResult:= LoadConfig(DefaultConfig);
-  if FileResult = 0 then
+  Config.CfgFolder:= DefaultCfgFolder; //init config
+  Config.ParamFile:= DefaultParams;
+  Config.WorkConfig:= DefaultConfig;
+
+  if DirectoryExists(FullCfgDir) then
   begin
-    if Config.WorkConfig <> DefaultConfig then
-      FileResult:= LoadConfig(Config.WorkConfig);
-    if FileResult <> 0 then
-      FileResult:= LoadConfig(DefaultConfig);
+    FileResult:= LoadConfig(FullCfgDir + DefaultConfig);  //load default config
+    if FileResult = 0 then
+      if Config.WorkConfig <> DefaultConfig then          //try to load config pointed to by defaultconfig
+        FileResult:= LoadConfig(FullCfgDir + Config.WorkConfig);
+  end
+  else
+  begin
+    if not CreateDir(DefaultCfgFolder) then  //if folder can't be created
+    begin
+      Config.CfgFolder:= '';
+      FileResult:= LoadConfig(FullCfgDir + DefaultConfig); // try again without additional folder
+      if FileResult = 0 then
+        if Config.WorkConfig <> DefaultConfig then
+          FileResult:= LoadConfig(FullCfgDir + Config.WorkConfig);
+    end
+    else
+    begin
+      ShowMessage('Не найдены файлы кофигурации.' + LineEnding +
+                  'Создана папка по умолчанию ' + DefaultCfgFolder + '.');
+      FileResult:= -1; //to still load defaults from optionform oncreate
+    end;
   end;
-end;
-
-procedure tMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
-begin
-  if Config.SaveParamsOnExit then
-    SaveParams(Config.DefaultParams);
-  SaveConfig(DefaultConfig);
-  if Assigned(SerPort) then SerPort.CloseSocket;
 end;
 
 procedure tMainForm.FormDestroy(Sender: TObject);
 begin
-  SerPort.Free;
-  TelNetClient.Free;
+  btnDisconnectClick(Self);
+
+  {SerPort.Free;
+  TelNetClient.Free; }
   DoneCriticalSection(LogCS);
   ProgramLog.Free;
   DoneCriticalSection(CommCS);
+end;
+
+procedure tMainForm.FrequencyTabChange(Sender: TObject);
+begin
+  if FrequencyTab.TabIndex = 2 then
+    eAmplitude.Enabled:= false
+  else
+    eAmplitude.Enabled:= cbACEnable.Enabled;
 end;
 
 procedure tMainForm.miNewReportClick(Sender: TObject);
@@ -707,13 +604,11 @@ begin
   ReportNumber:= 0; //so that it checks for existing file internally?
   ExperimentNumber:= 1;
   ExportParams(true);
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miExportParamsClick(Sender: TObject);
 begin
   ExportParams(true);
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.eAmplitudeChange(Sender: TObject);
@@ -731,6 +626,20 @@ begin
       ShowMessage('Единица ' + cbAmplUnit.Text + ' не поддерживается прибором');
 end;
 
+procedure tMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+begin
+  if Config.SaveParamsOnExit then
+  begin
+    FileResult:= SaveProfile(FullCfgDir + Config.ParamFile);
+    WriteProgramLog('Сохранение параметров в ' + FullCfgDir + Config.ParamFile +
+                    '; Результат: ' + strf(FileResult));
+  end;
+
+  FileResult:= SaveConfig(FullCfgDir + Config.WorkConfig);
+  WriteProgramLog('Сохранение конфигурации в ' + FullCfgDir + Config.WorkConfig +
+                  '; Результат: ' + strf(FileResult));
+end;
+
 procedure tMainForm.eOffsetChange(Sender: TObject);
 begin
   {if cbACEnable.Checked and (abs(eOffset.Value) > 2 * eAmplitude.Value) then
@@ -743,7 +652,7 @@ end;
 procedure tMainForm.eStepChange(Sender: TObject);
 begin
   if ((eStepStartF.Value <> eStepStopF.Value) and (eFStep.Value <> 0)) or
-    ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
+     ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
     StepForm.CalcSteps
   else
     TotalTime.Caption:= '0 ч 0 м 0 с, 0 шагов';
@@ -758,9 +667,9 @@ begin
   if cbSweepType.ItemIndex = 1 then
   begin
     if (eSweepStartF.Value < eSweepStopF.Value) and (eSweepStartF.Value * 1000000 < eSweepStopF.Value) then
-    eSweepStartF.Value:= eSweepStopF.Value / 1000000;                                                           { TODO 2 -cImprovement : Check this out }
+      eSweepStartF.Value:= eSweepStopF.Value / 1000000;                                                           { TODO 2 -cImprovement : Check this out }
     if (eSweepStartF.Value > eSweepStopF.Value) and (eSweepStartF.Value  > eSweepStopF.Value * 1000000) then
-    eSweepStartF.Value:= eSweepStopF.Value * 1000000;
+      eSweepStartF.Value:= eSweepStopF.Value * 1000000;
   end
 end;
 
@@ -775,9 +684,9 @@ begin
   end
 end;
 
-procedure tMainForm.cbPointPerStepChange(Sender: TObject);
+procedure tMainForm.cbPointPerStepDetChange(Sender: TObject);
 begin
-  if cbPointPerStep.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = integer(rBuffer)) then
+  if cbPointPerStepDet.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = integer(rBuffer)) then
   begin
     ReadingsForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
     ReadingsForm.cbReadingsModeChange(Self);
@@ -791,52 +700,94 @@ begin
   AboutForm.ShowModal;
 end;
 
+procedure tMainForm.btAutoConnectClick(Sender: TObject);
+begin
+                  Cursor:= crHourGlass;
+  ReadingsForm.   Cursor:= crHourGlass;
+  TempControlForm.Cursor:= crHourGlass;
+
+  AutoConnect;
+  ReadingsForm.AutoConnect;
+  TempControlForm.AutoConnect;
+
+                  Cursor:= crDefault;
+  ReadingsForm.   Cursor:= crDefault;
+  TempControlForm.Cursor:= crDefault;
+end;
+
 procedure tMainForm.miOptionsClick(Sender: TObject);
 begin
   OptionForm.ShowModal;
- // RestoreStatusBar;
 end;
 
 procedure tMainForm.miLoadCfgClick(Sender: TObject);
 var
   s: ansistring;
 begin
-  OpenDialog.FileName:= '';
-  OpenDialog.Title:= 'Загрузить файл конфигурации';
-  OpenDialog.Filter:= 'Файлы конфигурации|*.cfg|Все файлы|*.*';
-  if OpenDialog.Execute then
+  with OpenDialog do
   begin
-    s:= UTF8toANSI(OpenDialog.FileName); //  проверить на доп символы
-    LoadConfig(s);
+    InitialDir:= FullCfgDir;
+    DefaultExt:= CfgExt;
+    FileName:= '';
+    Title:= 'Загрузить файл конфигурации';
+    Filter:= 'Файлы конфигурации|*' + CfgExt + '|Все файлы|*.*';
+    if Execute then
+    begin
+      s:= UTF8toANSI(FileName); //  проверить на доп символы
+      LoadConfig(s);
+    end
   end;
-  //RestoreStatusBar;
 end;
 
 procedure tMainForm.miSaveCfgClick(Sender: TObject);
 var
   s: ansistring;
 begin
-  SaveDialog.FileName:= '';
-  SaveDialog.Title:= 'Сохранить файл конфигурации как';
-  SaveDialog.Filter:= 'Файлы конфигурации|*.cfg|Все файлы|*.*';
-  if SaveDialog.Execute then
+  with SaveDialog do
   begin
-    s:= UTF8toANSI(SaveDialog.FileName);
-    SaveConfig(s);
+    InitialDir:= FullCfgDir;
+    DefaultExt:= CfgExt;
+    FileName:= '';
+    Title:= 'Сохранить файл конфигурации как';
+    Filter:= 'Файлы конфигурации|*' + CfgExt + '|Все файлы|*.*';
+    if Execute then
+    begin
+      s:= UTF8toANSI(FileName);
+      SaveConfig(s);
+    end;
+    Config.WorkConfig:= s;
   end;
-  Config.WorkConfig:= s;
-  //RestoreStatusBar;
+end;
+
+procedure tMainForm.miShowTempControlFClick(Sender: TObject);
+begin
+  if not miShowTempControlF.Checked then
+  begin
+    TempControlForm.Show;
+    miShowTempControlF.Checked:= true;
+  end
+  else
+  begin
+    TempControlForm.Hide;
+    miShowTempControlF.Checked:= false;
+  end;
 end;
 
 procedure tMainForm.ReadingTimerStartTimer(Sender: TObject);
 begin
-  ReadingTimer.Interval:= Params.ReadingTime * 1000;
+  ReadingTimer.Interval:= Config.ReadingTime * 1000;
 end;
 
 procedure tMainForm.ReadingTimerTimer(Sender: TObject);
 begin
-  if ReadingsForm.LogState = lActive then
-    ReadingsForm.StopLog;
+  with ReadingsForm do
+    if Log.State = lActive then
+      Log.Stop;
+
+  with TempControlForm do
+    if Log.State = lActive then
+      Log.Stop;
+
   ReadingTimer.Enabled:= false;
 end;
 
@@ -845,39 +796,50 @@ begin
 
 end;
 
-{procedure tMainForm.RestoreStatusBar;
+function tMainForm.FullCfgDir: string;
 begin
-  StatusBar.SimplePanel:= false;
-end;  }
-
-procedure tMainForm.miLoadParClick(Sender: TObject);
-var
-  s: ansistring;
-begin
-  OpenDialog.FileName:= '';
-  OpenDialog.Title:= 'Загрузить файл параметров';
-  OpenDialog.Filter:= 'Файлы параметров|*.prm|Все файлы|*.*';
-  if OpenDialog.Execute then
-  begin
-    s:= UTF8toANSI(OpenDialog.FileName);
-    LoadParams(s);
-  end;
-  //RestoreStatusBar;
+  if Config.CfgFolder <> '' then
+    Result:= GetCurrentDir + '\' + Config.CfgFolder + '\'
+  else
+    Result:= GetCurrentDir + '\';
 end;
 
-procedure tMainForm.miSaveParClick(Sender: TObject);
+procedure tMainForm.miLoadProfileClick(Sender: TObject);
 var
   s: ansistring;
 begin
-  SaveDialog.FileName:= '';
-  SaveDialog.Title:= 'Сохранить файл параметров как';
-  SaveDialog.Filter:= 'Файлы параметров|*.prm|Все файлы|*.*';
-  if SaveDialog.Execute then
+  with OpenDialog do
   begin
-    s:= UTF8toANSI(SaveDialog.FileName);
-    SaveParams(s);
+    InitialDir:= FullCfgDir;
+    DefaultExt:= PrExt;
+    FileName:= '';
+    Title:= 'Загрузить файл параметров';
+    Filter:= 'Файлы параметров|*' + PrExt + '|Все файлы|*.*';
+    if Execute then
+    begin
+      s:= UTF8toANSI(FileName);
+      LoadProfile(s);
+    end;
   end;
-  //RestoreStatusBar;
+end;
+
+procedure tMainForm.miSaveProfileClick(Sender: TObject);
+var
+  s: ansistring;
+begin
+  with SaveDialog do
+  begin
+    InitialDir:= FullCfgDir;
+    DefaultExt:= PrExt;
+    FileName:= '';
+    Title:= 'Сохранить файл параметров как';
+    Filter:= 'Файлы параметров|*' + PrExt + '|Все файлы|*.*';
+    if Execute then
+    begin
+      s:= UTF8toANSI(FileName);
+      SaveProfile(s);
+    end;
+  end;
 end;
 
 procedure tMainForm.miShowReadingsFClick(Sender: TObject);
@@ -968,7 +930,6 @@ begin
     Offset:= eOffset.Value;
     ACOn:= cbACEnable.Checked;
     AmplUnit:= cbAmplUnit.ItemIndex;
-    ReadingTime:= ReadingTimer.Interval;
     if not cbAmplUnit.Visible then AmplitudeUnit:= uNone;
 
     EnterCriticalSection(CommCS);
@@ -978,21 +939,26 @@ begin
       PassCommands;
     LeaveCriticalSection(CommCS);
 
-    if FrequencyTab.TabIndex = 2 then
+    if FrequencyTab.TabIndex = StepTab then
     begin
-      if Config.AutoReadingStep and (ReadingsForm.ConnectionKind = cNone) then
-      begin
-        ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
-                    'но детектор не подключен.');
-        WriteProgramLog('Невозможно начать считывание: детектор не подключен');
-        CommandString:= '';
-        exit
-      end;
+      if Config.AutoReadingStep then       { TODO 2 -cImprovement : stuff like this really should throw an exception }
+        if (ReadingsForm.ConnectionKind = cNone) and
+           (TempControlForm.ConnectionKind = cNone) then
+          begin
+            ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
+                        'но ни один из приборов не подключен');
+
+            WriteProgramLog('Невозможно начать считывание: приборы не подключены');
+            CommandString:= '';
+            exit
+          end;
+
       if ((eStepStartF.Value <> eStepStopF.Value) and (eFStep.Value <> 0)) or
       ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
       begin
         //assignments in stepf
-        ReadingsForm.OnePointPerStep:= cbPointPerStep.Checked;
+        ReadingsForm.OnePointPerStep:= cbPointPerStepDet.Checked;
+        TempControlForm.OnePointPerStep:= cbPointPerStepTemp.Checked;
         AutoSweep:= false;
         StepStartF:= eStepStartF.Value;
         StepStopF:=  eStepStopF.Value;
@@ -1008,7 +974,9 @@ begin
           ExportParams(false);
           inc(ExperimentNumber);
         end;
-      end;
+      end
+      else
+        ShowMessage('Введены неверные параметры');
     end
     else
     begin
@@ -1021,16 +989,20 @@ begin
         PassCommands;
       LeaveCriticalSection(CommCS);
 
-      if FrequencyTab.TabIndex = 1 then
+      if FrequencyTab.TabIndex = SweepTab then
       begin
-        if Config.AutoReadingSweep and (ReadingsForm.ConnectionKind = cNone) then
-        begin
-          ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
-                      'но детектор не подключен.');
-          WriteProgramLog('Невозможно начать считывание: детектор не подключен');
-          CommandString:= '';
-          exit
-        end;
+        if Config.AutoReadingSweep then
+          if (ReadingsForm.ConnectionKind = cNone) and
+             (TempControlForm.ConnectionKind = cNone) then
+            begin
+              ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
+                          'но ни один из приборов не подключен');
+
+              WriteProgramLog('Невозможно начать считывание: приборы не подключены');
+              CommandString:= '';
+              exit
+            end;
+
         ReadingsForm.LogFreq:= true;
         ReadingsForm.cbUseGenFreq.Checked:= false;
         ReadingsForm.LogAmpl:= false;
@@ -1039,7 +1011,8 @@ begin
           Cursor:= crHourGlass;
           sleep(MinDelay);
           Cursor:= crDefault;
-          ReadingsForm.BeginLog;
+          ReadingsForm.Log.Start;
+          TempControlForm.Log.Start;
           if ReadingTime > 0 then
           begin
             ReadingTimer.Interval:= ReadingTime;
@@ -1071,16 +1044,20 @@ begin
           inc(ExperimentNumber);
         end;
       end
-      else
+      else  //ConstFTab
       begin
-        if Config.AutoReadingConst and (ReadingsForm.ConnectionKind = cNone) then
-        begin
-          ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
-                      'но детектор не подключен.');
-          WriteProgramLog('Невозможно начать считывание: детектор не подключен');
-          CommandString:= '';
-          exit
-        end;
+        if Config.AutoReadingConst then
+          if (ReadingsForm.ConnectionKind = cNone) and
+             (TempControlForm.ConnectionKind = cNone) then
+            begin
+              ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
+                          'но ни один из приборов не подключен');
+
+              WriteProgramLog('Невозможно начать считывание: приборы не подключены');
+              CommandString:= '';
+              exit
+            end;
+
         ReadingsForm.LogFreq:= false;
         ReadingsForm.LogAmpl:= false;
         if Config.AutoReadingConst then
@@ -1088,7 +1065,8 @@ begin
           Cursor:= crHourGlass;
           sleep(MinDelay);
           Cursor:= crDefault;
-          ReadingsForm.BeginLog;
+          ReadingsForm.Log.Start;
+          TempControlForm.Log.Start;
           if ReadingTime > 0 then
           begin
             ReadingTimer.Interval:= ReadingTime;
@@ -1113,7 +1091,7 @@ begin
     ParamsApplied:= true;
   end;
 
-  str(eAmplitude.Value:0:2, s);
+  str(eAmplitude.Value:0:2, s);     { TODO 2 -cImprovement : To events? properties? }
   AmplitudeReading.Caption:= s;
   str(eOffset.Value:0:2, s);
   OffsetReading.Caption:= s;
@@ -1131,8 +1109,8 @@ procedure tMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
   readingsform.enablecontrols(true);
-  serport:= tblockserial.create;
-  readingsform.serport:= tblockserial.create;
+  tempcontrolform.enablecontrols(true);
+  Debug:= true;
   //readingsform.btnConnectClick(self);
 end;
 
@@ -1275,10 +1253,10 @@ procedure tMainForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
 
-  if not FileExists(Config.DefaultParams) then
-    Config.DefaultParams:= DefaultParams;
-  if Config.LoadParamsOnStart then
-    LoadParams(Config.DefaultParams);
+  if not FileExists(FullCfgDir + Config.ParamFile) then
+    Config.ParamFile:= DefaultParams;
+  if (Config.LoadParamsOnStart) and (FileResult = 0) then
+    LoadProfile(FullCfgDir + Config.ParamFile);
 
   cbImpedanceChange(Self);
   if cbImpedance.ItemIndex < 0 then
@@ -1286,42 +1264,101 @@ begin
   if cbModulation.ItemIndex < 0 then
     cbModulation.ItemIndex:= 0;
   eStepChange(Self);
+  FrequencyTabChange(Self);
   ReadingsForm.cbReadingsModeChange(ReadingsForm);
 end;
 
 procedure tMainForm.btnConnectClick(Sender: TObject);
-var
-  s: string;
-  i: integer;
 begin
-  if ReadingsForm.cbPortSelect.ItemIndex = cbPortSelect.ItemIndex then
+  with ReadingsForm do
+  if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
   begin
-    if ReadingsForm.ConnectionKind = cSerial then
+    if ConnectionKind = cSerial then
     begin
       showmessage('К данному порту уже осуществляется подключение');
       exit
     end
     else
-    if ReadingsForm.ConnectionKind = cTelNet then
+    if ConnectionKind = cTelNet then
       showmessage('check ip');
        { TODO 2 -cImprovement : check ip }
   end;
+
+  with TempControlForm do
+  if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
+  begin
+    if ConnectionKind = cSerial then
+    begin
+      showmessage('К данному порту уже осуществляется подключение');
+      exit
+    end
+    else
+    if ConnectionKind = cTelNet then
+      showmessage('check ip');
+  end;
+
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 
-  {$IFOPT D+}
+  if debug then
   if DeviceIndex = 0 then
   begin
    deviceindex:= 1;
    connectionkind:= cserial;
+   serport:= tblockserial.create;
   end;
-  {$ENDIF}
 
-  if DeviceIndex = iDefaultDevice then Exit;
+  if DeviceIndex = iDefaultDevice then
+    exit;
+
+  FrequencyTabChange(Self);
 
   Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
   Params.LastGenerator:= MainForm.CurrentDevice^.Model;
+end;
 
+procedure tMainForm.EnableControls(Enable: boolean);
+begin
+  cbImpedance.Enabled:=        Enable;
+  cbFuncSelect.Enabled:=       Enable;
+  cbAmplUnit.Enabled:=         Enable;
+  eAmplitude.Enabled:=         Enable;
+  eOffset.Enabled:=            Enable;
+  eFrequency.Enabled:=         Enable;
+  cbSweepRate.Enabled:=        Enable;
+  eSweepRate.Enabled:=         Enable;
+  SweepRateReading.Enabled:=   Enable;
+  cbSweepType.Enabled:=        Enable;
+  cbSweepDirection.Enabled:=   Enable;
+  cbModulation.Enabled:=       Enable;
+  eSweepStartF.Enabled:=       Enable;
+  eSweepStopF.Enabled:=        Enable;
+  btApply.Enabled:=            Enable;
+  btTrigger.Enabled:=          Enable;
+  btQuery.Enabled:=            Enable;
+  btCustomCommand.Enabled:=    Enable;
+  btStop.Enabled:=             Enable;
+  btReset.Enabled:=            Enable;
+  btStatus.Enabled:=           Enable;
+  cbACEnable.Enabled:=         Enable;
+  eStepStartF.Enabled:=        Enable;
+  eStepStopF.Enabled:=         Enable;
+  eFStep.Enabled:=             Enable;
+  eStepStartA.Enabled:=        Enable;
+  eStepStopA.Enabled:=         Enable;
+  eAStep.Enabled:=             Enable;
+  eTimeStep.Enabled:=          Enable;
+  cbPointPerStepDet.Enabled:=  Enable;
+  cbPointPerStepTemp.Enabled:= Enable;
+  miNewReport.Enabled:=        Enable;
+  miExportParams.Enabled:=     Enable;
+end;
+
+procedure tMainForm.GetDeviceParams;
+var
+  i: integer;
+  s: string;
+begin
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
   cbImpedance.Items.Clear;
   cbFuncSelect.Items.Clear;
@@ -1420,56 +1457,6 @@ begin
     cbSweepDirection.Width:= cbModulation.Width;
     cbSweepDirection.BorderSpacing.Left:= 4;
   end;
-
-  with Params do
-  begin
-    cbImpedance.ItemIndex:= Impedance;
-    cbImpedanceChange(Self);
-    cbFuncSelect.ItemIndex:= CurrFunc;
-    cbFuncSelectChange(Self);
-
-    cbAmplUnit.ItemIndex:= AmplUnit;
-    cbAmplUnitChange(Self);
-
-    cbSweepType.ItemIndex:= SweepType;
-    cbSweepDirection.ItemIndex:= SweepDir;
-  end;
-end;
-
-procedure tMainForm.EnableControls(Enable: boolean);
-begin
-  cbImpedance.Enabled:=      Enable;
-  cbFuncSelect.Enabled:=     Enable;
-  cbAmplUnit.Enabled:=       Enable;
-  eAmplitude.Enabled:=       Enable;
-  eOffset.Enabled:=          Enable;
-  eFrequency.Enabled:=       Enable;
-  cbSweepRate.Enabled:=      Enable;
-  eSweepRate.Enabled:=       Enable;
-  SweepRateReading.Enabled:= Enable;
-  cbSweepType.Enabled:=      Enable;
-  cbSweepDirection.Enabled:= Enable;
-  cbModulation.Enabled:=     Enable;
-  eSweepStartF.Enabled:=     Enable;
-  eSweepStopF.Enabled:=      Enable;
-  btApply.Enabled:=          Enable;
-  btTrigger.Enabled:=        Enable;
-  btQuery.Enabled:=          Enable;
-  btCustomCommand.Enabled:=  Enable;
-  btStop.Enabled:=           Enable;
-  btReset.Enabled:=          Enable;
-  btStatus.Enabled:=         Enable;
-  cbACEnable.Enabled:=       Enable;
-  eStepStartF.Enabled:=      Enable;
-  eStepStopF.Enabled:=       Enable;
-  eFStep.Enabled:=           Enable;
-  eStepStartA.Enabled:=      Enable;
-  eStepStopA.Enabled:=       Enable;
-  eAStep.Enabled:=           Enable;
-  eTimeStep.Enabled:=        Enable;
-  cbPointPerStep.Enabled:=   Enable;
-  miNewReport.Enabled:=        Enable;
-  miExportParams.Enabled:=   Enable;
 end;
 
 end.

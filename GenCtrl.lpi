@@ -4,283 +4,34 @@
     <Version Value="9"/>
     <PathDelim Value="\"/>
     <General>
+      <Flags>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+        <UseDefaultCompilerOptions Value="True"/>
+      </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
-      <Title Value="Generator-Amplifier Control"/>
+      <MainUnit Value="-1"/>
+      <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
-      <UseXPManifest Value="True"/>
-      <Icon Value="0"/>
     </General>
-    <i18n>
-      <EnableI18N LFM="False"/>
-      <OutDir Value="local"/>
-    </i18n>
     <VersionInfo>
-      <UseVersionInfo Value="True"/>
-      <AutoIncrementBuild Value="True"/>
-      <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="5"/>
-      <Language Value="0419"/>
-      <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>
+      <StringTable ProductVersion=""/>
     </VersionInfo>
-    <BuildModes Count="3">
-      <Item1 Name="Default" Default="True"/>
-      <Item2 Name="Debug">
-        <CompilerOptions>
-          <Version Value="11"/>
-          <PathDelim Value="\"/>
-          <Target>
-            <Filename Value="Generator-Amplifier Debug"/>
-          </Target>
-          <SearchPaths>
-            <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="synapse\source\lib;pas-libusb-libusb-1.0\src"/>
-            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
-          </SearchPaths>
-          <Parsing>
-            <SyntaxOptions>
-              <IncludeAssertionCode Value="True"/>
-            </SyntaxOptions>
-          </Parsing>
-          <CodeGeneration>
-            <Checks>
-              <IOChecks Value="True"/>
-              <RangeChecks Value="True"/>
-              <OverflowChecks Value="True"/>
-              <StackChecks Value="True"/>
-            </Checks>
-            <Optimizations>
-              <OptimizationLevel Value="0"/>
-            </Optimizations>
-          </CodeGeneration>
-          <Linking>
-            <Debugging>
-              <DebugInfoType Value="dsDwarf2"/>
-              <UseHeaptrc Value="True"/>
-            </Debugging>
-            <Options>
-              <Win32>
-                <GraphicApplication Value="True"/>
-              </Win32>
-            </Options>
-          </Linking>
-        </CompilerOptions>
-      </Item2>
-      <Item3 Name="Release">
-        <CompilerOptions>
-          <Version Value="11"/>
-          <PathDelim Value="\"/>
-          <Target>
-            <Filename Value="Generator-Amplifier Control"/>
-          </Target>
-          <SearchPaths>
-            <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
-            <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
-          </SearchPaths>
-          <CodeGeneration>
-            <SmartLinkUnit Value="True"/>
-            <TargetCPU Value="i386"/>
-            <Optimizations>
-              <OptimizationLevel Value="3"/>
-            </Optimizations>
-          </CodeGeneration>
-          <Linking>
-            <Debugging>
-              <GenerateDebugInfo Value="False"/>
-              <StripSymbols Value="True"/>
-            </Debugging>
-            <LinkSmart Value="True"/>
-            <Options>
-              <Win32>
-                <GraphicApplication Value="True"/>
-              </Win32>
-            </Options>
-          </Linking>
-        </CompilerOptions>
-      </Item3>
+    <BuildModes Count="1">
+      <Item1 Name="default" Default="True"/>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
-      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
-      <ExcludeFileFilter Value="*.(bak|ppu|o|so);*~;backup"/>
     </PublishOptions>
     <RunParams>
       <local>
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="5">
-      <Item1>
-        <PackageName Value="LazControls"/>
-      </Item1>
-      <Item2>
-        <PackageName Value="fpvisa"/>
-      </Item2>
-      <Item3>
-        <PackageName Value="TAChartLazarusPkg"/>
-      </Item3>
-      <Item4>
-        <PackageName Value="FCL"/>
-      </Item4>
-      <Item5>
-        <PackageName Value="LCL"/>
-      </Item5>
-    </RequiredPackages>
-    <Units Count="22">
-      <Unit0>
-        <Filename Value="GenCtrl.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit0>
-      <Unit1>
-        <Filename Value="mainf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="MainForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="MainF"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="memof.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="MemoForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="MemoF"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="stepf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="StepForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="StepF"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="optionf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="OptionForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="OptionF"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="readingsf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="ReadingsForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="ReadingsF"/>
-      </Unit5>
-      <Unit6>
-        <Filename Value="customcommandf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="CustomCommandForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="CustomCommandF"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="statusf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="StatusForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="StatusF"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="genconst.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="GenConst"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="detconst.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="DetConst"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="serconf.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="axissource.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="AxisSource"/>
-      </Unit11>
-      <Unit12>
-        <Filename Value="aboutf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="AboutForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="AboutF"/>
-      </Unit12>
-      <Unit13>
-        <Filename Value="devicef.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="DeviceForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="DeviceF"/>
-      </Unit13>
-      <Unit14>
-        <Filename Value="synapse\source\lib\dnssend.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit14>
-      <Unit15>
-        <Filename Value="deviceparf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="Form1"/>
-        <ResourceBaseClass Value="Form"/>
-      </Unit15>
-      <Unit16>
-        <Filename Value="ReadingThreads.inc"/>
-        <IsPartOfProject Value="True"/>
-      </Unit16>
-      <Unit17>
-        <Filename Value="ReadingThreads.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit17>
-      <Unit18>
-        <Filename Value="offsetf.pas"/>
-        <IsPartOfProject Value="True"/>
-        <ComponentName Value="OffsetForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="OffsetF"/>
-      </Unit18>
-      <Unit19>
-        <Filename Value="DevSession.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit19>
-      <Unit20>
-        <Filename Value="visapreload.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit20>
-      <Unit21>
-        <Filename Value="menuh.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit21>
-    </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <PathDelim Value="\"/>
-    <Target>
-      <Filename Value="Generator Control"/>
-    </Target>
-    <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\..\2.6.4\units\i386-win32\synapse\source\lib;synapse\source\lib"/>
-      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
-    </SearchPaths>
-    <Linking>
-      <Options>
-        <Win32>
-          <GraphicApplication Value="True"/>
-        </Win32>
-      </Options>
-    </Linking>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">

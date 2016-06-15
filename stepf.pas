@@ -37,12 +37,14 @@ type
     procedure btFinishClick(Sender: TObject);
     procedure btPauseClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure FormCreate(Sender: TObject);
     procedure FormHide(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
   private
     { private declarations }
   public
+    Finished: boolean;
     function CalcSteps: longint;
     { public declarations }
   end;
@@ -52,12 +54,12 @@ var
   StartTime, ElapsedTime, PauseTime, PauseLength: TDateTime;
   StepNumber: longword;
   StepMode: eStepMode;
-  Finished: boolean = true;
   StepForm: TStepForm;
 
 implementation
 
-uses DeviceF, MainF, ReadingsF, ReadingThreads, SerConF;
+uses
+  DeviceF, MainF, ReadingsF, TempControlF, LogModule, ReadingThreads, SerConF;
 
 {$R *.lfm}
 
@@ -81,8 +83,18 @@ begin
   begin
     StepNumber:= abs(trunc((StopA - StartA) / AStep));
     StepMode:= sAmplitude;
-    ReadingsForm.LogAmpl:= true;
-    ReadingsForm.LogFreq:= false;
+
+    with ReadingsForm do
+    begin
+      LogAmpl:= true;
+      LogFreq:= false;
+    end;
+    with TempControlForm do
+    begin
+      LogAmpl:= true;
+      LogFreq:= false;
+    end;
+
     MainForm.eTimeStep.MinValue:= 150;
   end
   else
@@ -90,18 +102,39 @@ begin
   begin
     StepNumber:= abs(trunc((StopF - StartF) / FStep));
     StepMode:= sFrequency;
-    ReadingsForm.LogAmpl:= false;
-    ReadingsForm.LogFreq:= true;
+
+    with ReadingsForm do
+    begin
+      LogAmpl:= false;
+      LogFreq:= true;
+    end;
+    with TempControlForm do
+    begin
+      LogAmpl:= false;
+      LogFreq:= true;
+    end;
+
     MainForm.eTimeStep.MinValue:= 150;
   end
   else
   begin
     StepMode:= sBoth;
-    ReadingsForm.LogAmpl:= true;
-    ReadingsForm.LogFreq:= true;
+
+    with ReadingsForm do
+    begin
+      LogAmpl:= true;
+      LogFreq:= true;
+    end;
+    with TempControlForm do
+    begin
+      LogAmpl:= true;
+      LogFreq:= true;
+    end;
+
     MainForm.eTimeStep.MinValue:= 300;
     StepNumber:= abs(trunc((StopA - StartA) / AStep));
-    if abs(trunc(StopF - StartF) / FStep) > StepNumber then StepNumber:= abs(trunc((StopF - StartF) / FStep));
+    if abs(trunc(StopF - StartF) / FStep) > StepNumber then
+      StepNumber:= abs(trunc((StopF - StartF) / FStep));
   end;
   CalcSteps:= StepNumber;
   t:= StepNumber * MainForm.eTimeStep.Value;
@@ -146,6 +179,7 @@ begin
   with MainForm do
   begin
     EnableControls(false);
+    pnConnection.Enabled:= false;
     btQuery.Enabled:= true;
     btStatus.Enabled:= true;
     btCustomCommand.Enabled:= true;
@@ -162,8 +196,18 @@ begin
 
   if Config.AutoReadingStep then
   begin
-    ReadingsForm.btStartPauseLog.Enabled:= false;
-    ReadingsForm.btStopLog.Enabled:= false;
+    with ReadingsForm do
+      if ConnectionKind <> cNone then
+      begin
+        btStartPauseLog.Enabled:= false;
+        btStopLog.Enabled:= false;
+      end;
+    with TempControlForm do
+      if ConnectionKind <> cNone then
+      begin
+        btStartPauseLog.Enabled:= false;
+        btStopLog.Enabled:= false;
+      end;
   end;
 
   btCancel.Enabled:= true;
@@ -183,10 +227,15 @@ begin
   begin
     sleep(MainForm.MinDelay);
 
-    Params.OnePoint:= MainForm.cbPointPerStep.Checked;
-    ReadingsForm.BeginLog;
-    if MainForm.cbPointPerStep.Checked then
-      ReadingsForm.UpdateTimer.Enabled:= false;
+   // Params.OnePoint:= MainForm.cbPointPerStep.Checked;
+    with ReadingsForm do
+      if ConnectionKind <> cNone then
+        Log.Start;
+    with TempControlForm do
+      if ConnectionKind <> cNone then
+        Log.Start;
+    {if MainForm.cbPointPerStepDet.Checked then
+      ReadingsForm.UpdateTimer.Enabled:= false; }
   end;
 
   Finished:= false;
@@ -214,14 +263,28 @@ begin
     Sleep(Timer.Interval);
     if Config.AutoReadingStep then
     begin
-      ReadingsForm.ProcessBuffers;
-      ReadingsForm.StopLog;
+      with ReadingsForm do
+      if ConnectionKind <> cNone then
+      begin
+        Log.ProcessBuffers;
+        Log.Stop;
+      end;
+      with TempControlForm do
+      if ConnectionKind <> cNone then
+      begin
+        Log.ProcessBuffers;
+        Log.Stop;
+      end;
     end;
   end
   else
   begin
-    if MainForm.cbPointPerStep.Checked then
-      ReadingsThread:= tOnePerStepThread.Create;
+    with ReadingsForm do
+      if OnePointPerStep and (ConnectionKind <> cNone) then
+        Log.ReadingsThread:= tDetOnePerStepThread.Create;
+    with TempControlForm do
+      if OnePointPerStep and (ConnectionKind <> cNone) then
+        Log.ReadingsThread:= tTempOnePerStepThread.Create;
 
     ElapsedTime:= Now - StartTime - PauseLength;
     DateTimeToString(s, 'hh:mm:ss', ElapsedTime);
@@ -235,11 +298,18 @@ begin
     str(ProgressBar.Position, s);
     lStep.Caption:= s;
 
-    if MainForm.cbPointPerStep.Checked then
-    begin
-      ReadingsThread.WaitFor;
-      freeandnil(ReadingsThread);
-    end;
+    with ReadingsForm do
+      if OnePointPerStep and (ConnectionKind <> cNone) then
+      begin
+        Log.ReadingsThread.WaitFor;
+        freeandnil(Log.ReadingsThread);
+      end;
+    with TempControlForm do
+      if OnePointPerStep and (ConnectionKind <> cNone) then
+      begin
+        Log.ReadingsThread.WaitFor;
+        freeandnil(Log.ReadingsThread);
+      end;
 
     f:= Frequency;
     a:= Amplitude;
@@ -277,8 +347,12 @@ begin
       end;
     end;
 
-    if MainForm.cbPointPerStep.Checked then
-      ReadingsForm.ProcessBuffers;
+    with ReadingsForm do
+      if OnePointPerStep and (ConnectionKind <> cNone) then
+        Log.ProcessBuffers;
+    with TempControlForm do
+      if OnePointPerStep and (ConnectionKind <> cNone) then
+        Log.ProcessBuffers;
     MainForm.PassCommands;
   end;
 end;
@@ -288,9 +362,12 @@ begin
   MainForm.CommandString:= '';
   Timer.Enabled:= false;
   MainForm.EnableControls(true);
+  MainForm.pnConnection.Enabled:= true;
   MainForm.Cursor:= crDefault;
   ReadingsForm.btStartPauseLog.Enabled:= true;
   ReadingsForm.btStopLog.Enabled:= true;
+  TempControlForm.btStartPauseLog.Enabled:= true;
+  TempControlForm.btStopLog.Enabled:= true;
 end;
 
 procedure TStepForm.btPauseClick(Sender: TObject);
@@ -299,33 +376,57 @@ begin
   begin
     PauseTime:= Now;
     Timer.Enabled:= false;
-    if Config.AutoReadingStep then
-      ReadingsForm.PauseLog;
+
+    with ReadingsForm do
+      if Config.AutoReadingStep and (ConnectionKind <> cNone) then
+        Log.Pause;
+    with TempControlForm do
+      if Config.AutoReadingStep and (ConnectionKind <> cNone) then
+        Log.Pause;
+
     btPause.Caption:= 'Продолжить';
   end
   else
   begin
     PauseLength+= Now - PauseTime;
     Timer.Enabled:= true;
-    if Config.AutoReadingStep then
-      ReadingsForm.ContinueLog;
+
+    with ReadingsForm do
+      if Config.AutoReadingStep and (ConnectionKind <> cNone) then
+        Log.Continue;
+    with TempControlForm do
+      if Config.AutoReadingStep and (ConnectionKind <> cNone) then
+        Log.Continue;
+
     btPause.Caption:= 'Пауза';
   end;
 end;
 
 procedure TStepForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
-  if ReadingsForm.LogState <> lInActive then
+  if (ReadingsForm.Log.State <> lInActive) and
+     (TempControlForm.Log.State <> lInActive) then
     CanClose:= false
-  else CanClose:= true;
+  else
+    CanClose:= true;
+end;
+
+procedure TStepForm.FormCreate(Sender: TObject);
+begin
+  Finished:= true;
 end;
 
 procedure TStepForm.btCancelClick(Sender: TObject);
 begin
   Finished:= true;
   Timer.Enabled:= true;
-  if Config.AutoReadingStep then
-    ReadingsForm.StopLog;
+
+  with ReadingsForm do
+      if Config.AutoReadingStep and (ConnectionKind <> cNone) then
+        Log.Stop;
+  with TempControlForm do
+    if Config.AutoReadingStep and (ConnectionKind <> cNone) then
+      Log.Stop;
 end;
 
 procedure TStepForm.btFinishClick(Sender: TObject);

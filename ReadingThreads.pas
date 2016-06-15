@@ -9,9 +9,9 @@ uses
 
 type
 
-  { tBufferThread }
+  { tDetBufferThread }
 
-  tBufferThread = class(tThread)
+  tDetBufferThread = class(tThread)
     constructor Create(BufferLength: longword);
     procedure Execute; override;
   private
@@ -19,17 +19,42 @@ type
     ParamArr: tIntegerArray;
   end;
 
- { tSimultaneousThread }
+ { tDetSimultaneousThread }
 
- tSimultaneousThread = class(tThread)
+ tDetSimultaneousThread = class(tThread)
    DataList: TList;
    procedure Execute; override;
    constructor Create;
  end;
 
- { tOnePerStepThread }
+ { tDetOnePerStepThread }
 
- tOnePerStepThread = class(tThread)
+ tDetOnePerStepThread = class(tThread)
+   DataList: TList;
+   procedure Execute; override;
+   constructor Create;
+ end;
+
+ { tTempRealTimeThread }
+
+ tTempRealTimeThread = class(tThread)
+   DataList: TList;
+   procedure Execute; override;
+   constructor Create;
+   destructor Destroy; override;
+ end;
+
+ { tTempSimultaneousThread }
+
+ tTempSimultaneousThread = class(tThread)
+   DataList: TList;
+   procedure Execute; override;
+   constructor Create;
+ end;
+
+ { tTempOnePerStepThread }
+
+ tTempOnePerStepThread = class(tThread)
    DataList: TList;
    procedure Execute; override;
    constructor Create;
@@ -37,52 +62,140 @@ type
 
 implementation
 
-uses math, DeviceF, ReadingsF;
+uses math, DeviceF, ReadingsF, TempControlF;
 
-{ tOnePerStepThread }
+{ tTempRealTimeThread }
 
-constructor tOnePerStepThread.Create;
+procedure tTempRealTimeThread.Execute;
+var
+  pd: PBuffer;
+begin
+  with TempControlForm do
+  repeat
+    pd:= WaitForPoints(RealTimeWaitPoints);
+
+    if pd <> nil then
+    begin
+      DataList:= Log.ThreadList.LockList;
+        DataList.Add(pd);
+      Log.ThreadList.UnlockList;
+      Log.ReadPoints+= length(pd^);  //add storedpoints field like in buffer?
+    end
+  until Terminated;
+end;
+
+constructor tTempRealTimeThread.Create;
 begin
   inherited Create(false);
   FreeOnTerminate:= false;
+  TempControlForm.Socket:= TempControlForm.TelNetClient.Sock;
 end;
 
-procedure tOnePerStepThread.Execute;
+destructor tTempRealTimeThread.Destroy;
+begin
+  inherited Destroy;
+  TempControlForm.Socket:= nil;
+end;
+
+{ tTempOnePerStepThread }
+
+procedure tTempOnePerStepThread.Execute;
 var
   pd: PBuffer;
-  pt: ^TDateTime;
+  pt: PDateTime;
 begin
-  with ReadingsForm do
+  with TempControlForm do
   begin
-    try
-      pd:= RecvSnap(ParToRead);
+    pd:= RecvSnap(ParToRead);
 
-    except on E:Exception do
-      writeprogramlog(E.Message);
-    end;
-
-     if pd <> nil then
+    if pd <> nil then
     begin
       new(pt);
-      pt^:= ElapsedTime;
-      DataList:= ThreadList.LockList;
+      pt^:= Log.ElapsedTime;
+      DataList:= Log.ThreadList.LockList;
         DataList.Add(pt);
         DataList.Add(pd);
-      ThreadList.UnlockList;
-      inc(ReadPoints);
+      Log.ThreadList.UnlockList;
+      inc(Log.ReadPoints);
     end;
   end;
 end;
 
-{ tSimultaneousThread }
-
-constructor tSimultaneousThread.Create;
+constructor tTempOnePerStepThread.Create;
 begin
   inherited Create(false);
   FreeOnTerminate:= false;
 end;
 
-procedure tSimultaneousThread.Execute;
+{ tTempSimultaneousThread }
+
+procedure tTempSimultaneousThread.Execute;
+var
+  pd: PBuffer;
+  pt: PDateTime;
+begin
+  with TempControlForm do
+  repeat
+    pd:= RecvSnap(ParToRead);
+
+    if pd <> nil then
+    begin
+      new(pt);
+      pt^:= Log.ElapsedTime;
+      DataList:= Log.ThreadList.LockList;
+        DataList.Add(pt);
+        DataList.Add(pd);
+      Log.ThreadList.UnlockList;
+      inc(Log.ReadPoints);
+    end
+  until Terminated;
+end;
+
+constructor tTempSimultaneousThread.Create;
+begin
+  inherited Create(false);
+  FreeOnTerminate:= false;
+end;
+
+{ tDetOnePerStepThread }
+
+constructor tDetOnePerStepThread.Create;
+begin
+  inherited Create(false);
+  FreeOnTerminate:= false;
+end;
+
+procedure tDetOnePerStepThread.Execute;
+var
+  pd: PBuffer;
+  pt: PDateTime;
+begin
+  with ReadingsForm do
+  begin
+    pd:= RecvSnap(ParToRead);
+
+    if pd <> nil then
+    begin
+      new(pt);
+      pt^:= Log.ElapsedTime;
+      DataList:= Log.ThreadList.LockList;
+        DataList.Add(pt);
+        DataList.Add(pd);
+      Log.ThreadList.UnlockList;
+      inc(Log.ReadPoints);
+    end;
+  end;
+end;
+
+{ tDetSimultaneousThread }
+
+constructor tDetSimultaneousThread.Create;
+begin
+  inherited Create(false);
+  FreeOnTerminate:= false; { TODO : exactly why }
+end;
+
+procedure tDetSimultaneousThread.Execute;
 var
   pd: PBuffer;
   pt: ^TDateTime;
@@ -99,19 +212,19 @@ begin
     if pd <> nil then
     begin
       new(pt);
-      pt^:= ElapsedTime;
-      DataList:= ThreadList.LockList;
+      pt^:= Log.ElapsedTime;
+      DataList:= Log.ThreadList.LockList;
         DataList.Add(pt);
         DataList.Add(pd);
-      ThreadList.UnlockList;
-      inc(ReadPoints);
+      Log.ThreadList.UnlockList;
+      inc(Log.ReadPoints);
     end
   until Terminated;
 end;
 
-{ tBufferThread }
+{ tDetBufferThread }
 
-constructor tBufferThread.Create(BufferLength: longword);
+constructor tDetBufferThread.Create(BufferLength: longword);
 begin
   setlength(BuffByte1, BufferLength * 4);
   setlength(BuffByte2, BufferLength * 4);
@@ -120,7 +233,7 @@ begin
   FreeOnTerminate:= false;
 end;
 
-procedure tBufferThread.Execute;
+procedure tDetBufferThread.Execute;
 var
   StoredPoints: longint = 0;
   PointsToRead: longint;
@@ -133,7 +246,7 @@ begin
   with ReadingsForm do
   repeat
     try
-    EnterCriticalSection(CommCS);
+      EnterCriticalSection(CommCS);
       AddCommand(dStoredPoints, true);               //paus+
       PassCommands;
       s:= RecvString;
@@ -144,14 +257,14 @@ begin
     val(s, StoredPoints);
     //AddCommand(PAUS, false);
     //PassCommands;
-    PointsToRead:= StoredPoints - ReadPoints;
+    PointsToRead:= StoredPoints - Log.ReadPoints;
 
     if PointsToRead > 0 then
     begin
       Serport.RaiseExcept:= false;
 
       ParamArr[0]:= 1;
-      ParamArr[1]:= ReadPoints;
+      ParamArr[1]:= Log.ReadPoints;
       ParamArr[2]:= PointsToRead;
       try
         EnterCriticalSection(CommCS);
@@ -183,12 +296,12 @@ begin
         p2^[i]:= smallint(o^) * power(2, BuffByte2[i*4 + 2] - 124);
       end;
 
-      DataList:= ThreadList.LockList;
+      DataList:= Log.ThreadList.LockList;
         DataList.Add(p1);
         DataList.Add(p2);
         i:= DataList.Count;
-      ThreadList.UnlockList;
-      ReadPoints:= StoredPoints;
+      Log.ThreadList.UnlockList;
+      Log.ReadPoints:= StoredPoints;
     end;
     //AddCommand(STRT, false);
     //PassCommands;

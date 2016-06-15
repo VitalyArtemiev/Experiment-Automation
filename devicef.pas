@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, DividerBevel, Forms, Controls, Graphics, Dialogs,
-  Grids, Buttons, StdCtrls, ComCtrls, ExtCtrls;
+  Grids, Buttons, StdCtrls, ComCtrls, ExtCtrls, Types;
 
 type
   eHeaderRow = (
@@ -19,7 +19,8 @@ type
     hWideReserveOptions, hRangeOptions, hOffsetParams,
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
     hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions,
-    hAmplitudeUnits, hMaxFrequencies, hMinMaxAmplitudes
+    hAmplitudeUnits, hMaxFrequencies, hMinMaxAmplitudes,
+    hChannelList = integer(hTimeConstOptions)
                 );
 
   eCommonCommand = (
@@ -42,6 +43,10 @@ type
     dAutoWideReserve, dAutoPhase, dAutoOffset, dReferenceSource,  dSampleRate,
     dStartStorage, dPauseStorage, dResetStorage, dStoredPoints,
     dReadPointsNative, dStorageMode, dReadSimultaneous, dDisplaySelect
+                 );
+
+  eTempCommand = (
+    tError = integer(cTrigger) + 1, tPrint, tGetChannelNames, tReadSimultaneous
                  );
 
   {type
@@ -150,6 +155,7 @@ const
     cbInterface: TComboBox;
     DividerBevel1: TDividerBevel;
     DividerBevel2: TDividerBevel;
+    sgTempCommands: TStringGrid;
     stInstruction: TStaticText;
     Label2: TLabel;
     Label3: TLabel;
@@ -161,6 +167,7 @@ const
     SaveDialog: TSaveDialog;
     sgGenCommands: TStringGrid;
     sgDetCommands: TStringGrid;
+    tsTempControllers: TTabSheet;
     tsGenerators: TTabSheet;
     tsDetectors: TTabSheet;
     procedure btAddDeviceClick(Sender: TObject);
@@ -188,10 +195,18 @@ const
     procedure sgGenCommandsSelection(Sender: TObject; aCol, aRow: Integer);
     procedure EditOptionString(c, r: integer);
     function CheckConformance: integer;
+    procedure sgTempCommandsClick(Sender: TObject);
+    procedure sgTempCommandsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure sgTempCommandsSelectCell(Sender: TObject; aCol, aRow: Integer;
+      var CanSelect: Boolean);
+    procedure sgTempCommandsSelection(Sender: TObject; aCol, aRow: Integer);
+    procedure sgTempCommandsValidateEntry(sender: TObject; aCol, aRow: Integer;
+      const OldValue: string; var NewValue: String);
   private
     { private declarations }
     CurrColumn: integer;  //stringgrid.row
-    CurrGenFileName, CurrDetFileName: string;
+    CurrGenFileName, CurrDetFileName, CurrTempFileName: string;
     sg: tStringGrid;
   public
     { public declarations }
@@ -199,8 +214,11 @@ const
 
 const
   SGHeaderLength = integer(high(eHeaderRow)) + 3; //кол-во строк в tStringGrid, не относящ. к командам
+
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
+  DefaultTemp = 'DefaultTempCommands.xml';
+
   TelnetString = 'Ethernet - Telnet';
   VXIString = 'Ethernet - VXI';
   USBString = 'USB';
@@ -214,7 +232,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, Math, StrUtils, SynaIP, MainF, ReadingsF, OptionF, serconf, MemoF, ButtonPanel;
+  LCLType, Math, StrUtils, SynaIP, MainF, ReadingsF, TempControlF, OptionF, serconf, MemoF, ButtonPanel;
 
 const
   InputQueryWidth = 300;
@@ -349,15 +367,15 @@ begin
   if CurrColumn < 0 then exit;
   with sg do
   begin
-  if QuestionDlg(
-                 'Удаление устройства', 'Будет удалено устройство ' +
-                 Cells[CurrColumn, 0] + '. Продолжить?',
-                 mtCustom,[mrYes,'Да', mrNo, 'Нет'], ''
-                 ) = mrYes then
-    if CurrColumn > 0 then
-      DeleteCol(CurrColumn);
-  if CurrColumn > ColCount - 1 then
-    CurrColumn:= ColCount - 1;
+    if QuestionDlg(
+                   'Удаление устройства', 'Будет удалено устройство ' +
+                   Cells[CurrColumn, 0] + '. Продолжить?',
+                   mtCustom,[mrYes,'Да', mrNo, 'Нет'], ''
+                   ) = mrYes then
+      if CurrColumn > 0 then
+        DeleteCol(CurrColumn);
+    if CurrColumn > ColCount - 1 then
+      CurrColumn:= ColCount - 1;
   end;
 end;
 
@@ -374,7 +392,10 @@ begin
     case pcDevice.TabIndex of
       0: FileName:= DefaultGen;
       1: FileName:= DefaultDet;
+      2: FileName:= DefaultTemp;
     end;
+    InitialDir:= MainForm.FullCfgDir;
+    DefaultExt:= '.xml';
     Title:= 'Загрузить файл устройств';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
     if Execute then
@@ -398,6 +419,15 @@ begin
                LoadFromFile(CurrDetFileName);
              end;
            end;
+        2: begin
+             CurrTempFileName:= UTF8toANSI(FileName);
+             if FileExists(CurrTempFileName) then
+             with sg do
+             begin
+               sg.Clean;
+               LoadFromFile(CurrTempFileName);
+             end;
+           end;
       end;
     end;
   end;
@@ -406,10 +436,9 @@ end;
 procedure tDeviceForm.btResetDefaultFileClick(Sender: TObject);
 begin
   case pcDevice.TabIndex of
-    0:
-      Config.DefaultGens:= '';
-    1:
-      Config.DefaultDets:= '';
+    0: Config.DefaultGens:= '';
+    1: Config.DefaultDets:= '';
+    2: Config.DefaultTemps:= '';
   end;
 end;
 
@@ -418,10 +447,12 @@ begin
   with SaveDialog do
   begin
     case pcDevice.TabIndex of
-      0: FileName:= 'DefaultGenCommands';
-      1: FileName:= 'DefaultDetCommands';
+      0: FileName:= DefaultGen;
+      1: FileName:= DefaultDet;
+      2: FileName:= DefaultTemp;
     end;
-
+    InitialDir:= MainForm.FullCfgDir;
+    DefaultExt:= '.xml';
     Title:= 'Сохранить файл устройств как';
     Filter:= 'Файлы устройств|*.xml|Все файлы|*.*';
     if Execute then
@@ -435,6 +466,10 @@ begin
              CurrDetFileName:= UTF8toANSI(FileName);
              sg.SaveToFile(CurrDetFileName);
            end;
+        2: begin
+             CurrTempFileName:= UTF8toANSI(FileName);
+             sg.SaveToFile(CurrTempFileName);
+           end;
       end;
     end;
   end;
@@ -447,6 +482,8 @@ begin
          Config.DefaultGens:= CurrGenFileName;
     1: if CurrDetFileName <> '' then
          Config.DefaultDets:= CurrDetFileName;
+    2: if CurrTempFileName <> '' then
+         Config.DefaultTemps:= CurrTempFileName;
   end;
 end;
 
@@ -460,6 +497,7 @@ begin
   begin
     MainForm.GetSupportedDevices(dGenerator);
     ReadingsForm.GetSupportedDevices(dDetector);
+    TempControlForm.GetSupportedDevices(dTempController);
     OptionForm.ReloadDeviceList;
 
     CanClose:= true;
@@ -469,24 +507,31 @@ begin
 end;
 
 procedure tDeviceForm.FormCreate(Sender: TObject);
-begin
-  if FileExists(Config.DefaultGens) then
-    sgGenCommands.LoadFromFile(Config.DefaultGens)
-  else
-  if Config.DefaultGens <> DefaultGen then
-    ShowMessage('Не найден файл ' + Config.DefaultGens);
+begin                                                 //this is regulated by mainform.loadconfig   NOT ANYMORE THAT WAS STUPID
+  if Config.DefaultGens <> '' then
+    if FileExists(Config.DefaultGens) then
+      sgGenCommands.LoadFromFile(Config.DefaultGens)
+    else
+      ShowMessage('Не найден файл ' + Config.DefaultGens);
 
-  if FileExists(Config.DefaultDets) then
-    sgDetCommands.LoadFromFile(Config.DefaultDets)
-  else
-  if Config.DefaultDets <> DefaultDet then
-    ShowMessage('Не найден файл ' + Config.DefaultDets);
+  if Config.DefaultDets <> '' then
+    if FileExists(Config.DefaultDets) then
+      sgDetCommands.LoadFromFile(Config.DefaultDets)
+    else
+      ShowMessage('Не найден файл ' + Config.DefaultDets);
+
+  if Config.DefaultTemps <> '' then
+    if FileExists(Config.DefaultTemps) then
+      sgTempCommands.LoadFromFile(Config.DefaultTemps)
+    else
+      ShowMessage('Не найден файл ' + Config.DefaultTemps);
 end;
 
 procedure tDeviceForm.FormShow(Sender: TObject);
 begin
   CurrGenFileName:= '';
   CurrDetFileName:= '';
+  CurrTempFileName:= '';
   CurrColumn:= -1;
   pcDeviceChange(Self);
 end;
@@ -497,6 +542,7 @@ begin
   case pcDevice.TabIndex of
     0: sg:= sgGenCommands;
     1: sg:= sgDetCommands;
+    2: sg:= sgTempCommands;
   end;
 end;
 
@@ -525,22 +571,23 @@ procedure tDeviceForm.sgDetCommandsKeyDown(Sender: TObject; var Key: Word;
 begin
   with sgDetCommands do
     case Row of
-     integer(hTimeConstOptions),
-     integer(hSensitivityOptions),
-     integer(hTransferParams),
-     integer(hCH1Options),
-     integer(hCH2Options),
-     integer(hRatio1Options),
-     integer(hRatio2Options),
-     integer(hBufferRateOptions),
-     integer(hCloseReserveOptions),
-     integer(hWideReserveOptions),
-     integer(hRangeOptions),
-     integer(hOffsetParams):
-       key:= 0;
+      integer(hTimeConstOptions),
+      integer(hSensitivityOptions),
+      integer(hTransferParams),
+      integer(hCH1Options),
+      integer(hCH2Options),
+      integer(hRatio1Options),
+      integer(hRatio2Options),
+      integer(hBufferRateOptions),
+      integer(hCloseReserveOptions),
+      integer(hWideReserveOptions),
+      integer(hRangeOptions),
+      integer(hOffsetParams):
+      begin
+        key:= 0;
+        EditOptionString(Col, Row);
+      end;
     end;
-
-  sgDetCommandsClick(Self);
 end;
 
 procedure tDeviceForm.sgGenCommandsClick(Sender: TObject);
@@ -681,9 +728,9 @@ begin
           AutoEdit:= false;
         else
           begin
-             ButtonStyle:= cbsAuto;
-             if PickList <> nil then
-               PickList:= nil;
+            ButtonStyle:= cbsAuto;
+            if PickList <> nil then
+              PickList:= nil;
           end;
       end;
   end;
@@ -1202,6 +1249,86 @@ begin
         mComment.Lines.Clear;
       end;
     end;
+end;
+
+procedure tDeviceForm.sgTempCommandsClick(Sender: TObject);
+begin
+  with sgTempCommands do
+    case Row of
+      integer(hChannelList):
+        EditOptionString(Col, Row);
+    end;
+end;
+
+procedure tDeviceForm.sgTempCommandsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  with sgTempCommands do
+    case Row of
+      integer(hChannelList):
+      begin
+        key:= 0;
+        EditOptionString(Col, Row);
+      end;
+    end;
+end;
+
+procedure tDeviceForm.sgTempCommandsSelectCell(Sender: TObject; aCol,
+  aRow: Integer; var CanSelect: Boolean);
+begin
+  with sgTempCommands do
+  begin
+    AutoEdit:= true;
+    if aCol > 0 then
+      with Columns.Items[aCol - 1] do
+      case aRow of
+        integer(hInterface):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbInterface.Items;
+          end;
+        integer(hStopBits):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbStopBits.Items;
+          end;
+        integer(hParity):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbParity.Items;
+          end;
+        integer(hHandshake):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbHandshake.Items;
+          end;
+        integer(hTerminator):
+          begin
+            ButtonStyle:= cbsPickList;
+            PickList:= cbTerminator.Items;
+          end;
+        integer(hChannelList):
+          AutoEdit:= false;
+        else
+          begin
+            ButtonStyle:= cbsAuto;
+            if PickList <> nil then
+              PickList:= nil;
+          end;
+      end;
+  end;
+end;
+
+procedure tDeviceForm.sgTempCommandsSelection(Sender: TObject; aCol,
+  aRow: Integer);
+begin
+  CurrColumn:= aCol;
+end;
+
+procedure tDeviceForm.sgTempCommandsValidateEntry(sender: TObject; aCol,
+  aRow: Integer; const OldValue: string; var NewValue: String);
+begin
+  { TODO 2 -cImprovement : Look at this }
 end;
 
 end.
