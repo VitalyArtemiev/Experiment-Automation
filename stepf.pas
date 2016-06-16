@@ -59,7 +59,7 @@ var
 implementation
 
 uses
-  DeviceF, MainF, ReadingsF, TempControlF, LogModule, ReadingThreads, SerConF;
+  math, DeviceF, MainF, ReadingsF, TempControlF, LogModule, ReadingThreads, SerConF;
 
 {$R *.lfm}
 
@@ -226,14 +226,29 @@ begin
   if Config.AutoReadingStep then
   begin
     sleep(MainForm.MinDelay);
-
+    ReadingsForm.btApplyClick(Self);
+    TempControlForm.btApplyClick(Self);
+    sleep(max(ReadingsForm.eDelay.Value, TempControlForm.eDelay.Value));
    // Params.OnePoint:= MainForm.cbPointPerStep.Checked;
+    if (ReadingsForm.ConnectionKind <> cNone) and
+       (TempControlForm.ConnectionKind <> cNone) then
+      begin
+        ReadingsForm.ExperimentNumber:= max(ReadingsForm.ExperimentNumber,
+                                            TempControlForm.ExperimentNumber);
+        TempControlForm.ExperimentNumber:= ReadingsForm.ExperimentNumber;
+      end;
     with ReadingsForm do
+    begin
+      AutoApply:= false;
       if ConnectionKind <> cNone then
         Log.Start;
+    end;
     with TempControlForm do
+    begin
+      AutoApply:= false;
       if ConnectionKind <> cNone then
         Log.Start;
+    end;
     {if MainForm.cbPointPerStepDet.Checked then
       ReadingsForm.UpdateTimer.Enabled:= false; }
   end;

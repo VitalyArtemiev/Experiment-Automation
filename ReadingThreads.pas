@@ -5,7 +5,7 @@ unit ReadingThreads;
 interface
 
 uses
-  Classes, SysUtils, serconf;
+  Classes, SysUtils, serconf, blcksock;
 
 type
 
@@ -39,7 +39,9 @@ type
 
  tTempRealTimeThread = class(tThread)
    DataList: TList;
+   Socket: tTCPBlockSocket;
    procedure Execute; override;
+   function WaitForPoints(ParamCount{, Number}: integer): PBuffer;
    constructor Create;
    destructor Destroy; override;
  end;
@@ -62,7 +64,48 @@ type
 
 implementation
 
-uses math, DeviceF, ReadingsF, TempControlF;
+uses
+  math, DeviceF, ReadingsF, TempControlF;
+
+function tTempRealTimeThread.WaitForPoints(ParamCount{, Number}: integer): PBuffer;
+var
+  {Count, }i: integer;
+  s: array of string;
+begin
+  Result:= nil;
+  with TempControlForm do
+  case ConnectionKind of
+    cNone:
+      WriteProgramLog('WaitForPoints called without connection');
+    cSerial:
+      WriteProgramLog('WaitForPoints unsopported for Serial');
+    cUSB:
+      WriteProgramLog('WaitForPoints for USB under construction');
+    cTelNet:
+    begin
+      setlength(s, ParamCount);
+      //repeat
+      while (Socket.WaitingData = 0) and not Terminated do    //into readingthreads
+        sleep(1);
+
+        if Socket.WaitingData > 0 then
+        begin
+          for i:= 0 to ParamCount - 1 do
+            s[i]:= RecvString;
+
+          new(Result);
+          setlength(Result^, ParamCount);
+
+          for i:= 0 to ParamCount - 1 do
+            val(s[i], Result^[i]);
+          //inc(Count);
+        end
+      //until Count = Number;
+    end;
+    cVXI:
+      WriteProgramLog('WaitForPoints for VXI under construction');
+  end;
+end;
 
 { tTempRealTimeThread }
 
@@ -72,14 +115,14 @@ var
 begin
   with TempControlForm do
   repeat
-    pd:= WaitForPoints(RealTimeWaitPoints);
+    pd:= WaitForPoints(length(ParToRead));
 
     if pd <> nil then
     begin
       DataList:= Log.ThreadList.LockList;
         DataList.Add(pd);
       Log.ThreadList.UnlockList;
-      Log.ReadPoints+= length(pd^);  //add storedpoints field like in buffer?
+      Log.ReadPoints+= 1;{length(pd^);}  //add storedpoints field like in buffer?
     end
   until Terminated;
 end;
@@ -88,13 +131,14 @@ constructor tTempRealTimeThread.Create;
 begin
   inherited Create(false);
   FreeOnTerminate:= false;
-  TempControlForm.Socket:= TempControlForm.TelNetClient.Sock;
+  if Assigned(TempControlForm.TelNetClient) then
+    Socket:= TempControlForm.TelNetClient.Sock{.Socket}; { TODO : This might be it }
 end;
 
 destructor tTempRealTimeThread.Destroy;
 begin
+  Socket:= nil;
   inherited Destroy;
-  TempControlForm.Socket:= nil;
 end;
 
 { tTempOnePerStepThread }

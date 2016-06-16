@@ -157,7 +157,8 @@ type
     function LoadProfile(FileName: ansistring): integer;
     function SaveConfig(FileName: ansistring): integer;
     function LoadConfig(FileName: ansistring): integer;
-    function ExportParams(Manual: boolean; Header: boolean = false): integer;
+
+    function SaveReport(Manual: boolean; Header: boolean = false): integer;
 
     procedure EnableControls(Enable: boolean); override;
     procedure GetDeviceParams; override;
@@ -185,7 +186,6 @@ var
   PortList: string;
   PortCount: integer = 0;
   ReportNumber: integer = 0;
-  ExperimentNumber: integer = 1;
   Debug: boolean;
 
   Config: RConfig;
@@ -343,7 +343,7 @@ begin
     ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
 end;
 
-function tMainForm.ExportParams(Manual: boolean; Header: boolean): integer;
+function tMainForm.SaveReport(Manual: boolean; Header: boolean): integer;
 var
   i: integer;
   f: system.text;
@@ -393,65 +393,74 @@ begin
 
   DateTimeToString(s, 'dd/mm/yyyy  hh:mm:ss', Now);
   writeln(f, s);
-  str(ExperimentNumber, s);
+  str(ReadingsForm.ExperimentNumber, s);     { TODO 1 -cBug : redo }
 
   writeln(f, 'Эксперимент №' + s);
   writeln(f, '======================================================================');
   writeln(f, '               Параметры:');
-  if cbImpedance.Visible then
-    writeln(f, 'Сопротивление:        ' + cbImpedance.Text);
-  writeln(f, 'Функция:              ' + cbFuncSelect.Text);
-  writeln(f, 'Амплитуда:            ' + AmplitudeReading.Caption + ' В');
-  writeln(f, 'Смещение:             ' + OffsetReading.Caption + ' В');
-  if FrequencyTab.TabIndex = 0 then
+
+  if MainForm.ConnectionKind <> cNone then
   begin
     writeln(f);
-    writeln(f, 'Постоянная частота');
-    writeln(f, 'Значение:             ' + FrequencyReading.Caption + ' Гц');
-  end
-  else
-  if FrequencyTab.TabIndex = 1 then
-  begin
+    writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
     writeln(f);
-    writeln(f, 'Сканирование');
-    writeln(f, 'Тип:                  ' + cbSweepType.Text + ', ' + lowercase(cbSweepDirection.Text));
-    writeln(f, 'Начальная частота:    ' + SweepStartFReading.Caption + ' Гц');
-    writeln(f, 'Конечная частота:     ' + SweepStopFReading.Caption + ' Гц');
-    if cbSweepRate.Checked then
+    if cbImpedance.Visible then
+      writeln(f, 'Сопротивление:        ' + cbImpedance.Text);
+    writeln(f, 'Функция:              ' + cbFuncSelect.Text);
+    writeln(f, 'Амплитуда:            ' + AmplitudeReading.Caption + ' В');
+    writeln(f, 'Смещение:             ' + OffsetReading.Caption + ' В');
+    if FrequencyTab.TabIndex = 0 then
     begin
-      writeln(f, 'Частота сканирования: ' + SweepRateReading.Caption + ' Гц');
+      writeln(f);
+      writeln(f, 'Постоянная частота');
+      writeln(f, 'Значение:             ' + FrequencyReading.Caption + ' Гц');
     end
-    else writeln(f, 'Сканирование по триггеру');
-    writeln(f, 'Тип сканирования:     ' + cbSweepType.Caption);
-    writeln(f, 'Направление:          ' + cbSweepDirection.Caption);
-    if cbModulation.Visible then
-      writeln(f, 'Модуляция:            ' + cbModulation.Caption);
-  end
-  else
-  begin
-    writeln(f);
-    writeln(f, 'Пошагово');
-    str(eTimeStep.Value, s);
-    writeln(f, 'Интервал:             ' + s + ' мс');
-    str(eStepStartF.Value:10:6, s);
-    writeln(f, 'Начальная частота:    ' + s + ' Гц');
-    str(eStepStopF.Value:10:6, s);
-    writeln(f, 'Конечная частота:     ' + s + ' Гц');
-    str(eFStep.Value:10:6, s);
-    writeln(f, 'Шаг:                  ' + s + ' Гц');
-    writeln(f);
-    str(eStepStartA.Value:0:2, s);
-    writeln(f, 'Начальная амплитуда:  ' + s + ' В');
-    str(eStepStopA.Value:0:2, s);
-    writeln(f, 'Конечная амплитуда:   ' + s + ' В');
-    str(eAStep.Value:0:2, s);
-    writeln(f, 'Шаг:                  ' + s + ' В');
-    writeln(f, 'Данные в файле: ', ReadingsForm.Log.FileName);  { TODO : test }
+    else
+    if FrequencyTab.TabIndex = 1 then
+    begin
+      writeln(f);
+      writeln(f, 'Сканирование');
+      writeln(f, 'Тип:                  ' + cbSweepType.Text + ', ' + lowercase(cbSweepDirection.Text));
+      writeln(f, 'Начальная частота:    ' + SweepStartFReading.Caption + ' Гц');
+      writeln(f, 'Конечная частота:     ' + SweepStopFReading.Caption + ' Гц');
+      if cbSweepRate.Checked then
+      begin
+        writeln(f, 'Частота сканирования: ' + SweepRateReading.Caption + ' Гц');
+      end
+      else writeln(f, 'Сканирование по триггеру');
+      writeln(f, 'Тип сканирования:     ' + cbSweepType.Caption);
+      writeln(f, 'Направление:          ' + cbSweepDirection.Caption);
+      if cbModulation.Visible then
+        writeln(f, 'Модуляция:            ' + cbModulation.Caption);
+    end
+    else
+    begin
+      writeln(f);
+      writeln(f, 'Пошагово');
+      str(eTimeStep.Value, s);
+      writeln(f, 'Интервал:             ' + s + ' мс');
+      str(eStepStartF.Value:10:6, s);
+      writeln(f, 'Начальная частота:    ' + s + ' Гц');
+      str(eStepStopF.Value:10:6, s);
+      writeln(f, 'Конечная частота:     ' + s + ' Гц');
+      str(eFStep.Value:10:6, s);
+      writeln(f, 'Шаг:                  ' + s + ' Гц');
+      writeln(f);
+      str(eStepStartA.Value:0:2, s);
+      writeln(f, 'Начальная амплитуда:  ' + s + ' В');
+      str(eStepStopA.Value:0:2, s);
+      writeln(f, 'Конечная амплитуда:   ' + s + ' В');
+      str(eAStep.Value:0:2, s);
+      writeln(f, 'Шаг:                  ' + s + ' В');
+      writeln(f, 'Данные в файле: ', ReadingsForm.Log.FileName);  { TODO : test }
+    end;
   end;
 
   with ReadingsForm do
   if ConnectionKind <> cNone then
   begin
+    writeln(f);
+    writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
     writeln(f);
     writeln(f, Label6.Caption, ' ', cbTimeConstant.Text);
     writeln(f, Label7.Caption, ' ', cbSensitivity.Text);
@@ -474,6 +483,17 @@ begin
     end;
     writeln(f);
   end;
+
+  with TempControlForm do
+  if ConnectionKind <> cNone then
+  begin
+    writeln(f);
+    writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
+    writeln(f);
+    writeln(f, Label3.Caption, ' ', cbSamplerate.Text);
+    writeln(f);
+  end;
+
   writeln(f, '======================================================================');
   writeln(f, '               Комментарий:');
 
@@ -488,8 +508,8 @@ begin
   system.close(f);
   {$I+}
 
-  ExportParams:= IOResult;
-  if ExportParams <> 0 then
+  SaveReport:= IOResult;
+  if SaveReport <> 0 then
     ShowMessage('Ошибка сохранения отчета')
   else
     StatusBar.Panels[spStatus].Text:= 'Cохранено в ' + FileName;
@@ -602,13 +622,13 @@ end;
 procedure tMainForm.miNewReportClick(Sender: TObject);
 begin
   ReportNumber:= 0; //so that it checks for existing file internally?
-  ExperimentNumber:= 1;
-  ExportParams(true);
+  ReadingsForm.ExperimentNumber:= 1;
+  SaveReport(true);
 end;
 
 procedure tMainForm.miExportParamsClick(Sender: TObject);
 begin
-  ExportParams(true);
+  SaveReport(true);
 end;
 
 procedure tMainForm.eAmplitudeChange(Sender: TObject);
@@ -971,8 +991,7 @@ begin
         StepForm.Show;
         if Config.AutoExportParams and not Config.AutoReadingStep then
         begin
-          ExportParams(false);
-          inc(ExperimentNumber);
+          SaveReport(false);
         end;
       end
       else
@@ -1040,8 +1059,7 @@ begin
         SweepDir:= cbSweepDirection.ItemIndex;
         if Config.AutoExportParams and not Config.AutoReadingSweep then
         begin
-          ExportParams(false);
-          inc(ExperimentNumber);
+          SaveReport(false);
         end;
       end
       else  //ConstFTab
@@ -1083,8 +1101,7 @@ begin
 
         if Config.AutoExportParams and not Config.AutoReadingConst then
         begin
-          ExportParams(false);
-          inc(ExperimentNumber);
+          SaveReport(false);
         end;
       end;
     end;
@@ -1273,28 +1290,39 @@ begin
   with ReadingsForm do
   if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
   begin
-    if ConnectionKind = cSerial then
-    begin
-      showmessage('К данному порту уже осуществляется подключение');
-      exit
-    end
-    else
-    if ConnectionKind = cTelNet then
-      showmessage('check ip');
-       { TODO 2 -cImprovement : check ip }
+    case ConnectionKind of
+      cSerial:
+      begin
+        showmessage('К данному порту уже осуществляется подключение');
+        exit
+      end;
+      cTelNet:
+        if (CurrentDevice^.Host = MainForm.CurrentDevice^.Host) and
+           (CurrentDevice^.Port = MainForm.CurrentDevice^.Port) then
+          begin
+            showmessage('По данному адресу уже осуществляется подключение');
+            exit
+          end;
+    end;
   end;
 
   with TempControlForm do
   if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
   begin
-    if ConnectionKind = cSerial then
-    begin
-      showmessage('К данному порту уже осуществляется подключение');
-      exit
-    end
-    else
-    if ConnectionKind = cTelNet then
-      showmessage('check ip');
+    case ConnectionKind of
+      cSerial:
+      begin
+        showmessage('К данному порту уже осуществляется подключение');
+        exit
+      end;
+      cTelNet:
+        if (CurrentDevice^.Host = MainForm.CurrentDevice^.Host) and
+           (CurrentDevice^.Port = MainForm.CurrentDevice^.Port) then
+          begin
+            showmessage('По данному адресу уже осуществляется подключение');
+            exit
+          end;
+    end;
   end;
 
   OptionForm.TabControl.TabIndex:= 0;

@@ -19,6 +19,8 @@ type
 
   eDeviceKind = (dGenerator, dDetector, dTempController);
 
+  eReadMode = (rBuffer, rSimultaneous, rRealTime);
+
   Buffer = array of double;
   pBuffer = ^Buffer;
 
@@ -103,7 +105,6 @@ type
 
     SerPort: tBlockSerial;
     TelNetClient: tTelNetSend;
-    Socket: tTCPBlockSocket;
     //Session: tVisaSession;
     //UsbContext : tLibUsbContext;
 
@@ -144,6 +145,8 @@ type
     procedure SaveState(FileStream: tFileStream);
     function RestoreState(FileStream: tFileStream): integer;
     function RestoreState(FileName: string): integer;
+
+    //function SaveReport(FileStream:
   end;
 
   procedure WriteProgramLog(Log: string; Force: boolean = false);
@@ -181,7 +184,7 @@ var
 implementation
 
 uses
-  Math, Controls, EditBtn, StrUtils, DeviceF, MainF, OptionF;
+  sockets, Math, Controls, EditBtn, StrUtils, DeviceF, MainF;
 
 function strf(x: double): string; inline;
 begin
@@ -717,6 +720,8 @@ begin
 
   if Result = 0 then
   begin
+    {telnetclient.Sock.Socket:=;
+    fpsetsockopt }
     StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
     TimeOutErrors:= 0;
     EnableControls(true);
@@ -1092,7 +1097,7 @@ begin
       end;
     cTelNet:
       begin
-        //TelNetClient.RecvString //?????? { TODO 1 -cBug : check }
+        TelNetClient.Sock.Purge; //?????? { TODO 1 -cBug : check }
       end;
 
     cVXI:

@@ -3,7 +3,7 @@ object TempControlForm: TTempControlForm
   Height = 600
   Top = 168
   Width = 500
-  Caption = 'Управление температурным контроллером'
+  Caption = 'Управление термоконтроллером'
   ClientHeight = 600
   ClientWidth = 500
   Constraints.MinHeight = 600
@@ -191,6 +191,7 @@ object TempControlForm: TTempControlForm
     Caption = 'Применить'
     Default = True
     Enabled = False
+    OnClick = btApplyClick
     TabOrder = 2
   end
   object pnGraphControl: TPanel
@@ -556,6 +557,7 @@ object TempControlForm: TTempControlForm
       '512 Гц'
       'По триггеру'
     )
+    OnChange = cbSampleRateChange
     TabOrder = 6
     Text = '512 Гц'
   end
@@ -574,10 +576,11 @@ object TempControlForm: TTempControlForm
     BorderSpacing.Top = 4
     BorderSpacing.Right = 4
     ItemHeight = 15
-    ItemIndex = 0
+    ItemIndex = 2
     Items.Strings = (
-      'В реальном времени'
+      'Внутренний буфер'
       'Одновременный запрос'
+      'В реальном времени'
     )
     ParentShowHint = False
     ShowHint = True

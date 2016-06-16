@@ -442,8 +442,8 @@ begin
 
     ParamFile:= NewParamFile;
     s:= NewParamDir;
-    while pos('\', s) <> 0 do  { TODO 1 -cBug : this is wrong bc not necessarily 1 level down }
-      Copy2SymbDel(s, '\');
+    if pos(GetCurrentDir, s) <> 0 then
+      delete(s, 1, length(GetCurrentDir) + 1);
     CfgFolder:= s;
     OnConnect:= ConnectAction(rgOnConnect.ItemIndex);
   end;

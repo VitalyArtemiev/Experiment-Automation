@@ -55,6 +55,7 @@ type
     ThreadList: TThreadList;
     DataList: TList;
 
+
     function FullLogDir: string; inline;
 
     constructor Create;

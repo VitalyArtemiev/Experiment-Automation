@@ -28,8 +28,8 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, menuh, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
-  serconf, AxisSource, AboutF, DeviceF, dialogs, lazcontrols, ReadingThreads,
-  OffsetF, DevSession, TempControlF, LogModule{, FileM};
+  serconf, AboutF, DeviceF, dialogs, lazcontrols,
+  OffsetF, TempControlF{, FileM};
 
 {$R *.res}
 

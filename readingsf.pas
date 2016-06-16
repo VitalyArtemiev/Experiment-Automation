@@ -11,10 +11,6 @@ uses
   SerConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
 
 type
-  //eLogState = (lInActive, lActive, lPaused);
-
-  eReadMode = (rBuffer, rSimultaneous);
-
   { TReadingsForm }
 
   tReadingsForm = class(TSerConnectForm)
@@ -157,11 +153,13 @@ type
     procedure ProcessBuffers(Sender: tLogModule);
   public
     { public declarations }
+    ExperimentNumber: integer;
     LogStub, LogExtension, DataFolder: string;
     Log: tLogModule;
 
     ParToRead: array of shortint;
-    LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep, OffsetTracked: boolean;
+    LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep, OffsetTracked,
+      AutoApply: boolean;
     TimeStep: double;
 
     procedure EnableControls(Enable: boolean); override;
@@ -263,6 +261,7 @@ begin
   t:= 0;
   DataFolder:= DefaultLogFolder;
   LogStub:= '';
+  ExperimentNumber:= 1;
 
   LogFreq:= false;
   LogTime:= true;
@@ -595,7 +594,7 @@ begin
     WriteProgramLog('Data collection start');
     btClearClick(Self);
 
-    if StepForm.Finished or not ReadingsForm.ParamsApplied then  //skip if stepf is already going
+    if AutoApply and (StepForm.Finished or not ReadingsForm.ParamsApplied) then  //skip if stepf is already going
     begin
       Cursor:= crHourGlass;
       ReadingsForm.btApplyClick(Self);
@@ -688,10 +687,6 @@ begin
 
     if ReadingMode = rBuffer then
     begin
-      EnterCriticalSection(CommCS);
-        AddCommand(dStartStorage);
-        PassCommands;
-      LeaveCriticalSection(CommCS);
       cbChart1Show.ItemIndex:= cbChart1Show.Items.IndexOf(cbCH1.Text);
       cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
     end;
@@ -716,7 +711,13 @@ begin
   with Sender do
     case ReadingMode of   //onstart
       rBuffer:
+      begin
+        EnterCriticalSection(CommCS);
+          AddCommand(dStartStorage);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
         ReadingsThread:= tDetBufferThread.Create(PointsInBuffer);
+      end;
       rSimultaneous:
       begin
         if OnePointPerStep then
@@ -790,7 +791,7 @@ begin
   if Log.State <> lInActive then
   begin
     if Config.AutoExportParams then
-       MainForm.ExportParams(false, ReportHeader);
+       MainForm.SaveReport(false, ReportHeader);
     inc(ExperimentNumber);
   end;
   //btStartPauseLog.Caption:= 'Начать снятие';
@@ -810,8 +811,8 @@ begin
       begin
         inc(ReportNumber);
         str(ReportNumber, s1);
-        while FileExists(FilePath + '\' + FileName + '_' + s1 + '.txt') or
-              FileExists(FilePath + '\' + FileName + '_' + s1 + '_1' + LogExtensions[integer(dDetector)]) do
+        while FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + '.txt') or
+              FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + '_1' + LogExtensions[integer(dDetector)]) do
         begin
           inc(ReportNumber);
           str(ReportNumber, s1);
@@ -826,7 +827,7 @@ begin
     else
     begin
       str(ExperimentNumber, s1);
-      while FileExists(FilePath + '\' + FileName + '_' + s1 + LogExtensions[integer(dDetector)]) do
+      while FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + LogExtensions[integer(dDetector)]) do
       begin
         inc(ExperimentNumber);
         str(ExperimentNumber, s1);
@@ -1206,6 +1207,7 @@ end;
 
 procedure tReadingsForm.btStartPauseLogClick(Sender: TObject);
 begin
+  AutoApply:= true;
   Log.Toggle;
 end;
 
@@ -1219,27 +1221,39 @@ begin
   with MainForm do
   if cbPortSelect.ItemIndex = ReadingsForm.cbPortSelect.ItemIndex then
   begin
-    if ConnectionKind = cSerial then
-    begin
-      showmessage('К данному порту уже осуществляется подключение');
-      exit
-    end
-    else
-    if ConnectionKind = cTelNet then
-      showmessage('check ip');
+    case ConnectionKind of
+      cSerial:
+      begin
+        showmessage('К данному порту уже осуществляется подключение');
+        exit
+      end;
+      cTelNet:
+        if (CurrentDevice^.Host = ReadingsForm.CurrentDevice^.Host) and
+           (CurrentDevice^.Port = ReadingsForm.CurrentDevice^.Port) then
+          begin
+            showmessage('По данному адресу уже осуществляется подключение');
+            exit
+          end;
+    end;
   end;
 
   with TempControlForm do
   if cbPortSelect.ItemIndex = ReadingsForm.cbPortSelect.ItemIndex then
   begin
-    if ConnectionKind = cSerial then
-    begin
-      showmessage('К данному порту уже осуществляется подключение');
-      exit
-    end
-    else
-    if ConnectionKind = cTelNet then
-      showmessage('check ip');
+    case ConnectionKind of
+      cSerial:
+      begin
+        showmessage('К данному порту уже осуществляется подключение');
+        exit
+      end;
+      cTelNet:
+        if (CurrentDevice^.Host = ReadingsForm.CurrentDevice^.Host) and
+           (CurrentDevice^.Port = ReadingsForm.CurrentDevice^.Port) then
+          begin
+            showmessage('По данному адресу уже осуществляется подключение');
+            exit
+          end;
+    end;
   end;
 
   OptionForm.TabControl.TabIndex:= 1;
@@ -1610,8 +1624,8 @@ begin
     LogExtension:= '.' + LogExtension;
   end;
   DataFolder:= ExtractFileDir(Value);
-  pos(GetCurrentDir, DataFolder);
-  delete(DataFolder, 1, length(GetCurrentDir) + 1);
+  if pos(GetCurrentDir, DataFolder) <> 0 then
+    delete(DataFolder, 1, length(GetCurrentDir) + 1);
   Value:= LogStub;
 end;
 

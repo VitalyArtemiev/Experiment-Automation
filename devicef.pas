@@ -17,10 +17,13 @@ type
     hIndices, hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options,
     hRatio1Options, hRatio2Options, hBufferRateOptions, hCloseReserveOptions,
     hWideReserveOptions, hRangeOptions, hOffsetParams,
+
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
     hSweepTypeOptions, hSweepDirectionOptions, hModulationOptions,
     hAmplitudeUnits, hMaxFrequencies, hMinMaxAmplitudes,
-    hChannelList = integer(hTimeConstOptions)
+
+    hChannelList = integer(hTimeConstOptions), htSampleRateOptions,   { TODO 2 -cImprovement : split? }
+    hBufferPointOptions
                 );
 
   eCommonCommand = (
@@ -46,7 +49,8 @@ type
                  );
 
   eTempCommand = (
-    tError = integer(cTrigger) + 1, tPrint, tGetChannelNames, tReadSimultaneous
+    tError = integer(cTrigger) + 1, tPrint, tGetChannelNames, tReadSimultaneous,
+    tSampleRate, tResetStorage, tStoredPoints, tReadPoints
                  );
 
   {type
@@ -1255,7 +1259,9 @@ procedure tDeviceForm.sgTempCommandsClick(Sender: TObject);
 begin
   with sgTempCommands do
     case Row of
-      integer(hChannelList):
+      integer(hChannelList),
+      integer(htSampleRateOptions),
+      integer(hBufferPointOptions):
         EditOptionString(Col, Row);
     end;
 end;
@@ -1265,7 +1271,9 @@ procedure tDeviceForm.sgTempCommandsKeyDown(Sender: TObject; var Key: Word;
 begin
   with sgTempCommands do
     case Row of
-      integer(hChannelList):
+      integer(hChannelList),
+      integer(htSampleRateOptions),
+      integer(hBufferPointOptions):
       begin
         key:= 0;
         EditOptionString(Col, Row);
@@ -1307,7 +1315,9 @@ begin
             ButtonStyle:= cbsPickList;
             PickList:= cbTerminator.Items;
           end;
-        integer(hChannelList):
+        integer(hChannelList),
+        integer(htSampleRateOptions),
+        integer(hBufferPointOptions):
           AutoEdit:= false;
         else
           begin
