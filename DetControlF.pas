@@ -1,4 +1,4 @@
-unit ReadingsF;
+unit DetControlF;
 
 {$mode objfpc}{$H+}
 
@@ -6,14 +6,14 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
-  TATransformations, TADbSource, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  TATransformations, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus, EditBtn, MainF,
   SerConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
 
 type
-  { TReadingsForm }
+  { TDetControlForm }
 
-  tReadingsForm = class(TSerConnectForm)
+  TDetControlForm = class(TSerConnectForm)
     btAutoPhase: TButton;
     btAutoRange: TButton;
     btAutoReserve1: TButton;
@@ -153,6 +153,7 @@ type
     procedure ProcessBuffers(Sender: tLogModule);
   public
     { public declarations }
+    ReportSaved: boolean;
     ExperimentNumber: integer;
     LogStub, LogExtension, DataFolder: string;
     Log: tLogModule;
@@ -169,7 +170,7 @@ type
   end;
 
 var
-  ReadingsForm: TReadingsForm;
+  DetControlForm: TDetControlForm;
 
 implementation
 
@@ -177,7 +178,7 @@ uses
   DateUtils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, TempControlF,
   OffsetF, synaser{remove};
 
-procedure tReadingsForm.Source1GetChartDataItem(
+procedure TDetControlForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
 var
   i: word;
@@ -208,7 +209,7 @@ begin
   else Source1.PointsNumber:= 0;
 end;
 
-procedure tReadingsForm.Source2GetChartDataItem(
+procedure TDetControlForm.Source2GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
 var
   i: word;
@@ -239,7 +240,7 @@ begin
   else Source2.PointsNumber:= 0;
 end;
 
-procedure tReadingsForm.FormCreate(Sender: TObject);
+procedure TDetControlForm.FormCreate(Sender: TObject);
 var
   i: longint;
 begin
@@ -262,6 +263,7 @@ begin
   DataFolder:= DefaultLogFolder;
   LogStub:= '';
   ExperimentNumber:= 1;
+  ReportSaved:= false;
 
   LogFreq:= false;
   LogTime:= true;
@@ -291,7 +293,7 @@ begin
   InitCriticalSection(CommCS);
 end;
 
-procedure tReadingsForm.FormDestroy(Sender: TObject);
+procedure TDetControlForm.FormDestroy(Sender: TObject);
 begin
   Log.Stop;
   btClearClick(Self); //log stops here
@@ -304,7 +306,7 @@ begin
   DoneCriticalSection(CommCS);
 end;
 
-procedure tReadingsForm.FormShow(Sender: TObject);
+procedure TDetControlForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
   if cbRatio1.ItemIndex < 0 then
@@ -313,13 +315,13 @@ begin
     cbRatio2.ItemIndex:= 0;
 end;
 
-procedure tReadingsForm.GraphSplitterResize(Sender: TObject);
+procedure TDetControlForm.GraphSplitterResize(Sender: TObject);
 begin
   with GraphSplitter do
     Position:= Width div 2;
 end;
 
-procedure tReadingsForm.pmChartPopup(Sender: TObject);
+procedure TDetControlForm.pmChartPopup(Sender: TObject);
 var
   i: integer;
   cb: tCombobox;
@@ -343,7 +345,7 @@ begin
   end;
 end;
 
-procedure tReadingsForm.EnableControls(Enable: boolean);    //+++
+procedure TDetControlForm.EnableControls(Enable: boolean);    //+++
 begin
   btOffset.Enabled:=          Enable;
   btApply.Enabled:=           Enable;
@@ -374,7 +376,7 @@ begin
   eDelay.Enabled:=            Enable;
 end;
 
-procedure tReadingsForm.GetDeviceParams;
+procedure TDetControlForm.GetDeviceParams;
 var
   i, c: integer;
   s: string;
@@ -528,12 +530,12 @@ begin
   fneDataFileStubEditingDone(Self);
 end;
 
-procedure tReadingsForm.UpdateTimerTimer(Sender: TObject);
+procedure TDetControlForm.UpdateTimerTimer(Sender: TObject);
 begin
   Log.ProcessBuffers;
 end;
 
-procedure tReadingsForm.ZoomInClick(Sender: TObject);
+procedure TDetControlForm.ZoomInClick(Sender: TObject);
 var
   c: tChart;
   Rect: tDoubleRect;
@@ -556,7 +558,7 @@ begin
   end;
 end;
 
-procedure tReadingsForm.ZoomOutClick(Sender: TObject);
+procedure TDetControlForm.ZoomOutClick(Sender: TObject);
 var
   c: tChart;
   Rect: tDoubleRect;
@@ -579,12 +581,12 @@ begin
   end;
 end;
 
-procedure tReadingsForm.RestoreScaleClick(Sender: TObject);
+procedure TDetControlForm.RestoreScaleClick(Sender: TObject);
 begin
   tChart(pmChart.PopupComponent).ZoomFull(true);
 end;
 
-procedure tReadingsForm.BeforeStart(Sender: tLogModule);
+procedure TDetControlForm.BeforeStart(Sender: tLogModule);
 var
   i, j: integer;
 begin
@@ -594,11 +596,11 @@ begin
     WriteProgramLog('Data collection start');
     btClearClick(Self);
 
-    if AutoApply and (StepForm.Finished or not ReadingsForm.ParamsApplied) then  //skip if stepf is already going
+    if AutoApply and (StepForm.Finished or not DetControlForm.ParamsApplied) then  //skip if stepf is already going
     begin
       Cursor:= crHourGlass;
-      ReadingsForm.btApplyClick(Self);
-      sleep(ReadingsForm.eDelay.Value);
+      DetControlForm.btApplyClick(Self);
+      sleep(DetControlForm.eDelay.Value);
     end;
     Cursor:= crDefault;
 
@@ -706,7 +708,7 @@ begin
   end;
 end;
 
-procedure tReadingsForm.Start(Sender: tLogModule);
+procedure TDetControlForm.Start(Sender: tLogModule);
 begin
   with Sender do
     case ReadingMode of   //onstart
@@ -728,7 +730,7 @@ begin
     end;
 end;
 
-procedure tReadingsForm.Pause(Sender: tLogModule);
+procedure TDetControlForm.Pause(Sender: tLogModule);
 begin
  // btStartPauseLog.Caption:= 'Продолжить';  //event onpause
   WriteProgramLog('Data collection pause');
@@ -744,7 +746,7 @@ begin
   end;
 end;
 
-procedure tReadingsForm.Continue(Sender: tLogModule);
+procedure TDetControlForm.Continue(Sender: tLogModule);
 begin
   //btStartPauseLog.Caption:= 'Приостановить';
   WriteProgramLog('Data collection resume');
@@ -773,7 +775,7 @@ begin
     end;
 end;
 
-procedure tReadingsForm.Stop(Sender: tLogModule);
+procedure TDetControlForm.Stop(Sender: tLogModule);
 begin
   UpdateTimer.Enabled:= false;    //to event    OnStop
 
@@ -791,14 +793,18 @@ begin
   if Log.State <> lInActive then
   begin
     if Config.AutoExportParams then
-       MainForm.SaveReport(false, ReportHeader);
+    begin
+      MainForm.ReportFolder:= Log.FilePath;
+      MainForm.SaveReport(false, ReportHeader);
+      ReportSaved:= true;
+    end;
     inc(ExperimentNumber);
   end;
   //btStartPauseLog.Caption:= 'Начать снятие';
   //btApply.Enabled:= true;
 end;
 
-procedure tReadingsForm.CreateFile(Sender: tLogModule);
+procedure TDetControlForm.CreateFile(Sender: tLogModule);
 var
   s1, s2: string;
   i: integer;
@@ -871,7 +877,7 @@ begin
   end;
 end;
 
-function tReadingsForm.SaveLog(Sender: tLogModule): integer;
+function TDetControlForm.SaveLog(Sender: tLogModule): integer;
 var
   i, j: integer;
   s: string;
@@ -937,7 +943,7 @@ begin
   end;
 end;
 
-procedure tReadingsForm.StateChange(Sender: tLogModule);
+procedure TDetControlForm.StateChange(Sender: tLogModule);
 begin
   with tLogModule(Sender) do
     if State = lActive then
@@ -993,13 +999,14 @@ begin
         btClear.Enabled:=         true;
         pnConnection.Enabled:=    true;
         btStartPauseLog.Caption:= StartCaption;
+        ReportSaved:= false;
       end
       else
         btStartPauseLog.Caption:= ContinueCaption;
     end;
 end;
 
-procedure tReadingsForm.ProcessBuffers(Sender: tLogModule);
+procedure TDetControlForm.ProcessBuffers(Sender: tLogModule);
 var
   i, j, k, lk: longint;
   l, c: longword;
@@ -1139,7 +1146,7 @@ begin
   end;
 end;
 
-function tReadingsForm.RecvSnap(p: array of shortint): PBuffer;
+function TDetControlForm.RecvSnap(p: array of shortint): PBuffer;
 var
   num, i, j: integer;
   ParamArr: tIntegerArray; //CONSTRUCTOR!!!
@@ -1199,27 +1206,27 @@ begin
   val(s, Result^[i + 1]);
 end;
 
-procedure tReadingsForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+procedure TDetControlForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
   Log.Stop;
   MainForm.miShowReadingsF.Checked:= false;
 end;
 
-procedure tReadingsForm.btStartPauseLogClick(Sender: TObject);
+procedure TDetControlForm.btStartPauseLogClick(Sender: TObject);
 begin
   AutoApply:= true;
   Log.Toggle;
 end;
 
-procedure tReadingsForm.btStatusClick(Sender: TObject);
+procedure TDetControlForm.btStatusClick(Sender: TObject);
 begin
   inherited btStatusClick(Sender);
 end;
 
-procedure tReadingsForm.btnConnectClick(Sender: TObject);
+procedure TDetControlForm.btnConnectClick(Sender: TObject);
 begin
   with MainForm do
-  if cbPortSelect.ItemIndex = ReadingsForm.cbPortSelect.ItemIndex then
+  if cbPortSelect.ItemIndex = DetControlForm.cbPortSelect.ItemIndex then
   begin
     case ConnectionKind of
       cSerial:
@@ -1228,8 +1235,8 @@ begin
         exit
       end;
       cTelNet:
-        if (CurrentDevice^.Host = ReadingsForm.CurrentDevice^.Host) and
-           (CurrentDevice^.Port = ReadingsForm.CurrentDevice^.Port) then
+        if (CurrentDevice^.Host = DetControlForm.CurrentDevice^.Host) and
+           (CurrentDevice^.Port = DetControlForm.CurrentDevice^.Port) then
           begin
             showmessage('По данному адресу уже осуществляется подключение');
             exit
@@ -1238,7 +1245,7 @@ begin
   end;
 
   with TempControlForm do
-  if cbPortSelect.ItemIndex = ReadingsForm.cbPortSelect.ItemIndex then
+  if cbPortSelect.ItemIndex = DetControlForm.cbPortSelect.ItemIndex then
   begin
     case ConnectionKind of
       cSerial:
@@ -1247,8 +1254,8 @@ begin
         exit
       end;
       cTelNet:
-        if (CurrentDevice^.Host = ReadingsForm.CurrentDevice^.Host) and
-           (CurrentDevice^.Port = ReadingsForm.CurrentDevice^.Port) then
+        if (CurrentDevice^.Host = DetControlForm.CurrentDevice^.Host) and
+           (CurrentDevice^.Port = DetControlForm.CurrentDevice^.Port) then
           begin
             showmessage('По данному адресу уже осуществляется подключение');
             exit
@@ -1266,14 +1273,14 @@ begin
   begin
    deviceindex:= 2;
    connectionkind:= cserial;
-   readingsform.serport:= tblockserial.create;
+   DetControlForm.serport:= tblockserial.create;
   end;
 
   if DeviceIndex = iDefaultDevice then
     exit;
 
-  Params.DetectorPort:= ReadingsForm.CurrentDevice^.Port;
-  Params.LastDetector:= ReadingsForm.CurrentDevice^.Model;
+  Params.DetectorPort:= DetControlForm.CurrentDevice^.Port;
+  Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
 
   OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
 
@@ -1283,7 +1290,7 @@ begin
   LeaveCriticalSection(CommCS);      { TODO 1 -cBug : do you need this??? }
 end;
 
-procedure tReadingsForm.btClearClick(Sender: TObject);
+procedure TDetControlForm.btClearClick(Sender: TObject);
 begin
   Source1.PointsNumber:= 0;
   Source2.PointsNumber:= 0;
@@ -1294,7 +1301,7 @@ begin
   StatusBar.Panels[spStatus].Text:= '';
 end;
 
-procedure tReadingsForm.btAutoPhaseClick(Sender: TObject);
+procedure TDetControlForm.btAutoPhaseClick(Sender: TObject);
 begin
   EnterCriticalSection(CommCS);
     AddCommand(dAutoPhase, false);
@@ -1303,7 +1310,7 @@ begin
   //btQueryClick(Self);
 end;
 
-procedure tReadingsForm.btAutoSensitivityClick(Sender: TObject);
+procedure TDetControlForm.btAutoSensitivityClick(Sender: TObject);
 var
   SerPollSB: byte;
   s: string;
@@ -1340,7 +1347,7 @@ begin
   StatusBar.Panels[spStatus].Text:= '';
 end;
 
-procedure tReadingsForm.btAutoRangeClick(Sender: TObject);
+procedure TDetControlForm.btAutoRangeClick(Sender: TObject);
 begin
   EnterCriticalSection(CommCS);
     AddCommand(dAutoRange, false);
@@ -1349,7 +1356,7 @@ begin
   btQueryClick(Self);
 end;
 
-procedure tReadingsForm.btAutoReserve1Click(Sender: TObject);
+procedure TDetControlForm.btAutoReserve1Click(Sender: TObject);
 begin
   EnterCriticalSection(CommCS);
     AddCommand(dAutoCloseReserve, false);
@@ -1358,7 +1365,7 @@ begin
   btQueryClick(Self);
 end;
 
-procedure tReadingsForm.btAutoReserve2Click(Sender: TObject);
+procedure TDetControlForm.btAutoReserve2Click(Sender: TObject);
 begin
    EnterCriticalSection(CommCS);
     AddCommand(dAutoWideReserve, false);
@@ -1367,7 +1374,7 @@ begin
   btQueryClick(Self);
 end;
 
-procedure tReadingsForm.btApplyClick(Sender: TObject);
+procedure TDetControlForm.btApplyClick(Sender: TObject);
 begin
   {if cbSampleRate.ItemIndex <> cbSampleRate.Items.Count - 1 then
     SampleRate:= (intpower(2, cbSampleRate.ItemIndex)) * 0.0625
@@ -1426,13 +1433,13 @@ begin
   ParamsApplied:= true;
 end;
 
-procedure tReadingsForm.btOffsetClick(Sender: TObject);
+procedure TDetControlForm.btOffsetClick(Sender: TObject);
 begin
   OffsetTracked:= true;
   OffsetForm.Show;
 end;
 
-procedure tReadingsForm.btQueryClick(Sender: TObject);
+procedure TDetControlForm.btQueryClick(Sender: TObject);
 var
   s1, s2, s3: string;
   i, e: integer;
@@ -1519,13 +1526,13 @@ begin
   end;
 end;
 
-procedure tReadingsForm.btStopLogClick(Sender: TObject);
+procedure TDetControlForm.btStopLogClick(Sender: TObject);
 begin
   ForceStop:= true;
   Log.Stop;
 end;
 
-procedure tReadingsForm.cbChart1ShowChange(Sender: TObject); //FIXIT  how what even wtf
+procedure TDetControlForm.cbChart1ShowChange(Sender: TObject); //FIXIT  how what even wtf
 begin
   if (Log.State = lActive) and (ReadingMode = rBuffer) then
   with cbChart1Show do
@@ -1538,7 +1545,7 @@ begin
   Source1.Reset;
 end;
 
-procedure tReadingsForm.cbChart2ShowChange(Sender: TObject);
+procedure TDetControlForm.cbChart2ShowChange(Sender: TObject);
 begin
   if (Log.State = lActive) and (ReadingMode = rBuffer) then
   with cbChart2Show do
@@ -1551,19 +1558,10 @@ begin
   Source2.Reset;
 end;
 
-procedure tReadingsForm.cbReadingsModeChange(Sender: TObject);
+procedure TDetControlForm.cbReadingsModeChange(Sender: TObject);
 begin
-  case CbReadingsMode.ItemIndex of
-    integer(rSimultaneous):
-    begin
-     cgTransfer.Enabled:= true;
-     Label13.Hide;
-     cbSampleRate.Hide;
-     sbParamScroll.Show;
-     cgTransfer.Show;
-     cbXAxis.Items.Strings[0]:= 'Время, с';
-     end;
-    else
+  case cbReadingsMode.ItemIndex of
+    integer(rBuffer):
     begin
       MainForm.cbPointPerStepDet.Checked:= false;
       cgTransfer.Enabled:= false;
@@ -1573,10 +1571,24 @@ begin
       sbParamScroll.Hide;
       cbXAxis.Items.Strings[0]:= 'Номер точки';
     end;
+    integer(rSimultaneous):
+    begin
+      cgTransfer.Enabled:= true;
+      Label13.Hide;
+      cbSampleRate.Hide;
+      sbParamScroll.Show;
+      cgTransfer.Show;
+      cbXAxis.Items.Strings[0]:= 'Время, с';
+    end;
+    integer(rRealTime):
+    begin
+      ShowMessage('В разработке');
+      cbReadingsMode.ItemIndex:= integer(rSimultaneous);
+    end;
   end;
 end;
 
-procedure tReadingsForm.ChartMenuItemClick(Sender: TObject);
+procedure TDetControlForm.ChartMenuItemClick(Sender: TObject);
 var
   cb: tComboBox;
   i: integer;
@@ -1601,7 +1613,7 @@ begin
   end;
 end;
 
-procedure tReadingsForm.DataPointHintToolHint(
+procedure TDetControlForm.DataPointHintToolHint(
   ATool: TDataPointHintTool; const APoint: TPoint; var AHint: String);
 var
   s: string;
@@ -1613,7 +1625,7 @@ begin
   AHint:= ' ' + cbXAxis.Text + ': ' + strf(APoint.x) + '; ' + s + ': ' + strf(APoint.Y);
 end;
 
-procedure tReadingsForm.fneDataFileStubAcceptFileName(Sender: TObject;
+procedure TDetControlForm.fneDataFileStubAcceptFileName(Sender: TObject;
   var Value: String);
 begin
   LogStub:= ExtractFileName(Value);
@@ -1629,7 +1641,7 @@ begin
   Value:= LogStub;
 end;
 
-procedure tReadingsForm.fneDataFileStubEditingDone(Sender: TObject);
+procedure TDetControlForm.fneDataFileStubEditingDone(Sender: TObject);
 var
   s: string;
 begin
@@ -1644,43 +1656,43 @@ begin
   end;
 end;
 
-procedure tReadingsForm.PanDragToolAfterMouseDown(ATool: TChartTool;
+procedure TDetControlForm.PanDragToolAfterMouseDown(ATool: TChartTool;
   APoint: TPoint);
 begin
   pmChart.AutoPopup:= true;
 end;
 
-procedure tReadingsForm.PanDragToolAfterMouseMove(ATool: TChartTool;
+procedure TDetControlForm.PanDragToolAfterMouseMove(ATool: TChartTool;
   APoint: TPoint);
 begin
   pmChart.AutoPopup:= false;
 end;
 
-procedure tReadingsForm.ParamsChange(Sender: TObject);
+procedure TDetControlForm.ParamsChange(Sender: TObject);
 begin
   ParamsApplied:= false;
 end;
 
-procedure tReadingsForm.cbShowPointsChange(Sender: TObject);
+procedure TDetControlForm.cbShowPointsChange(Sender: TObject);
 begin
   Chart1LineSeries1.ShowPoints:= cbShowPoints.Checked;
   Chart2LineSeries1.ShowPoints:= cbShowPoints.Checked;
 end;
 
-procedure tReadingsForm.cbUseGenFreqChange(Sender: TObject);
+procedure TDetControlForm.cbUseGenFreqChange(Sender: TObject);
 begin
   UseGenFreq:= cbUseGenFreq.Checked;
   if UseGenFreq then
     LogFreq:= true;
 end;
 
-procedure tReadingsForm.cbXAxisChange(Sender: TObject);
+procedure TDetControlForm.cbXAxisChange(Sender: TObject);
 begin
   Source1.Reset;
   Source2.Reset;
 end;
 
-procedure tReadingsForm.cgTransferItemClick(Sender: TObject; Index: integer);
+procedure TDetControlForm.cgTransferItemClick(Sender: TObject; Index: integer);
 var
   i, ParNum: word;
 begin

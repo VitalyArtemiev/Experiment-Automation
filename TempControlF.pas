@@ -58,6 +58,7 @@ type
     procedure btStartPauseLogClick(Sender: TObject);
     procedure btStopLogClick(Sender: TObject);
     procedure cbChartShowChange(Sender: TObject);
+    procedure cbReadingsModeChange(Sender: TObject);
     procedure cbSampleRateChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
     procedure fneDataFileStubAcceptFileName(Sender: TObject; var Value: String);
@@ -79,6 +80,7 @@ type
     procedure ZoomOutClick(Sender: TObject);
   private
     { private declarations }
+    ReportHeader: boolean;
     srcFreq, srcAmpl: TAxisSource;
     t: double;
     ReadingMode: eReadMode;
@@ -116,7 +118,7 @@ var
 implementation
 
 uses
-  Dateutils, StrUtils, TAChartUtils, DeviceF, MainF, StepF, ReadingsF, OptionF,
+  Dateutils, StrUtils, TAChartUtils, DeviceF, MainF, StepF, DetControlF, OptionF,
   {remove}tlntsend, ReadingThreads;
 
 {$R *.lfm}
@@ -130,7 +132,7 @@ begin
   WriteProgramLog('Creating TempControl form');
 
   Top:= MainForm.Top;
-  Left:= ReadingsForm.Left + ReadingsForm.Width + 8;
+  Left:= DetControlForm.Left + DetControlForm.Width + 8;
 
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -580,12 +582,15 @@ begin
 
   OnePointPerStep:= false;
 
-  {if Log.State <> lInActive then
+  if Log.State <> lInActive then
   begin
-    if Config.AutoExportParams then
-       MainForm.SaveReport(false, ReportHeader);
+    if Config.AutoExportParams and DetControlForm.ReportSaved then
+    begin
+      MainForm.ReportFolder:= Log.FilePath;
+      MainForm.SaveReport(false, ReportHeader);
+    end;
     inc(ExperimentNumber);
-  end; }
+  end;
 end;
 
 procedure TTempControlForm.CreateFile(Sender: tLogModule);
@@ -609,7 +614,7 @@ begin
         end;
       end;
 
-      //ReportHeader:= true;
+      ReportHeader:= true;
       str(ReportNumber, s1);
       str(ExperimentNumber, s2);
       FileName+= '_' + s1 + '_' + s2;
@@ -623,7 +628,7 @@ begin
         str(ExperimentNumber, s1);
       end;
 
-      //ReportHeader:= false;
+      ReportHeader:= false;
       FileName+= '_' + s1;
     end;
     FileName+= LogExtensions[integer(dTempController)];
@@ -926,7 +931,7 @@ end;
 procedure TTempControlForm.EnableControls(Enable: boolean);
 begin
   cbSampleRate.Enabled:=    Enable;
-  cgTransfer.Enabled:=      Enable;
+  //cgTransfer.Enabled:=      Enable;
   btReset.Enabled:=         Enable;
   btQuery.Enabled:=         Enable;
   btCustomCommand.Enabled:= Enable;
@@ -939,7 +944,15 @@ end;
 procedure TTempControlForm.GetDeviceParams;
 var
   i: integer;
+  s: string;
 begin
+  if (DeviceIndex =0) and debug then
+  begin
+    deviceindex:= 1;
+    connectionkind:= ctelnet;
+    telnetclient:= tTelNetSend.create;
+  end;
+
   cbSampleRate.Items.Clear;;
   cgTransfer.Items.Clear;
   cbChartShow.Items.Clear;
@@ -973,7 +986,12 @@ begin
     cbSampleRate.Items.AddText(Cells[DeviceIndex, integer(htSampleRateOptions)]);
     setlength(BufferIndices, cbSampleRate.Items.Count);
     for i:= 0 to cbSampleRate.Items.Count - 1 do
-      BufferIndices[i]:= cbSampleRate.Items[i]; { TODO 1 -cImprovement : real indices }
+    begin
+      s:= cbSampleRate.Items[i];
+      BufferIndices[i]:= CopyDelFromTo(s, '', ' - ');
+
+      cbSampleRate.Items[i]:= s;
+    end;
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eDelay.MinValue:= MinDelay;
@@ -1051,7 +1069,7 @@ begin
     end;
   end;
 
-  with ReadingsForm do
+  with DetControlForm do
   if cbPortSelect.ItemIndex = TempControlForm.cbPortSelect.ItemIndex then
   begin
     case ConnectionKind of
@@ -1075,19 +1093,11 @@ begin
 
   inherited btnConnectClick(Sender);
 
-  if Debug then
-  if DeviceIndex = 0 then
-  begin
-   deviceindex:= 1;
-   connectionkind:= ctelnet;
-   telnetclient:= tTelNetSend.create;
-  end;
-
   if DeviceIndex = iDefaultDevice then
     exit;
 
-  Params.DetectorPort:= ReadingsForm.CurrentDevice^.Port;
-  Params.LastDetector:= ReadingsForm.CurrentDevice^.Model;
+  Params.DetectorPort:= DetControlForm.CurrentDevice^.Port;
+  Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
 
   OptionForm.eDevice2.ItemIndex:= DeviceIndex - 1;
 end;
@@ -1135,6 +1145,27 @@ begin
   }
   Source.PointsNumber:= Log.ProcessedPoints;
   Source.Reset;
+end;
+
+procedure TTempControlForm.cbReadingsModeChange(Sender: TObject);
+begin
+  case cbReadingsMode.ItemIndex of
+    integer(rBuffer):
+    begin
+      ShowMessage('В разработке');
+      cbReadingsMode.ItemIndex:= integer(rSimultaneous);
+      //MainForm.cbPointPerStepTemp.Checked:= false;
+    end;
+    integer(rSimultaneous):
+    begin
+      cbXAxis.Items.Strings[0]:= 'Время, с';
+    end;
+    else
+    begin
+      MainForm.cbPointPerStepTemp.Checked:= false;
+      cbXAxis.Items.Strings[0]:= 'Номер точки';
+    end;
+  end;
 end;
 
 procedure TTempControlForm.cbSampleRateChange(Sender: TObject);

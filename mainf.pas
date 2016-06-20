@@ -151,6 +151,7 @@ type
   public
     { public declarations }
     FileResult: integer;
+    ReportFolder: string;
 
     function FullCfgDir: string; inline;
     function SaveProfile(FileName: ansistring): integer;
@@ -194,7 +195,7 @@ var
 implementation
 
 uses
-  Math, Variants, MemoF, StepF, OptionF, ReadingsF, TempControlF, LogModule, OffsetF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, DetControlF, TempControlF, LogModule, OffsetF, AboutF;
 
 {$R *.lfm}
 
@@ -212,7 +213,7 @@ begin
     try
       FileStream:= TFilestream.Create(FileName, fmOpenRead);
       Result:= RestoreState(FileStream);
-      Result+= ReadingsForm.RestoreState(FileStream);
+      Result+= DetControlForm.RestoreState(FileStream);
       Result+= TempControlForm.RestoreState(FileStream);
       StringStream:= tStringStream.Create('');
 
@@ -223,9 +224,9 @@ begin
 
       p:= pos('DetLogDir', s);
       if p = 0 then
-        ReadingsForm.DataFolder:= DefaultLogFolder
+        DetControlForm.DataFolder:= DefaultLogFolder
       else
-        ReadingsForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+        DetControlForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
 
       p:= pos('TempLogDir', s);
       if p = 0 then
@@ -276,12 +277,12 @@ begin
     end;
   end;
   SaveState(FileStream);
-  ReadingsForm.SaveState(FileStream);
+  DetControlForm.SaveState(FileStream);
   TempControlForm.SaveState(FileStream);
   s:= 'Internal' + '(' + LineEnding;
   FileStream.Write(s[1], length(s));
 
-  s:= 'DetLogDir' + '=' + ReadingsForm.DataFolder + LineEnding;
+  s:= 'DetLogDir' + '=' + DetControlForm.DataFolder + LineEnding;
   FileStream.Write(s[1], length(s));
 
   s:= 'TempLogDir' + '=' + TempControlForm.DataFolder + LineEnding;
@@ -350,6 +351,13 @@ var
   FileName, s: string;
 begin
   DateTimeToString(FileName, 'yyyy_mm_dd', Now);
+if ReportFolder <> '' then
+  begin
+    if CreateDir(ReportFolder) then
+      FileName:= ReportFolder + '\' + FileName
+    else
+      WriteProgramLog('Error creating folder ' + ReportFolder);
+  end;
 
   if ReportNumber = 0 then
   begin
@@ -393,7 +401,7 @@ begin
 
   DateTimeToString(s, 'dd/mm/yyyy  hh:mm:ss', Now);
   writeln(f, s);
-  str(ReadingsForm.ExperimentNumber, s);     { TODO 1 -cBug : redo }
+  str(DetControlForm.ExperimentNumber, s);     { TODO 1 -cBug : redo }
 
   writeln(f, 'Эксперимент №' + s);
   writeln(f, '======================================================================');
@@ -452,11 +460,11 @@ begin
       writeln(f, 'Конечная амплитуда:   ' + s + ' В');
       str(eAStep.Value:0:2, s);
       writeln(f, 'Шаг:                  ' + s + ' В');
-      writeln(f, 'Данные в файле: ', ReadingsForm.Log.FileName);  { TODO : test }
+      writeln(f, 'Данные в файле: ', DetControlForm.Log.FileName);  { TODO : test }
     end;
   end;
 
-  with ReadingsForm do
+  with DetControlForm do
   if ConnectionKind <> cNone then
   begin
     writeln(f);
@@ -508,8 +516,8 @@ begin
   system.close(f);
   {$I+}
 
-  SaveReport:= IOResult;
-  if SaveReport <> 0 then
+  Result:= IOResult;
+  if Result <> 0 then
     ShowMessage('Ошибка сохранения отчета')
   else
     StatusBar.Panels[spStatus].Text:= 'Cохранено в ' + FileName;
@@ -604,8 +612,6 @@ procedure tMainForm.FormDestroy(Sender: TObject);
 begin
   btnDisconnectClick(Self);
 
-  {SerPort.Free;
-  TelNetClient.Free; }
   DoneCriticalSection(LogCS);
   ProgramLog.Free;
   DoneCriticalSection(CommCS);
@@ -622,7 +628,14 @@ end;
 procedure tMainForm.miNewReportClick(Sender: TObject);
 begin
   ReportNumber:= 0; //so that it checks for existing file internally?
-  ReadingsForm.ExperimentNumber:= 1;
+  DetControlForm.ExperimentNumber:= 1;
+  if DetControlForm.ConnectionKind <> cNone then
+    ReportFolder:= DetControlForm.Log.FilePath
+  else
+    if TempControlForm.ConnectionKind <> cNone then
+      ReportFolder:= TempControlForm.Log.FilePath
+  else
+    ReportFolder:= '';
   SaveReport(true);
 end;
 
@@ -706,10 +719,10 @@ end;
 
 procedure tMainForm.cbPointPerStepDetChange(Sender: TObject);
 begin
-  if cbPointPerStepDet.Checked and (ReadingsForm.cbReadingsMode.ItemIndex = integer(rBuffer)) then
+  if cbPointPerStepDet.Checked and (DetControlForm.cbReadingsMode.ItemIndex = integer(rBuffer)) then
   begin
-    ReadingsForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
-    ReadingsForm.cbReadingsModeChange(Self);
+    DetControlForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
+    DetControlForm.cbReadingsModeChange(Self);
     ShowMessage('Доступно только в режиме "Одновременный запрос".' + LineEnding +
     'Режим снятия переключен');
   end;
@@ -722,16 +735,17 @@ end;
 
 procedure tMainForm.btAutoConnectClick(Sender: TObject);
 begin
+  ShowMessage('В разработке');
                   Cursor:= crHourGlass;
-  ReadingsForm.   Cursor:= crHourGlass;
+  DetControlForm.   Cursor:= crHourGlass;
   TempControlForm.Cursor:= crHourGlass;
 
   AutoConnect;
-  ReadingsForm.AutoConnect;
+  DetControlForm.AutoConnect;
   TempControlForm.AutoConnect;
 
                   Cursor:= crDefault;
-  ReadingsForm.   Cursor:= crDefault;
+  DetControlForm.   Cursor:= crDefault;
   TempControlForm.Cursor:= crDefault;
 end;
 
@@ -800,7 +814,7 @@ end;
 
 procedure tMainForm.ReadingTimerTimer(Sender: TObject);
 begin
-  with ReadingsForm do
+  with DetControlForm do
     if Log.State = lActive then
       Log.Stop;
 
@@ -866,12 +880,12 @@ procedure tMainForm.miShowReadingsFClick(Sender: TObject);
 begin
   if not miShowReadingsF.Checked then
   begin
-    ReadingsForm.Show;
+    DetControlForm.Show;
     miShowReadingsF.Checked:= true;
   end
   else
   begin
-    ReadingsForm.Hide;
+    DetControlForm.Hide;
     miShowReadingsF.Checked:= false;
   end;
 end;
@@ -962,7 +976,7 @@ begin
     if FrequencyTab.TabIndex = StepTab then
     begin
       if Config.AutoReadingStep then       { TODO 2 -cImprovement : stuff like this really should throw an exception }
-        if (ReadingsForm.ConnectionKind = cNone) and
+        if (DetControlForm.ConnectionKind = cNone) and
            (TempControlForm.ConnectionKind = cNone) then
           begin
             ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
@@ -977,7 +991,7 @@ begin
       ((eStepStartA.Value <> eStepStopA.Value) and (eAStep.Value <> 0)) then
       begin
         //assignments in stepf
-        ReadingsForm.OnePointPerStep:= cbPointPerStepDet.Checked;
+        DetControlForm.OnePointPerStep:= cbPointPerStepDet.Checked;
         TempControlForm.OnePointPerStep:= cbPointPerStepTemp.Checked;
         AutoSweep:= false;
         StepStartF:= eStepStartF.Value;
@@ -1011,7 +1025,7 @@ begin
       if FrequencyTab.TabIndex = SweepTab then
       begin
         if Config.AutoReadingSweep then
-          if (ReadingsForm.ConnectionKind = cNone) and
+          if (DetControlForm.ConnectionKind = cNone) and
              (TempControlForm.ConnectionKind = cNone) then
             begin
               ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
@@ -1022,15 +1036,15 @@ begin
               exit
             end;
 
-        ReadingsForm.LogFreq:= true;
-        ReadingsForm.cbUseGenFreq.Checked:= false;
-        ReadingsForm.LogAmpl:= false;
+        DetControlForm.LogFreq:= true;
+        DetControlForm.cbUseGenFreq.Checked:= false;
+        DetControlForm.LogAmpl:= false;
         if Config.AutoReadingSweep then
         begin
           Cursor:= crHourGlass;
           sleep(MinDelay);
           Cursor:= crDefault;
-          ReadingsForm.Log.Start;
+          DetControlForm.Log.Start;
           TempControlForm.Log.Start;
           if ReadingTime > 0 then
           begin
@@ -1065,7 +1079,7 @@ begin
       else  //ConstFTab
       begin
         if Config.AutoReadingConst then
-          if (ReadingsForm.ConnectionKind = cNone) and
+          if (DetControlForm.ConnectionKind = cNone) and
              (TempControlForm.ConnectionKind = cNone) then
             begin
               ShowMessage('Ошибка: Включено автоматическое снятие показаний,' + LineEnding +
@@ -1076,14 +1090,14 @@ begin
               exit
             end;
 
-        ReadingsForm.LogFreq:= false;
-        ReadingsForm.LogAmpl:= false;
+        DetControlForm.LogFreq:= false;
+        DetControlForm.LogAmpl:= false;
         if Config.AutoReadingConst then
         begin
           Cursor:= crHourGlass;
           sleep(MinDelay);
           Cursor:= crDefault;
-          ReadingsForm.Log.Start;
+          DetControlForm.Log.Start;
           TempControlForm.Log.Start;
           if ReadingTime > 0 then
           begin
@@ -1125,10 +1139,10 @@ end;
 procedure tMainForm.btProgramClick(Sender: TObject);
 begin
   enablecontrols(true);
-  readingsform.enablecontrols(true);
+  DetControlForm.enablecontrols(true);
   tempcontrolform.enablecontrols(true);
   Debug:= true;
-  //readingsform.btnConnectClick(self);
+  //DetControlForm.btnConnectClick(self);
 end;
 
 procedure tMainForm.btQueryClick(Sender: TObject);
@@ -1282,12 +1296,12 @@ begin
     cbModulation.ItemIndex:= 0;
   eStepChange(Self);
   FrequencyTabChange(Self);
-  ReadingsForm.cbReadingsModeChange(ReadingsForm);
+  DetControlForm.cbReadingsModeChange(DetControlForm);
 end;
 
 procedure tMainForm.btnConnectClick(Sender: TObject);
 begin
-  with ReadingsForm do
+  with DetControlForm do
   if cbPortSelect.ItemIndex = MainForm.cbPortSelect.ItemIndex then
   begin
     case ConnectionKind of

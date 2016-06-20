@@ -1,7 +1,7 @@
-object ReadingsForm: TReadingsForm
-  Left = 444
+object DetControlForm: TDetControlForm
+  Left = 570
   Height = 600
-  Top = 206
+  Top = 162
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -40,18 +40,15 @@ object ReadingsForm: TReadingsForm
   end
   object btApply: TButton
     AnchorSideLeft.Side = asrCenter
-    AnchorSideTop.Control = btOffset
-    AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = StatusBar
     Left = 706
     Height = 23
-    Top = 545
+    Top = 548
     Width = 90
-    Anchors = [akTop, akRight]
-    BorderSpacing.Top = 75
-    BorderSpacing.Bottom = 8
+    Anchors = [akRight, akBottom]
+    BorderSpacing.Bottom = 6
     Caption = 'Применить'
     Default = True
     Enabled = False
@@ -676,6 +673,7 @@ object ReadingsForm: TReadingsForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
+      AnchorSideTop.Control = fneDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
@@ -722,6 +720,7 @@ object ReadingsForm: TReadingsForm
     end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
+      AnchorSideTop.Control = fneDataFileStub
       AnchorSideBottom.Control = StatusBar
       Left = 222
       Height = 23

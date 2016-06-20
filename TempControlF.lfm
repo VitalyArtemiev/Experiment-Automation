@@ -178,7 +178,7 @@ object TempControlForm: TTempControlForm
   object btApply: TButton
     AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Owner
+    AnchorSideRight.Control = cbReadingsMode
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = StatusBar
     Left = 406
@@ -186,7 +186,6 @@ object TempControlForm: TTempControlForm
     Top = 548
     Width = 90
     Anchors = [akRight, akBottom]
-    BorderSpacing.Right = 4
     BorderSpacing.Bottom = 6
     Caption = 'Применить'
     Default = True
@@ -269,6 +268,7 @@ object TempControlForm: TTempControlForm
     end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
+      AnchorSideTop.Control = fneDataFileStub
       Left = 222
       Height = 23
       Top = 96
@@ -287,6 +287,7 @@ object TempControlForm: TTempControlForm
       Top = 34
       Width = 104
       BorderSpacing.Top = 8
+      Increment = 50
       MaxValue = 90000
       ParentShowHint = False
       ShowHint = True
@@ -358,6 +359,7 @@ object TempControlForm: TTempControlForm
       BorderSpacing.Left = 20
       BorderSpacing.Top = 3
       BorderSpacing.Right = 4
+      Increment = 50
       MaxValue = 10000
       ParentShowHint = False
       ShowHint = True
@@ -582,6 +584,7 @@ object TempControlForm: TTempControlForm
       'Одновременный запрос'
       'В реальном времени'
     )
+    OnChange = cbReadingsModeChange
     ParentShowHint = False
     ShowHint = True
     TabOrder = 7
@@ -653,7 +656,6 @@ object TempControlForm: TTempControlForm
       ClientWidth = 102
       ColumnLayout = clVerticalThenHorizontal
       Columns = 2
-      Enabled = False
       Items.Strings = (
         'out1'
         '2A'
@@ -673,11 +675,11 @@ object TempControlForm: TTempControlForm
   end
   object Label11: TLabel
     AnchorSideLeft.Control = Chart
-    AnchorSideTop.Control = Chart
-    AnchorSideTop.Side = asrBottom
+    AnchorSideTop.Control = cbChartShow
+    AnchorSideTop.Side = asrCenter
     Left = 4
     Height = 15
-    Top = 416
+    Top = 420
     Width = 83
     Caption = 'График - Ось Y'
     ParentColor = False

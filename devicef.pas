@@ -236,7 +236,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, Math, StrUtils, SynaIP, MainF, ReadingsF, TempControlF, OptionF, serconf, MemoF, ButtonPanel;
+  LCLType, Math, StrUtils, SynaIP, MainF, DetControlF, TempControlF, OptionF, serconf, MemoF, ButtonPanel;
 
 const
   InputQueryWidth = 300;
@@ -500,7 +500,7 @@ begin
   if o = 0 then
   begin
     MainForm.GetSupportedDevices(dGenerator);
-    ReadingsForm.GetSupportedDevices(dDetector);
+    DetControlForm.GetSupportedDevices(dDetector);
     TempControlForm.GetSupportedDevices(dTempController);
     OptionForm.ReloadDeviceList;
 

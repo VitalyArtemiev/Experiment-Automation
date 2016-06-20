@@ -58,9 +58,9 @@ begin
   FileVerInfo:= TFileVersionInfo.Create(nil);
   try
     {$IFOPT D+}
-    FileVerInfo.FileName:= 'Generator-Amplifier Debug.exe';
+    FileVerInfo.FileName:= 'EADebug.exe';
     {$ELSE}
-    FileVerInfo.FileName:= 'Generator-Amplifier Control.exe';
+    FileVerInfo.FileName:= 'Experiment Automation.exe';
     {$ENDIF}
     FileVerInfo.ReadFileInfo;
     lProgramVersion.Caption:= 'Версия программы:  ' +  FileVerInfo.VersionStrings.Values['FileVersion'];

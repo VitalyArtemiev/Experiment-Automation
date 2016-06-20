@@ -100,7 +100,7 @@ var
 
 implementation
 
-uses StrUtils, SynaIP, MainF, ReadingsF, TempControlF, SerConF, DeviceF;
+uses StrUtils, SynaIP, MainF, DetControlF, TempControlF, SerConF, DeviceF;
 
 {$R *.lfm}
 
@@ -158,7 +158,7 @@ var
 begin
   with DeviceForm.sgDetCommands do
   begin
-    case ReadingsForm.SupportedDevices[eDevice1.ItemIndex + 1].Connection of
+    case DetControlForm.SupportedDevices[eDevice1.ItemIndex + 1].Connection of
       //cNone: ;
       cSerial:
         begin
@@ -342,7 +342,7 @@ begin
       cbHandShake.ItemIndex:= 2;
   end;
 
-  with ReadingsForm, ReadingsForm.CurrentDevice^, eDevice1 do
+  with DetControlForm, DetControlForm.CurrentDevice^, eDevice1 do
   begin
     if CurrentDevice^.Model <> '' then
       ItemIndex:= Items.IndexOf(CurrentDevice^.Model);
@@ -411,8 +411,8 @@ begin
   if MainForm.ConnectionKind <> cNone then
     eDevice.ItemIndex:= eDevice.Items.IndexOf(MainForm.CurrentDevice^.Model);
 
-  if ReadingsForm.ConnectionKind <> cNone then
-    eDevice1.ItemIndex:= eDevice1.Items.IndexOf(ReadingsForm.CurrentDevice^.Model);
+  if DetControlForm.ConnectionKind <> cNone then
+    eDevice1.ItemIndex:= eDevice1.Items.IndexOf(DetControlForm.CurrentDevice^.Model);
 
   if TempControlForm.ConnectionKind <> cNone then
     eDevice2.ItemIndex:= eDevice2.Items.IndexOf(TempControlForm.CurrentDevice^.Model);
@@ -510,7 +510,7 @@ begin
     end;
 
   if eDevice1.ItemIndex >= 0 then
-    with ReadingsForm, ReadingsForm.SupportedDevices[eDevice1.ItemIndex + 1], DeviceForm.sgDetCommands do
+    with DetControlForm, DetControlForm.SupportedDevices[eDevice1.ItemIndex + 1], DeviceForm.sgDetCommands do
     begin
       Timeout:= seRecvTimeOut.Value;
       case Connection of

@@ -27,22 +27,26 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, menuh, MainF, memof, stepf, optionf, ReadingsF, CustomCommandF, StatusF,
+  Windows, Forms, menuh, MainF, memof, stepf, optionf,
+DetControlF, CustomCommandF, StatusF,
   serconf, AboutF, DeviceF, dialogs, lazcontrols,
   OffsetF, TempControlF{, FileM};
 
 {$R *.res}
 
+var
+  Ex: integer;
+
 begin
-  //Application.OnHint := @MenuHint.Show;
-  Application.Title:= 'Generator-Amplifier Control';
-  Application.MainFormOnTaskBar:= true;
+  Application.Title:= 'Experiment Automation';
   RequireDerivedFormResource:= True;
   Application.Initialize;
+  Ex:= GetWindowLong(FindWindow(nil, 'Experiment Automation'), GWL_EXSTYLE);
+  SetWindowLong(FindWindow(nil, 'Experiment Automation'), GWL_EXSTYLE, Ex or WS_EX_TOOLWINDOW and not WS_EX_APPWINDOW);
 
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TDeviceForm, DeviceForm);
-  Application.CreateForm(TReadingsForm, ReadingsForm);
+  Application.CreateForm(TDetControlForm, DetControlForm);
   Application.CreateForm(TMemoForm, MemoForm);
   Application.CreateForm(TStepForm, StepForm);
   Application.CreateForm(TOptionForm, OptionForm);

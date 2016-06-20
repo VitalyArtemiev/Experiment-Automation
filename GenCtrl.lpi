@@ -6,7 +6,7 @@
     <General>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <Title Value="Generator-Amplifier Control"/>
+      <Title Value="Experiment Automation"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <Icon Value="0"/>
@@ -19,7 +19,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="8"/>
       <Language Value="0419"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>
@@ -31,7 +31,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="Generator-Amplifier Debug"/>
+            <Filename Value="EADebug"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -53,7 +53,6 @@
           </CodeGeneration>
           <Linking>
             <Debugging>
-              <DebugInfoType Value="dsDwarf2"/>
               <UseHeaptrc Value="True"/>
             </Debugging>
             <Options>
@@ -69,7 +68,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="Generator-Amplifier Control"/>
+            <Filename Value="Experiment Automation"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -166,12 +165,11 @@
         <UnitName Value="OptionF"/>
       </Unit4>
       <Unit5>
-        <Filename Value="readingsf.pas"/>
+        <Filename Value="DetControlF.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="ReadingsForm"/>
+        <ComponentName Value="DetControlForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="ReadingsF"/>
       </Unit5>
       <Unit6>
         <Filename Value="customcommandf.pas"/>

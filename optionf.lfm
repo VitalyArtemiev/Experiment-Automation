@@ -51,9 +51,9 @@ object OptionForm: TOptionForm
     Height = 328
     Top = 0
     Width = 350
-    ActivePage = ConnectionTab
+    ActivePage = GeneralTab
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 2
     object GeneralTab: TTabSheet
       Caption = 'Общие настройки'

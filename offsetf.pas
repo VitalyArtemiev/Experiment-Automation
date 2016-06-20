@@ -44,7 +44,7 @@ implementation
 
 {$R *.lfm}
 
-uses StrUtils, DeviceF, SerConF, ReadingsF;
+uses StrUtils, DeviceF, SerConF, DetControlF;
 
 { TOffsetForm }
 
@@ -60,7 +60,7 @@ var
   i: integer;
 begin
   with DeviceForm.sgDetCommands do
-    s:= Cells[ReadingsForm.DeviceIndex, integer(hOffsetParams)];
+    s:= Cells[DetControlForm.DeviceIndex, integer(hOffsetParams)];
   with cbParams do
   begin
     Items.Clear;
@@ -84,7 +84,7 @@ var
   i, l, e: integer;
   d: double;
 begin
-  with ReadingsForm, cbParams do
+  with DetControlForm, cbParams do
   begin
     Purge;
     if CommandSupported(dExpand) then
@@ -141,7 +141,7 @@ end;
 
 procedure TOffsetForm.btAutoOffsetClick(Sender: TObject);
 begin
-  with ReadingsForm, cbParams do
+  with DetControlForm, cbParams do
   begin
     EnterCriticalSection(CommCS);
       AddCommand(dAutoOffset, false, ParamIndices[ItemIndex]);
@@ -153,7 +153,7 @@ end;
 
 procedure TOffsetForm.btApplyClick(Sender: TObject);
 begin
-  with ReadingsForm, cbParams do
+  with DetControlForm, cbParams do
   begin
     Offsets[ItemIndex]:= eOffset.Value;
     Expands[ItemIndex]:= cbExpand.ItemIndex;

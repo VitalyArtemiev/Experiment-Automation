@@ -65,7 +65,7 @@ type
 implementation
 
 uses
-  math, DeviceF, ReadingsF, TempControlF;
+  math, DeviceF, DetControlF, TempControlF;
 
 function tTempRealTimeThread.WaitForPoints(ParamCount{, Number}: integer): PBuffer;
 var
@@ -214,7 +214,7 @@ var
   pd: PBuffer;
   pt: PDateTime;
 begin
-  with ReadingsForm do
+  with DetControlForm do
   begin
     pd:= RecvSnap(ParToRead);
 
@@ -244,7 +244,7 @@ var
   pd: PBuffer;
   pt: ^TDateTime;
 begin
-  with ReadingsForm do
+  with DetControlForm do
   repeat
     try
       pd:= RecvSnap(ParToRead);
@@ -287,7 +287,7 @@ var
   o: ^smallint;
   DataList: TList;
 begin
-  with ReadingsForm do
+  with DetControlForm do
   repeat
     try
       EnterCriticalSection(CommCS);

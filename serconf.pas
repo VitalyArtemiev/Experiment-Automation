@@ -93,6 +93,8 @@ type
     procedure btQueryClick(Sender: TObject); virtual; abstract;
     procedure btResetClick(Sender: TObject);
     procedure btStatusClick(Sender: TObject);
+  protected
+    procedure CreateSocket(Sender: TObject);
   private
     TestResult: string;
     fTimeOuts: longword;
@@ -145,21 +147,23 @@ type
     procedure SaveState(FileStream: tFileStream);
     function RestoreState(FileStream: tFileStream): integer;
     function RestoreState(FileName: string): integer;
-
-    //function SaveReport(FileStream:
   end;
 
   procedure WriteProgramLog(Log: string; Force: boolean = false);
   procedure WriteProgramLog(i: longint; Force: boolean = false);
+  procedure WriteProgramLog(i: int64; Force: boolean = false);
   procedure WriteProgramLog(d: double; Force: boolean = false);
 
   function strf(x: double): string;
   function strf(x: longint): string;
+  function strf(x: int64): string;
   function valf(s: string): integer;
   function vald(s: string): double;
 
   function CopyFromTo(Origin: string; Start, Stop: string): string;
   function CopyFromTo(Origin: string; SearchStart: integer; Start, Stop: string): string;
+
+  function CopyDelFromTo(var Origin: string; Start, Stop: string): string;
  // function SubstrCount(const aString, aSubstring: string): Integer;
 
 const
@@ -196,6 +200,11 @@ begin
   str(x, Result);
 end;
 
+function strf(x: int64): string;
+begin
+  str(x, Result);
+end;
+
 function valf(s: string): integer; inline;
 begin
   val(s, Result);
@@ -224,6 +233,16 @@ begin
   p1:= Pos(Start, Origin) + 1;
   p2:= Pos(Stop, Origin);
   Result:= Copy(Origin, p1, p2 - p1);
+end;
+
+function CopyDelFromTo(var Origin: string; Start, Stop: string): string;
+var
+  p1, p2: integer;
+begin
+  p1:= Pos(Start, Origin) + 1;
+  p2:= Pos(Stop, Origin);
+  Result:= Copy(Origin, p1, p2 - p1);
+  Delete(Origin, 1, p2 + length(Stop) - 1);
 end;
 
 {function SubstrCount(const aString, aSubstring: string): Integer;
@@ -256,6 +275,11 @@ begin
   WriteProgramLog(strf(i), Force);
 end;
 
+procedure WriteProgramLog(i: int64; Force: boolean = false); inline;
+begin
+  WriteProgramLog(strf(i), Force);
+end;
+
 procedure WriteProgramLog(d: double; Force: boolean = false); inline;
 begin
   WriteProgramLog(strf(d), Force);
@@ -282,7 +306,6 @@ begin
   end;
   if (Result = 0) or debug then
   begin
-   // if debug then deviceindex:= 1;
     GetDeviceParams;
     Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
     try
@@ -345,6 +368,29 @@ begin
     StatusForm.Hide;
   StatusForm.Form:= pointer(Self);
   StatusForm.Show;
+end;
+
+procedure tSerConnectForm.CreateSocket(Sender: TObject);
+var
+  Socket: TSocket;
+  f: longint;
+begin
+  Socket:= TelNetClient.Sock.Socket;
+
+   writeprogramlog(Socket);
+    f:= 1;
+    f:= fpsetsockopt(Socket, IPPROTO_TCP, TCP_NODELAY, @f, Sizeof(f));
+    WriteprogramLog(f);
+
+    f:= socketerror;
+
+    case f of
+      ESockEBADF: WriteprogramLog('badf');
+      ESockENOTSOCK: WriteprogramLog('notsock');
+      ESockEFAULT: WriteprogramLog('fault');
+      else
+        WriteprogramLog('err ' + strf(f));
+    end;
 end;
 
 procedure tSerConnectForm.btResetClick(Sender: TObject);
@@ -661,7 +707,9 @@ end;
 
 function tSerConnectForm.ConnectTelNet: longint;
 var
-  i: integer;
+  i, f: integer;
+  a: int64;
+  sock: ptruint;
   s: string;
 begin
   DeviceIndex:= iDefaultDevice;
@@ -685,6 +733,9 @@ begin
         TelNetClient.TargetPort:= Port;
         TelNetClient.Timeout:= TimeOut;
 
+        TelNetClient.Sock.OnCreateSocket:= @CreateSocket;
+
+                           { TODO 1 -c??? : remove after test }
         TelNetClient.Login;
 
         InitDevice;
@@ -720,8 +771,6 @@ begin
 
   if Result = 0 then
   begin
-    {telnetclient.Sock.Socket:=;
-    fpsetsockopt }
     StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
     TimeOutErrors:= 0;
     EnableControls(true);
