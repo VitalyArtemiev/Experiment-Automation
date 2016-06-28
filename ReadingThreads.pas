@@ -10,8 +10,8 @@ uses
 type
 
   { tDetBufferThread }
-
   tDetBufferThread = class(tThread)
+    DataList: TList;
     constructor Create(BufferLength: longword);
     procedure Execute; override;
   private
@@ -21,51 +21,99 @@ type
 
  { tDetSimultaneousThread }
 
- tDetSimultaneousThread = class(tThread)
-   DataList: TList;
-   procedure Execute; override;
-   constructor Create;
- end;
+  tDetSimultaneousThread = class(tThread)
+    DataList: TList;
+    procedure Execute; override;
+    constructor Create;
+  end;
 
  { tDetOnePerStepThread }
 
- tDetOnePerStepThread = class(tThread)
-   DataList: TList;
-   procedure Execute; override;
-   constructor Create;
- end;
+  tDetOnePerStepThread = class(tThread)
+    DataList: TList;
+    procedure Execute; override;
+    constructor Create;
+  end;
+
+
+  { tTempBufferThread }
+
+  tTempBufferThread = class(tThread)
+    DataList: TList;
+    constructor Create(BufferLength: longword);
+    procedure Execute; override;
+  private
+    Buffers: array of array of double;
+    ParamArr: tIntegerArray;
+  end;
 
  { tTempRealTimeThread }
 
- tTempRealTimeThread = class(tThread)
-   DataList: TList;
-   Socket: tTCPBlockSocket;
-   procedure Execute; override;
-   function WaitForPoints(ParamCount{, Number}: integer): PBuffer;
-   constructor Create;
-   destructor Destroy; override;
- end;
+  tTempRealTimeThread = class(tThread)
+    DataList: TList;
+    Socket: tTCPBlockSocket;
+    procedure Execute; override;
+    function WaitForPoints(ParamCount{, Number}: integer): PBuffer;
+    constructor Create;
+    destructor Destroy; override;
+  end;
 
  { tTempSimultaneousThread }
 
- tTempSimultaneousThread = class(tThread)
-   DataList: TList;
-   procedure Execute; override;
-   constructor Create;
- end;
+  tTempSimultaneousThread = class(tThread)
+    DataList: TList;
+    procedure Execute; override;
+    constructor Create;
+  end;
 
  { tTempOnePerStepThread }
 
- tTempOnePerStepThread = class(tThread)
-   DataList: TList;
-   procedure Execute; override;
-   constructor Create;
- end;
+  tTempOnePerStepThread = class(tThread)
+    DataList: TList;
+    procedure Execute; override;
+    constructor Create;
+  end;
 
 implementation
 
 uses
   math, DeviceF, DetControlF, TempControlF;
+
+{ tTempBufferThread }
+
+constructor tTempBufferThread.Create(BufferLength: longword);
+begin
+  setlength(Buffers, BufferLength);
+  setlength(ParamArr, 3);
+  inherited Create(false);
+  FreeOnTerminate:= false;
+end;
+
+procedure tTempBufferThread.Execute;
+var
+  s: string;
+  PointsToRead: longint;
+  i: integer;
+begin
+  with TempControlForm do
+    repeat
+      try
+        EnterCriticalSection(CommCS);
+          AddCommand(tStoredPoints, true);               //paus+
+          PassCommands;
+          s:= RecvString;
+      finally
+        LeaveCriticalSection(CommCS);
+      end;
+      val(s, PointsToRead);
+
+      for i:= 0 to PointsToRead do
+      begin
+
+      end;
+
+    until Terminated;
+end;
 
 function tTempRealTimeThread.WaitForPoints(ParamCount{, Number}: integer): PBuffer;
 var
@@ -285,7 +333,6 @@ var
   i: integer;
   s: string;
   o: ^smallint;
-  DataList: TList;
 begin
   with DetControlForm do
   repeat

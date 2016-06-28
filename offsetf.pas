@@ -72,7 +72,7 @@ begin
     for i:= 0 to Items.Count - 1 do
     begin
       s:= Items[i];
-      ParamIndices[i]:= Copy2SymbDel(s, ' ');
+      ParamIndices[i]:= CopyDelFromTo(s, '', IndexDelim);
       Items[i]:= s;
     end;
   end;

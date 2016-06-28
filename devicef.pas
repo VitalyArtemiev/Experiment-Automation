@@ -13,9 +13,10 @@ type
     hModel, hManufacturer, hInterface, hBaudRate, hDataBits, hStopBits, hParity,
     hHandShake, hIPAdress, hPort, hInitString, hTimeOut, hMinDelay,
     hParSeparator, hCommSeparator, hTerminator,
-    hTimeConstOptions, hSensitivityOptions, hTransferParams, hFirstIndex,
-    hIndices, hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options,
-    hRatio1Options, hRatio2Options, hBufferRateOptions, hCloseReserveOptions,
+
+    hTimeConstOptions, hSensitivityOptions, hTransferParams, hIndices,
+    hMaxSimultPars, hPointsInBuffer, hCH1Options, hCH2Options, hRatio1Options,
+    hRatio2Options, hBufferRateOptions, hCloseReserveOptions,
     hWideReserveOptions, hRangeOptions, hOffsetParams,
 
     hResistanceOptions = integer(hTimeConstOptions), hFunctionOptions,
@@ -44,13 +45,14 @@ type
     dInputRange, dSensitivity, dTimeConstant, dCloseReserve, dWideReserve,
     dOffset, dExpand, dAutoRange, dAutoSensitivity, dAutoCloseReserve,
     dAutoWideReserve, dAutoPhase, dAutoOffset, dReferenceSource,  dSampleRate,
-    dStartStorage, dPauseStorage, dResetStorage, dStoredPoints,
+    dStartStorage, dPauseStorage, dResetStorage, dStoredPoints, //dReadPonts in text
     dReadPointsNative, dStorageMode, dReadSimultaneous, dDisplaySelect
                  );
 
   eTempCommand = (
-    tError = integer(cTrigger) + 1, tPrint, tGetChannelNames, tReadSimultaneous,
-    tSampleRate, tResetStorage, tStoredPoints, tReadPoints
+    tError = integer(cTrigger) + 1, tPrint, tGetChannelNames,
+    tSampleRate, tStartStorage, tPauseStorage, tResetStorage, tStoredPoints,
+    tReadPoints, tReadSimultaneous, tStartRealTime, tPauseRealTime, tStopRealTime
                  );
 
   {type
@@ -217,7 +219,7 @@ const
   end;
 
 const
-  SGHeaderLength = integer(high(eHeaderRow)) + 3; //кол-во строк в tStringGrid, не относящ. к командам
+  SGHeaderLength = integer(high(eHeaderRow)) + 4; //кол-во строк в tStringGrid, не относящ. к командам
 
   DefaultGen = 'DefaultGenCommands.xml';
   DefaultDet = 'DefaultDetCommands.xml';
@@ -1142,7 +1144,7 @@ begin
         exit(-$20);
       end;
 
-      val(Cells[i, integer(hFirstIndex)], o, e);
+      {val(Cells[i, integer(hFirstIndex)], o, e);
       if (e <> 0) or (o < 0) then
       begin
         pcDevice.TabIndex:= 1;
@@ -1150,7 +1152,7 @@ begin
         Col:= i;
         ShowMessage('Ошибка в поле "Индекс 1-го параметра"');
         exit(-$21);
-      end;
+      end; }
 
       s:= Cells[i, integer(hIndices)];
       if pos(',', s) = 0 then

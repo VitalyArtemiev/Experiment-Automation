@@ -55,9 +55,6 @@ type
     ThreadList: TThreadList;
     DataList: TList;
 
-
-    function FullLogDir: string; inline;
-
     constructor Create;
     destructor Destroy; override;
     //Methods you should call
@@ -132,14 +129,6 @@ begin
     onStateChange(Self);
 end;
 
-function tLogModule.FullLogDir: string;
-begin
-  if FilePath <> '' then
-    Result:= GetCurrentDir + '\' + FilePath + '\'
-  else
-    Result:= GetCurrentDir + '\';
-end;
-
 constructor tLogModule.Create;
 begin
   State:= lInActive;
@@ -174,8 +163,8 @@ begin
   if pos('.', Filename) = 0 then
     FileName+= DefaultLogExtension;
 
-  if not DirectoryExists(FullLogDir) then
-    if not CreateDir(FullLogDir) then
+  if not DirectoryExists(FilePath) then
+    if not CreateDir(FilePath) then
     begin
       WriteProgramLog('Could not create path');
       FilePath:= '';

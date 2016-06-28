@@ -19,7 +19,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
-      <BuildNr Value="8"/>
+      <BuildNr Value="9"/>
       <Language Value="0419"/>
       <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>

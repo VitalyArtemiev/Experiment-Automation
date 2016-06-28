@@ -147,6 +147,7 @@ type
     procedure StatusBarHint(Sender: TObject);
   private
     { private declarations }
+    iIm, iFu, iST, iSD, iMF: tStringArray;
     FrequencyLimits, MinAmplitudeLimits, MaxAmplitudeLimits: array of double;
   public
     { public declarations }
@@ -223,16 +224,18 @@ begin
       s:= CopyFromTo(StringStream.DataString, p, '(', ')');
 
       p:= pos('DetLogDir', s);
-      if p = 0 then
-        DetControlForm.DataFolder:= DefaultLogFolder
-      else
-        DetControlForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+      with DetControlForm do
+        if p = 0 then
+          DataFolder:= DefaultLogFolder
+        else
+          DataFolder:= CopyFromTo(s, p, '=', LineEnding);
 
       p:= pos('TempLogDir', s);
-      if p = 0 then
-        TempControlForm.DataFolder:= DefaultLogFolder
-      else
-        TempControlForm.DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+      with TempControlForm do
+        if p = 0 then
+          DataFolder:= DefaultLogFolder
+        else
+          DataFolder:= CopyFromTo(s, p, '=', LineEnding);
 
       StringStream.Destroy;
       FileStream.Destroy;
@@ -833,7 +836,12 @@ end;
 function tMainForm.FullCfgDir: string;
 begin
   if Config.CfgFolder <> '' then
-    Result:= GetCurrentDir + '\' + Config.CfgFolder + '\'
+  begin
+    if pos('\', Config.CfgFolder) = 0 then
+      Result:= GetCurrentDir + '\' + Config.CfgFolder + '\'
+    else
+      Result:= Config.CfgFolder + '\'
+  end
   else
     Result:= GetCurrentDir + '\';
 end;
@@ -964,12 +972,13 @@ begin
     Offset:= eOffset.Value;
     ACOn:= cbACEnable.Checked;
     AmplUnit:= cbAmplUnit.ItemIndex;
-    if not cbAmplUnit.Visible then AmplitudeUnit:= uNone;
+    if not cbAmplUnit.Visible then
+      AmplitudeUnit:= uNone;
 
     EnterCriticalSection(CommCS);
       if cbImpedance.Visible then
-        AddCommand(gResistance, false, Impedance);
-      AddCommand(gFunction, false, CurrFunc);
+        AddCommand(gResistance, false, iIm[Impedance]);
+      AddCommand(gFunction, false, iFu[CurrFunc]);
       PassCommands;
     LeaveCriticalSection(CommCS);
 
@@ -1055,9 +1064,9 @@ begin
 
         EnterCriticalSection(CommCS);
           AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
-          AddCommand(gSweepType, false, cbSweepType.ItemIndex);
-          AddCommand(gSweepDirection, false, cbSweepDirection.ItemIndex);
-          AddCommand(gModulationWaveform , false, cbModulation.ItemIndex);
+          AddCommand(gSweepType, false, iST[cbSweepType.ItemIndex]);
+          AddCommand(gSweepDirection, false, iSD[cbSweepDirection.ItemIndex]);
+          AddCommand(gModulationWaveform , false, iMF[cbModulation.ItemIndex]);
           AddCommand(gSweepRate, false, eSweepRate.Value, uNone);
           AddCommand(gSweepStartFrequency, false, eSweepStartF.Value, uNone);
           AddCommand(gSweepStopFrequency, false, eSweepStopF.Value, uNone);
@@ -1179,16 +1188,11 @@ begin
 
   if cbImpedance.Visible then
   begin
-    val(copy(s, 1, pos(cs, s) - 1), i, e);
-    if e <> 0 then exit;
-    cbImpedance.ItemIndex:= i;
+    cbImpedance.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iIm);
     delete(s, 1, pos(cs, s) + l);
   end;
 
-  val(copy(s, 1, pos(cs, s) - 1), i, e);
-
-  if e <> 0 then exit;
-  cbFuncSelect.ItemIndex:= i;
+  cbFuncSelect.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iFu); ;
   delete(s, 1, pos(cs, s) + l);
 
   os:= copy(s, 1, pos(cs, s) - 1);   //VP!
@@ -1226,21 +1230,18 @@ begin
   delete(s, 1, pos(cs, s) + l);
 
   val(copy(s, 1, pos(cs, s) - 1), i);
-  cbSweepRate.Checked:= boolean(i);
+  cbSweepRate.Checked:= boolean(i); { TODO 2 -cImprovement : lacks func for boolean }
   delete(s, 1, pos(cs, s) + l);
 
-  val(copy(s, 1, pos(cs, s) - 1), i);
-  cbSweepType.ItemIndex:= i;
+  cbSweepType.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iST);
   delete(s, 1, pos(cs, s) + l);
 
-  val(copy(s, 1, pos(cs, s) - 1), i);
-  cbSweepDirection.ItemIndex:= i;
+  cbSweepDirection.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iSD); ;
   delete(s, 1, pos(cs, s) + l);
 
   if cbModulation.Visible then
   begin
-    val(copy(s, 1, pos(cs, s) - 1), i);
-    cbModulation.ItemIndex:= i;
+    cbModulation.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iMF);
     delete(s, 1, pos(cs, s) + l);
   end;
 
@@ -1342,14 +1343,6 @@ begin
   OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
 
-  if debug then
-  if DeviceIndex = 0 then
-  begin
-   deviceindex:= 1;
-   connectionkind:= cserial;
-   serport:= tblockserial.create;
-  end;
-
   if DeviceIndex = iDefaultDevice then
     exit;
 
@@ -1401,20 +1394,36 @@ var
   i: integer;
   s: string;
 begin
+  if debug then
+  if DeviceIndex = 0 then
+  begin
+   deviceindex:= 1;
+   connectionkind:= cserial;
+   serport:= tblockserial.create;
+  end;
+
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
-  cbImpedance.Items.Clear;
+  {cbImpedance.Items.Clear;
   cbFuncSelect.Items.Clear;
   cbSweepType.Items.Clear;
   cbSweepDirection.Items.Clear;
-  cbModulation.Items.Clear;
+  cbModulation.Items.Clear;   }
 
   with DeviceForm.sgGenCommands do
   begin
-    cbImpedance.Items.AddText(Cells[DeviceIndex, integer(hResistanceOptions)]);
-    cbFuncSelect.Items.AddText(Cells[DeviceIndex, integer(hFunctionOptions)]);
-    cbSweepType.Items.AddText(Cells[DeviceIndex, integer(hSweepTypeOptions)]);
-    cbSweepDirection.Items.AddText(Cells[DeviceIndex, integer(hSweepDirectionOptions)]);
-    cbModulation.Items.AddText(Cells[DeviceIndex, integer(hModulationOptions)]);
+    //cbImpedance.Items.AddText(Cells[DeviceIndex, integer(hResistanceOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hResistanceOptions)], cbImpedance.Items, iIm);
+    //cbFuncSelect.Items.AddText(Cells[DeviceIndex, integer(hFunctionOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hFunctionOptions)], cbFuncSelect.Items, iFu);
+    //cbSweepType.Items.AddText(Cells[DeviceIndex, integer(hSweepTypeOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hSweepTypeOptions)], cbSweepType.Items, iST);
+
+    //cbSweepDirection.Items.AddText(Cells[DeviceIndex, integer(hSweepDirectionOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hSweepDirectionOptions)], cbSweepDirection.Items, iSD);
+
+    //cbModulation.Items.AddText(Cells[DeviceIndex, integer(hModulationOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hModulationOptions)], cbModulation.Items, iMF);
+
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eTimeStep.MinValue:= MinDelay;

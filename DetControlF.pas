@@ -42,7 +42,7 @@ type
     cbRatio2: TComboBox;
     ChartToolset: TChartToolset;
     DataPointHintTool: TDataPointHintTool;
-    fneDataFileStub: TFileNameEdit;
+    fneDataFileStub: TDirectoryEdit;
     ZoomDragTool: TZoomDragTool;
     PanDragTool: TPanDragTool;
     eDelay: TSpinEdit;
@@ -105,7 +105,9 @@ type
     procedure ChartMenuItemClick(Sender: TObject);
     procedure DataPointHintToolHint(ATool: TDataPointHintTool;
       const APoint: TPoint; var AHint: String);
-    procedure fneDataFileStubAcceptFileName(Sender: TObject; var Value: String);
+    procedure fneDataFileStubAcceptDirectory(Sender: TObject; var Value: String
+      );
+    procedure fneDataFileStubButtonClick(Sender: TObject);
     procedure fneDataFileStubEditingDone(Sender: TObject);
     procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
     procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
@@ -136,8 +138,10 @@ type
     t, SampleRate: double; //t for buffer and writing to sources
     ReadingMode: eReadMode;
     MaxSimultPars, TotalPars,
-    FirstIndex, ReferenceIndex, CH1Index, CH2Index: shortint; { TODO 2 -cImprovement : to device record }
+    ReferenceIndex, CH1Index, CH2Index: shortint; { TODO 2 -cImprovement : to device record }
     PointsInBuffer: longword;
+
+    iTC, iSe, iPa, iCH1, iCH2, iRCH1, iRCH2, iBF, iCR, iWR, iRa{, iOf}: array of string;
 
     ReadPars: array of boolean;
     srcFreq, srcAmpl, srcCH1, srcCH2: TAxisSource;
@@ -381,7 +385,7 @@ var
   i, c: integer;
   s: string;
 begin
-  cgTransfer.Items.Clear;
+  {cgTransfer.Items.Clear;
   cbCh1.Items.Clear;
   cbCh2.Items.Clear;
   cbRatio1.Items.Clear;
@@ -392,13 +396,29 @@ begin
   cbTimeConstant.Items.Clear;
   cbReserve1.Items.Clear;
   cbReserve2.Items.Clear;
-  cbInputRange.Items.Clear;
+  cbInputRange.Items.Clear;}
+
+  if Debug then
+  if DeviceIndex = 0 then
+  begin
+   deviceindex:= 1;
+   connectionkind:= cserial;
+   DetControlForm.serport:= tblockserial.create;
+  end;
+
   for i:= 4 to pmChart.Items.Count - 1 do
     pmChart.Items.Delete(4);
 
   with DeviceForm.sgDetCommands do
   begin
-    cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hTransferParams)]);
+    //cbTimeConstant.Items.AddText(Cells[DeviceIndex, integer(hTimeConstOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hTimeConstOptions)], cbTimeConstant.Items, iTC);
+
+    //cbSensitivity.Items.AddText(Cells[DeviceIndex, integer(hSensitivityOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hSensitivityOptions)], cbSensitivity.Items, iSe);
+
+    //cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hTransferParams)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hTransferParams)], cgTransfer.Items, iPa);
 
     if cgTransfer.Width < 90 then
     begin
@@ -418,15 +438,31 @@ begin
       Items[Items.Count - 1].Caption:= cgTransfer.Items[i];
       Items[Items.Count - 1].OnClick:= @ChartMenuItemClick;
     end;
-    cbCh1.Items.AddText(Cells[DeviceIndex, integer(hCH1Options)]);
-    cbCh2.Items.AddText(Cells[DeviceIndex, integer(hCH2Options)]);
-    cbRatio1.Items.AddText(Cells[DeviceIndex, integer(hRatio1Options)]);
-    cbRatio2.Items.AddText(Cells[DeviceIndex, integer(hRatio2Options)]);
-    cbSensitivity.Items.AddText(Cells[DeviceIndex, integer(hSensitivityOptions)]);
-    cbTimeConstant.Items.AddText(Cells[DeviceIndex, integer(hTimeConstOptions)]);
-    cbReserve1.Items.AddText(Cells[DeviceIndex, integer(hCloseReserveOptions)]);
-    cbReserve2.Items.AddText(Cells[DeviceIndex, integer(hWideReserveOptions)]);
-    cbInputRange.Items.AddText(Cells[DeviceIndex, integer(hRangeOptions)]);
+
+
+    //cbCh1.Items.AddText(Cells[DeviceIndex, integer(hCH1Options)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hCH1Options)], cbCh1.Items, iCH1);
+
+    //cbCh2.Items.AddText(Cells[DeviceIndex, integer(hCH2Options)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hCH2Options)], cbCh2.Items, iCH2);
+
+    //cbRatio1.Items.AddText(Cells[DeviceIndex, integer(hRatio1Options)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hRatio1Options)], cbRatio1.Items, iRCH1);
+
+    //cbRatio2.Items.AddText(Cells[DeviceIndex, integer(hRatio2Options)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hRatio2Options)], cbRatio2.Items, iRCH2);
+
+    SeparateIndices(Cells[DeviceIndex, integer(hBufferRateOptions)], cbSampleRate.Items, iBF);
+
+    //cbReserve1.Items.AddText(Cells[DeviceIndex, integer(hCloseReserveOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hCloseReserveOptions)], cbReserve1.Items, iCR);
+
+    //cbReserve2.Items.AddText(Cells[DeviceIndex, integer(hWideReserveOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hWideReserveOptions)], cbReserve2.Items, iWR);
+
+    //cbInputRange.Items.AddText(Cells[DeviceIndex, integer(hRangeOptions)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hRangeOptions)], cbInputRange.Items, iRa);
+
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eDelay.MinValue:= MinDelay;
@@ -436,7 +472,6 @@ begin
     MaxSimultPars:= valf(Cells[DeviceIndex, integer(hMaxSimultPars)]);
     setlength(ParToRead, MaxSimultPars);
 
-    FirstIndex:= valf(Cells[DeviceIndex, integer(hFirstIndex)]);
     PointsInBuffer:= valf(Cells[DeviceIndex, integer(hPointsInBuffer)]);
     s:= Cells[DeviceIndex, integer(hIndices)];
     i:= pos(',', s);
@@ -460,7 +495,7 @@ begin
   else
     btOffset.Hide;
 
-  if cbRatio1.ItemIndex < 0 then
+  if cbRatio1.Items.Count = 0 then
   begin
     cbRatio1.Hide;
     Label14.Hide;
@@ -475,7 +510,7 @@ begin
     Label15.Show;
   end;
 
-  if cbReserve1.ItemIndex < 0 then
+  if cbReserve1.Items.Count = 0 then
   begin
     cbReserve1.Hide;
     btAutoReserve1.Hide;
@@ -488,7 +523,7 @@ begin
     Label16.Show;
   end;
 
-  if cbReserve2.ItemIndex < 0 then
+  if cbReserve2.Items.Count = 0 then
   begin
     cbReserve2.Hide;
     btAutoReserve2.Hide;
@@ -501,7 +536,7 @@ begin
     Label17.Show;
   end;
 
-  if cbInputRange.ItemIndex < 0 then
+  if cbInputRange.Items.Count = 0 then
   begin
     cbInputRange.Hide;
     btAutoRange.Hide;
@@ -516,7 +551,8 @@ begin
 
   c:= 0;
   for i:= 0 to cgTransfer.Items.Count - 1 do
-    if cgTransfer.Checked[i] then inc(c);
+    if cgTransfer.Checked[i] then
+      inc(c);
 
   if c < 2 then
   begin
@@ -1149,7 +1185,7 @@ end;
 function TDetControlForm.RecvSnap(p: array of shortint): PBuffer;
 var
   num, i, j: integer;
-  ParamArr: tIntegerArray; //CONSTRUCTOR!!!
+  ParamArr: tStringArray; //CONSTRUCTOR!!!
   s: string;
 begin
   if (p[0] < 0) or (p[1] < 0) then
@@ -1170,7 +1206,7 @@ begin
   //WriteProgramLog(strf(num) + ' SNAP elements');
 
   for i:= 0 to high(ParamArr) do
-    ParamArr[i]:= p[i] + FirstIndex;
+    ParamArr[i]:= ipa[p[i]];
 
   {for i:= 0 to high(ParamArr) do
     WriteProgramLog(ParamArr[i]);}
@@ -1185,8 +1221,8 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  sleep(60 + random(30));
-  s:= strf(random)+',' +strf(random)+',' + strf(random);
+  {sleep(60 + random(30));
+  s:= strf(random)+',' +strf(random)+',' + strf(random);}
   //writeprogramlog(s);
   if s = '' then
   begin
@@ -1267,14 +1303,6 @@ begin
   OptionForm.DevicePage.TabIndex:= 1;
 
   inherited btnConnectClick(Sender);      //only override getdeviceparams
-
-  if Debug then
-  if DeviceIndex = 0 then
-  begin
-   deviceindex:= 2;
-   connectionkind:= cserial;
-   DetControlForm.serport:= tblockserial.create;
-  end;
 
   if DeviceIndex = iDefaultDevice then
     exit;
@@ -1408,25 +1436,25 @@ begin
     EnterCriticalSection(CommCS);
     if cbRatio1.Visible then
     begin
-      AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, Display1, Ratio1));
-      AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, Display2, Ratio2));
+      AddCommand(dDisplaySelect, false, tVariantArray.Create(1, iCH1[Display1], iRCH1[Ratio1]));
+      AddCommand(dDisplaySelect, false, tVariantArray.Create(2, iCH2[Display2], iRCH2[Ratio2]));
     end
     else
     begin
-      AddCommand(dDisplaySelect, false, tIntegerArray.Create(1, Display1));
-      AddCommand(dDisplaySelect, false, tIntegerArray.Create(2, Display2));
+      AddCommand(dDisplaySelect, false, tVariantArray.Create(1, iCH1[Display1]));
+      AddCommand(dDisplaySelect, false, tVariantArray.Create(2, iCH2[Display2]));
     end;
 
-      AddCommand(dSampleRate, false, SampleRate);
-      AddCommand(dSensitivity, false, Sensitivity);
-      AddCommand(dTimeConstant, false, TimeConstant);
+      AddCommand(dSampleRate, false, iBF[SampleRate]);
+      AddCommand(dSensitivity, false, iSe[Sensitivity]);
+      AddCommand(dTimeConstant, false, iTC[TimeConstant]);
       AddCommand(dReferenceSource, false, 0);   //external ref freq
       if cbReserve1.Visible then
-        AddCommand(dCloseReserve, false, CloseReserve);
+        AddCommand(dCloseReserve, false, iCR[CloseReserve]);
       if cbReserve2.Visible then
-        AddCommand(dWideReserve, false, WideReserve);
+        AddCommand(dWideReserve, false, iWR[WideReserve]);
       if cbInputRange.Visible then
-        AddCommand(dInputRange, false, InputRange);
+        AddCommand(dInputRange, false, iRa[InputRange]);
       PassCommands;
     LeaveCriticalSection(CommCS);
   end;
@@ -1463,36 +1491,42 @@ begin
     s2:= RecvString;
 
     s3:= RecvString;
-    val(s3, i, e);
-    if e = 0 then cbSampleRate.ItemIndex:= i;
+    i:= AnsiIndexStr(s3, iBF);
+    if i>= 0 then
+      cbSampleRate.ItemIndex:= i;
 
     s3:= RecvString;
-    val(s3, i, e);
-    if e = 0 then cbSensitivity.ItemIndex:= i;
+    i:= AnsiIndexStr(s3, iSe);
+    if i>= 0 then
+      cbSensitivity.ItemIndex:= i;
 
     s3:= RecvString;
-    val(s3, i, e);
-    if e = 0 then cbTimeConstant.ItemIndex:= i;
+    i:= AnsiIndexStr(s3, iTC);
+    if i>= 0 then
+      cbTimeConstant.ItemIndex:= i;
 
     if cbReserve1.Visible then
     begin
       s3:= RecvString;
-      val(s3, i, e);
-      if e = 0 then cbReserve1.ItemIndex:= i;
+      i:= AnsiIndexStr(s3, iCR);
+      if i>= 0 then
+        cbReserve1.ItemIndex:= i;
     end;
 
     if cbReserve2.Visible then
     begin
       s3:= RecvString;
-      val(s3, i, e);
-      if e = 0 then cbReserve2.ItemIndex:= i;
+      i:= AnsiIndexStr(s3, iWR);
+      if i>= 0 then
+        cbReserve2.ItemIndex:= i;
     end;
 
     if cbInputRange.Visible then
     begin
       s3:= RecvString;
-      val(s3, i, e);
-      if e = 0 then cbInputRange.ItemIndex:= i;
+      i:= AnsiIndexStr(s3, iRa);
+      if i>= 0 then
+        cbInputRange.ItemIndex:= i;
     end;
   LeaveCriticalSection(CommCS);
 
@@ -1500,29 +1534,37 @@ begin
   begin
     s3:= CurrentDevice^.ParSeparator;
 
-    val(copy(s1, 1, pos(s3, s1) - 1), i, e);
-    if e <> 0 then exit;
+    i:= AnsiIndexStr(copy(s1, 1, pos(s3, s1) - 1), iCH1);
+    if i < 0 then
+      exit;
     cbCh1.ItemIndex:= i;
     delete(s1, 1, pos(s3, s1));
 
-    val(s1, i);
+    i:= AnsiIndexStr(s1, iRCH1);
+    if i < 0 then
+      exit;
     cbRatio1.ItemIndex:= i;
 
-    val(copy(s2, 1, pos(s3, s2) - 1), i, e);
-    if e <> 0 then exit;
+    i:= AnsiIndexStr(copy(s1, 1, pos(s3, s2) - 1), iCH2);
+    if i < 0 then
+      exit;
     cbCh2.ItemIndex:= i;
     delete(s2, 1, pos(s3, s2));
 
-    val(s2, i);
+    i:= AnsiIndexStr(s2, iRCH2);
+    if i < 0 then
+      exit;
     cbRatio2.ItemIndex:= i;
   end
   else
   begin
-    val(s1, i, e);
-    if e = 0 then cbCh1.ItemIndex:= i;
+    i:= AnsiIndexStr(s1, iCH1);
+    if i >= 0 then
+      cbCh1.ItemIndex:= i;
 
-    val(s2, i, e);
-    if e = 0 then cbCh2.ItemIndex:= i;
+    i:= AnsiIndexStr(s2, iCH2);
+    if i >= 0 then
+      cbCh2.ItemIndex:= i;
   end;
 end;
 
@@ -1625,34 +1667,54 @@ begin
   AHint:= ' ' + cbXAxis.Text + ': ' + strf(APoint.x) + '; ' + s + ': ' + strf(APoint.Y);
 end;
 
-procedure TDetControlForm.fneDataFileStubAcceptFileName(Sender: TObject;
+procedure TDetControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;
   var Value: String);
 begin
-  LogStub:= ExtractFileName(Value);
-  if pos('.', LogStub) <> 0 then
-  begin
-    LogExtension:= LogStub;
-    LogStub:= Copy2SymbDel(LogExtension, '.');
-    LogExtension:= '.' + LogExtension;
-  end;
-  DataFolder:= ExtractFileDir(Value);
+  DataFolder:= Value;
   if pos(GetCurrentDir, DataFolder) <> 0 then
     delete(DataFolder, 1, length(GetCurrentDir) + 1);
-  Value:= LogStub;
+  Value:= fneDataFileStub.Text;
 end;
 
-procedure TDetControlForm.fneDataFileStubEditingDone(Sender: TObject);
+procedure TDetControlForm.fneDataFileStubButtonClick(Sender: TObject);
 var
   s: string;
 begin
   with fneDataFileStub do
-  if (pos('.', Text) = 0) and
-     (pos('\', Text) = 0) then
-    LogStub:= Text
-  else
   begin
-    s:= Text;
-    fneDataFileStubAcceptFileName(fneDataFileStub, s);
+    if pos('\', DataFolder) = 0 then
+      RootDir:= GetCurrentDir + '\' + DataFolder
+    else
+      RootDir:= DataFolder;
+
+    Directory:= '';
+  end;
+end;
+
+procedure TDetControlForm.fneDataFileStubEditingDone(Sender: TObject);
+begin
+  with fneDataFileStub do
+  begin
+    if (pos('.', Text) = 0) and (pos('\', Text) = 0) then
+    begin
+      LogStub:= Text;
+    end
+    else
+    begin
+      LogStub:= ExtractFileName(Text);
+
+      if pos('.', LogStub) <> 0 then
+      begin
+        LogExtension:= LogStub;
+        LogStub:= Copy2SymbDel(LogExtension, '.');
+        LogExtension:= '.' + LogExtension;
+      end;
+      DataFolder:= ExtractFileDir(Text);
+      RootDir:= DataFolder;
+      if pos(GetCurrentDir, DataFolder) <> 0 then
+        delete(DataFolder, 1, length(GetCurrentDir) + 1);
+      Text:= LogStub + LogExtension;
+    end;
   end;
 end;
 

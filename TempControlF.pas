@@ -30,7 +30,7 @@ type
     Divider: TMenuItem;
     eDelay: TSpinEdit;
     eUpdateInterval: TSpinEdit;
-    fneDataFileStub: TFileNameEdit;
+    fneDataFileStub: TDirectoryEdit;
     Label1: TLabel;
     Label11: TLabel;
     Label13: TLabel;
@@ -61,7 +61,8 @@ type
     procedure cbReadingsModeChange(Sender: TObject);
     procedure cbSampleRateChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
-    procedure fneDataFileStubAcceptFileName(Sender: TObject; var Value: String);
+    procedure fneDataFileStubAcceptDirectory(Sender: TObject; var Value: String);
+    procedure fneDataFileStubButtonClick(Sender: TObject);
     procedure fneDataFileStubEditingDone(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
@@ -86,7 +87,7 @@ type
     ReadingMode: eReadMode;
     MacroCrutch: string;
 
-    BufferIndices: array of string;
+    iPA, iBu: array of string;
 
     procedure BeforeStart(Sender: tLogModule);
     procedure Start(Sender: tLogModule);
@@ -465,7 +466,12 @@ begin
   with Sender do
     case ReadingMode of   //onstart
       rBuffer:
+      begin
+        AddCommand(tResetStorage);
+        AddCommand(tStartStorage);
+        PassCommands;
         ReadingsThread:= nil;//tDetBufferThread.Create(PointsInBuffer);
+      end;
       rSimultaneous:
       begin
         if OnePointPerStep then
@@ -475,19 +481,29 @@ begin
       end;
       rRealTime:
       begin
-        s:= '';
-        for i:= 0 to high(ParToRead) do
-          s+= 'getlog ' + cgTransfer.Items[ParToRead[i]] + ', next; ';
-        s+= ' }';
+        if CurrentDevice^.Model = 'PTC10' then   //srsly, fuck ptc10. who coded this? can't transfer buffer other than 1 point at a time? also macros are shit. cant even form custom strings. i am not writing another command architecture to accomodate this bullshit.
+        begin
+          s:= '';
+          for i:= 0 to high(ParToRead) do
+            s+= 'getlog ' + cgTransfer.Items[ParToRead[i]] + ', next; ';
+          s+= ' }';
 
-        EnterCriticalSection(CommCS);
-          AddCommand(tResetStorage);
-          commandstring+= '; name RTAMacro; while (1) { ' + s;
-          MacroCrutch:= CommandString;
-          //AddCommand(tReadPoints, false, s);
-          showmessage(commandstring);
-          PassCommands;
-        LeaveCriticalSection(CommCS);
+          EnterCriticalSection(CommCS);
+            AddCommand(tResetStorage);
+            //AddCommand(tStartRealTime);
+            commandstring+= '; name RTAMacro; while (1) { ' + s;
+            MacroCrutch:= CommandString; //needed to continue
+            PassCommands;
+          LeaveCriticalSection(CommCS);
+        end
+        else
+        begin
+          EnterCriticalSection(CommCS);
+            AddCommand(tResetStorage);
+            AddCommand(tStartRealTime);
+            PassCommands;
+          LeaveCriticalSection(CommCS);
+        end;
 
         ReadingsThread:= tTempRealTimeThread.Create;
       end;
@@ -501,14 +517,30 @@ begin
   UpdateTimer.Enabled:= false;
 
   case ReadingMode of
-    {rBuffer: ;
-    rSimultaneous: ; }
-    rRealTime:
+    rBuffer:
     begin
       EnterCriticalSection(CommCS);
-        CommandString:= 'kill RTAMacro';
+        AddCommand(tPauseStorage);
         PassCommands;
       LeaveCriticalSection(CommCS);
+    end;
+    //rSimultaneous: ;
+    rRealTime:
+    begin
+      if CurrentDevice^.Model = 'PTC10' then
+      begin
+        EnterCriticalSection(CommCS);
+          CommandString:= 'kill RTAMacro';
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+      end
+      else
+      begin
+        EnterCriticalSection(CommCS);
+          AddCommand(tPauseRealTime);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+      end;
     end;
   end;
   {if ReadingMode = rBuffer then
@@ -535,8 +567,14 @@ begin
 
   with Sender do
     case ReadingMode of
-      {rBuffer:
-        ReadingsThread:= tDetBufferThread.Create(PointsInBuffer);}
+      rBuffer:
+      begin
+        EnterCriticalSection(CommCS);
+          AddCommand(tStartStorage);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+        ReadingsThread:= tDetBufferThread.Create(0{PointsInBuffer});
+      end;
       rSimultaneous:
       begin
         if OnePointPerStep then
@@ -546,10 +584,21 @@ begin
       end;
       rRealTime:
       begin
-        EnterCriticalSection(CommCS);
-          CommandString:= MacroCrutch;
-          PassCommands;
-        LeaveCriticalSection(CommCS);
+        if CurrentDevice^.Model = 'PTC10' then
+        begin
+          EnterCriticalSection(CommCS);
+            CommandString:= MacroCrutch;
+            PassCommands;
+          LeaveCriticalSection(CommCS);
+        end
+        else
+        begin
+          EnterCriticalSection(CommCS);
+            AddCommand(tStartRealTime);
+            PassCommands;
+          LeaveCriticalSection(CommCS);
+        end;
+
         ReadingsThread:= tTempRealTimeThread.Create;
       end;
     end;
@@ -560,14 +609,30 @@ begin
   UpdateTimer.Enabled:= false;    //to event    OnStop
 
   case ReadingMode of
-   { rBuffer: ;
-    rSimultaneous: ;    }
-    rRealTime:
+    rBuffer:
     begin
       EnterCriticalSection(CommCS);
-        CommandString:= 'kill RTAMacro';
+        AddCommand(dResetStorage);
         PassCommands;
       LeaveCriticalSection(CommCS);
+    end;
+   // rSimultaneous: ;
+    rRealTime:
+    begin
+      if CurrentDevice^.Model = 'PTC10' then
+      begin
+        EnterCriticalSection(CommCS);
+          CommandString:= 'kill RTAMacro';
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+      end
+      else
+      begin
+        EnterCriticalSection(CommCS);
+          AddCommand(tStopRealTime);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+      end;
     end;
   end;
 
@@ -953,16 +1018,16 @@ begin
     telnetclient:= tTelNetSend.create;
   end;
 
-  cbSampleRate.Items.Clear;;
+ { cbSampleRate.Items.Clear;;
   cgTransfer.Items.Clear;
-  cbChartShow.Items.Clear;
+  cbChartShow.Items.Clear; }
 
   for i:= 4 to pmChart.Items.Count - 1 do
     pmChart.Items.Delete(4);
 
   with DeviceForm.sgTempCommands do
   begin
-    cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hChannelList)]);
+    SeparateIndices(Cells[DeviceIndex, integer(hChannelList)], cgTransfer.Items, iPa);
 
     if cgTransfer.Width < 120 then
     begin
@@ -982,16 +1047,9 @@ begin
       Items[Items.Count - 1].Caption:= cgTransfer.Items[i];
       Items[Items.Count - 1].OnClick:= @ChartMenuItemClick;
     end;
+    i:= integer(cbSampleRate.Items);
 
-    cbSampleRate.Items.AddText(Cells[DeviceIndex, integer(htSampleRateOptions)]);
-    setlength(BufferIndices, cbSampleRate.Items.Count);
-    for i:= 0 to cbSampleRate.Items.Count - 1 do
-    begin
-      s:= cbSampleRate.Items[i];
-      BufferIndices[i]:= CopyDelFromTo(s, '', ' - ');
-
-      cbSampleRate.Items[i]:= s;
-    end;
+    SeparateIndices(Cells[DeviceIndex, integer(htSampleRateOptions)], cbSampleRate.Items, iBu);
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eDelay.MinValue:= MinDelay;
@@ -1116,7 +1174,7 @@ end;
 procedure TTempControlForm.btApplyClick(Sender: TObject);
 begin
   EnterCriticalSection(CommCS);
-    AddCommand(tSampleRate, false, BufferIndices[cbSampleRate.ItemIndex]);
+    AddCommand(tSampleRate, false, iBu[cbSampleRate.ItemIndex]);
     PassCommands;
   LeaveCriticalSection(CommCS);
   ParamsApplied:= true;
@@ -1178,34 +1236,54 @@ begin
   ChartLineSeries.ShowPoints:= cbShowPoints.Checked;
 end;
 
-procedure TTempControlForm.fneDataFileStubAcceptFileName(Sender: TObject;
+procedure TTempControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;
   var Value: String);
 begin
-  LogStub:= ExtractFileName(Value);
-  if pos('.', LogStub) <> 0 then
-  begin
-    LogExtension:= LogStub;
-    LogStub:= Copy2SymbDel(LogExtension, '.');
-    LogExtension:= '.' + LogExtension;
-  end;
-  DataFolder:= ExtractFileDir(Value);
+  DataFolder:= Value;
   if pos(GetCurrentDir, DataFolder) <> 0 then
     delete(DataFolder, 1, length(GetCurrentDir) + 1);
-  Value:= LogStub;
+  Value:= fneDataFileStub.Text;
 end;
 
-procedure TTempControlForm.fneDataFileStubEditingDone(Sender: TObject);
+procedure TTempControlForm.fneDataFileStubButtonClick(Sender: TObject);
 var
   s: string;
 begin
   with fneDataFileStub do
-  if (pos('.', Text) = 0) and
-     (pos('\', Text) = 0) then
-    LogStub:= Text
-  else
   begin
-    s:= Text;
-    fneDataFileStubAcceptFileName(fneDataFileStub, s);
+    if pos('\', DataFolder) = 0 then
+      RootDir:= GetCurrentDir + '\' + DataFolder
+    else
+      RootDir:= DataFolder;
+
+    Directory:= '';
+  end;
+end;
+
+procedure TTempControlForm.fneDataFileStubEditingDone(Sender: TObject);
+begin
+  with fneDataFileStub do
+  begin
+    if (pos('.', Text) = 0) and (pos('\', Text) = 0) then
+    begin
+      LogStub:= Text;
+    end
+    else
+    begin
+      LogStub:= ExtractFileName(Text);
+
+      if pos('.', LogStub) <> 0 then
+      begin
+        LogExtension:= LogStub;
+        LogStub:= Copy2SymbDel(LogExtension, '.');
+        LogExtension:= '.' + LogExtension;
+      end;
+      DataFolder:= ExtractFileDir(Text);
+      RootDir:= DataFolder;
+      if pos(GetCurrentDir, DataFolder) <> 0 then
+        delete(DataFolder, 1, length(GetCurrentDir) + 1);
+      Text:= LogStub + LogExtension;
+    end;
   end;
 end;
 

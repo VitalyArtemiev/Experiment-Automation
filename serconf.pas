@@ -11,6 +11,7 @@ uses
 
 type
   tIntegerArray = array of integer;
+  tStringArray  = array of string;
   tVariantArray = array of variant;
 
   ConnectAction = (ANo, AQuery, AReset);
@@ -137,6 +138,7 @@ type
     procedure AddCommand(c: variant{tCommand}; Query: boolean; s: string);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; i: longint);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tIntegerArray);
+    procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tStringArray);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tVariantArray);  //supports ordinal, float, string
     procedure AddCommand(c: variant{tCommand}; Query: boolean; x: double; Units: eUnits = uNone);
     procedure PassCommands;
@@ -153,6 +155,7 @@ type
   procedure WriteProgramLog(i: longint; Force: boolean = false);
   procedure WriteProgramLog(i: int64; Force: boolean = false);
   procedure WriteProgramLog(d: double; Force: boolean = false);
+  procedure SeparateIndices(Source: string; sa: TStrings; var ia: tStringArray);
 
   function strf(x: double): string;
   function strf(x: longint): string;
@@ -175,6 +178,8 @@ const
   StartCaption = 'Начать снятие';
   PauseCaption = 'Приостановить';
   ContinueCaption = 'Продолжить';
+
+  IndexDelim = ' - ';
 
   CfgExt = '.cfg';
   PrExt = '.pr';
@@ -285,12 +290,36 @@ begin
   WriteProgramLog(strf(d), Force);
 end;
 
+procedure SeparateIndices(Source: string; sa: TStrings; var ia: tStringArray);
+var
+  s: string;
+  i: integer;
+begin
+  sa.Clear;
+  sa.AddText(Source);
+  setlength(ia, sa.Count);
+  for i:= 0 to sa.Count - 1 do
+  begin
+    s:= sa[i];
+    if pos(IndexDelim, s) <> 0 then
+    begin
+      ia[i]:= CopyDelFromTo(s, '', IndexDelim);
+      sa[i]:= s;
+    end
+    else
+    begin
+      ia[i]:= strf(i);
+    end;
+  end;
+end;
+
 procedure tSerConnectForm.btnConnectClick(Sender: TObject);
 var
   Result: integer;
   Crutch: integer absolute Result;
 begin
   Cursor:= crHourGlass;
+  Update;
   btnDisconnectClick(Sender);
   if cbPortSelect.ItemIndex >= 0 then
   begin
@@ -306,8 +335,8 @@ begin
   end;
   if (Result = 0) or debug then
   begin
-    GetDeviceParams;
     Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
+    GetDeviceParams;
     try
       if FileExists(MainForm.FullCfgDir + Config.ParamFile) then
         RestoreState(MainForm.FullCfgDir + Config.ParamFile)
@@ -1044,6 +1073,34 @@ begin
     begin
       if i <> 0 then CommandString+= ParSeparator;
       CommandString+= strf(a[i]);
+    end;
+  end;
+end;
+
+procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
+  var a: tStringArray);
+var
+  i: longint;
+begin
+  with CurrentDevice^ do
+  begin
+    if (c > high(Commands)) or
+      (Commands[c] = '') then
+    begin
+      WriteProgramLog('Error: command "'+ GetCommandName(c) +'" unsopported by ' + Model);
+      exit
+    end;
+
+    if CommandString <> '' then CommandString+= CommSeparator;
+
+    CommandString+= Commands[c];
+
+    if Query then CommandString+= '?';
+
+    for i:= 0 to high(a) do
+    begin
+      if i <> 0 then CommandString+= ParSeparator;
+      CommandString+= a[i];
     end;
   end;
 end;

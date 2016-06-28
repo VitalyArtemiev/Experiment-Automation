@@ -235,10 +235,10 @@ begin
   with MainForm.OpenDialog do
   begin
     InitialDir:= MainForm.FullCfgDir;
-    DefaultExt:= '.prm';
+    DefaultExt:= PrExt;
     FileName:= Config.ParamFile;
-    Title:= 'Выбор файла конфигурации';
-    Filter:= 'Все файлы|*.*|Файлы конфигурации|*.prm';
+    Title:= 'Выбор профиля по умолчанию';
+    Filter:= 'Все файлы|*.*|Файлы профилей|*' + PrExt;
     if Execute then
       begin
         NewParamFile:= ExtractFileName(FileName);

@@ -222,7 +222,6 @@ object TempControlForm: TTempControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
-      AnchorSideTop.Control = fneDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
@@ -382,7 +381,7 @@ object TempControlForm: TTempControlForm
       ParentColor = False
       Transparent = False
     end
-    object fneDataFileStub: TFileNameEdit
+    object fneDataFileStub: TDirectoryEdit
       AnchorSideLeft.Control = eDelay
       AnchorSideTop.Control = cbXAxis
       AnchorSideTop.Side = asrBottom
@@ -391,9 +390,8 @@ object TempControlForm: TTempControlForm
       Hint = 'Указать папку для сохранения и шаблон '#13#10'для имени файла'
       Top = 96
       Width = 104
-      OnAcceptFileName = fneDataFileStubAcceptFileName
-      FilterIndex = 0
-      HideDirectories = False
+      OnAcceptDirectory = fneDataFileStubAcceptDirectory
+      ShowHidden = False
       ButtonWidth = 23
       NumGlyphs = 1
       BorderSpacing.Top = 8
@@ -401,6 +399,7 @@ object TempControlForm: TTempControlForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
+      OnButtonClick = fneDataFileStubButtonClick
       OnEditingDone = fneDataFileStubEditingDone
     end
   end
