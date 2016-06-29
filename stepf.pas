@@ -230,13 +230,6 @@ begin
     TempControlForm.btApplyClick(Self);
     sleep(max(DetControlForm.eDelay.Value, TempControlForm.eDelay.Value));
    // Params.OnePoint:= MainForm.cbPointPerStep.Checked;
-    if (DetControlForm.ConnectionKind <> cNone) and
-       (TempControlForm.ConnectionKind <> cNone) then
-      begin
-        DetControlForm.ExperimentNumber:= max(DetControlForm.ExperimentNumber,
-                                            TempControlForm.ExperimentNumber);
-        TempControlForm.ExperimentNumber:= DetControlForm.ExperimentNumber;
-      end;
     with DetControlForm do
     begin
       AutoApply:= false;

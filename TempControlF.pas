@@ -100,7 +100,6 @@ type
     procedure ProcessBuffers(Sender: tLogModule);
   public
     { public declarations }
-    ExperimentNumber: integer;
     LogStub, LogExtension, DataFolder: string;
     Log: tLogModule;
 

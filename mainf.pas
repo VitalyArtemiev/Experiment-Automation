@@ -188,6 +188,7 @@ var
   PortList: string;
   PortCount: integer = 0;
   ReportNumber: integer = 0;
+  ExperimentNumber: integer;
   Debug: boolean;
 
   Config: RConfig;
@@ -404,7 +405,7 @@ if ReportFolder <> '' then
 
   DateTimeToString(s, 'dd/mm/yyyy  hh:mm:ss', Now);
   writeln(f, s);
-  str(DetControlForm.ExperimentNumber, s);     { TODO 1 -cBug : redo }
+  str(ExperimentNumber, s);     { TODO 1 -cBug : redo }
 
   writeln(f, 'Эксперимент №' + s);
   writeln(f, '======================================================================');
@@ -631,7 +632,7 @@ end;
 procedure tMainForm.miNewReportClick(Sender: TObject);
 begin
   ReportNumber:= 0; //so that it checks for existing file internally?
-  DetControlForm.ExperimentNumber:= 1;
+  ExperimentNumber:= 1;
   if DetControlForm.ConnectionKind <> cNone then
     ReportFolder:= DetControlForm.Log.FilePath
   else
@@ -793,6 +794,7 @@ begin
       SaveConfig(s);
     end;
     Config.WorkConfig:= s;
+    SaveConfig(FullCfgDir + DefaultConfig);
   end;
 end;
 

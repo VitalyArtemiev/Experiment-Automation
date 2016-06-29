@@ -158,7 +158,6 @@ type
   public
     { public declarations }
     ReportSaved: boolean;
-    ExperimentNumber: integer;
     LogStub, LogExtension, DataFolder: string;
     Log: tLogModule;
 
