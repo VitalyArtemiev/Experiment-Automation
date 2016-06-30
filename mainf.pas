@@ -405,7 +405,7 @@ if ReportFolder <> '' then
 
   DateTimeToString(s, 'dd/mm/yyyy  hh:mm:ss', Now);
   writeln(f, s);
-  str(ExperimentNumber, s);     { TODO 1 -cBug : redo }
+  str(ExperimentNumber, s);
 
   writeln(f, 'Эксперимент №' + s);
   writeln(f, '======================================================================');
@@ -740,17 +740,17 @@ end;
 procedure tMainForm.btAutoConnectClick(Sender: TObject);
 begin
   ShowMessage('В разработке');
-                  Cursor:= crHourGlass;
-  DetControlForm.   Cursor:= crHourGlass;
-  TempControlForm.Cursor:= crHourGlass;
+                  SetCursorAll(crHourGlass);
+  DetControlForm. SetCursorAll(crHourGlass);
+  TempControlForm.SetCursorAll(crHourGlass);
 
   AutoConnect;
   DetControlForm.AutoConnect;
   TempControlForm.AutoConnect;
 
-                  Cursor:= crDefault;
-  DetControlForm.   Cursor:= crDefault;
-  TempControlForm.Cursor:= crDefault;
+                  SetCursorAll(crDefault);
+  DetControlForm. SetCursorAll(crDefault);
+  TempControlForm.SetCursorAll(crDefault);
 end;
 
 procedure tMainForm.miOptionsClick(Sender: TObject);
@@ -1052,9 +1052,9 @@ begin
         DetControlForm.LogAmpl:= false;
         if Config.AutoReadingSweep then
         begin
-          Cursor:= crHourGlass;
+          SetCursorAll(crHourGlass);
           sleep(MinDelay);
-          Cursor:= crDefault;
+          SetCursorAll(crDefault);
           DetControlForm.Log.Start;
           TempControlForm.Log.Start;
           if ReadingTime > 0 then
@@ -1105,9 +1105,9 @@ begin
         DetControlForm.LogAmpl:= false;
         if Config.AutoReadingConst then
         begin
-          Cursor:= crHourGlass;
+          SetCursorAll(crHourGlass);
           sleep(MinDelay);
-          Cursor:= crDefault;
+          SetCursorAll(crDefault);
           DetControlForm.Log.Start;
           TempControlForm.Log.Start;
           if ReadingTime > 0 then

@@ -343,11 +343,11 @@ begin
 
     if AutoApply and (StepForm.Finished or not TempControlForm.ParamsApplied) then  //skip if stepf is already going
     begin
-      Cursor:= crHourGlass;
+      SetCursorAll(crHourGlass);
       TempControlForm.btApplyClick(Self);
       sleep(TempControlForm.eDelay.Value);
     end;
-    Cursor:= crDefault;
+    SetCursorAll(crDefault);
 
     ReadingMode:= eReadMode(cbReadingsMode.ItemIndex);
 

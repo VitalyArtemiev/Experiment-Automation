@@ -180,7 +180,7 @@ begin
   inherited Create(false);
   FreeOnTerminate:= false;
   if Assigned(TempControlForm.TelNetClient) then
-    Socket:= TempControlForm.TelNetClient.Sock{.Socket}; { TODO : This might be it }
+    Socket:= TempControlForm.TelNetClient.Sock;
 end;
 
 destructor tTempRealTimeThread.Destroy;

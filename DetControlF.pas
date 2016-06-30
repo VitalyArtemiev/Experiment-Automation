@@ -633,11 +633,11 @@ begin
 
     if AutoApply and (StepForm.Finished or not DetControlForm.ParamsApplied) then  //skip if stepf is already going
     begin
-      Cursor:= crHourGlass;
+      SetCursorAll(crHourGlass);
       DetControlForm.btApplyClick(Self);
       sleep(DetControlForm.eDelay.Value);
     end;
-    Cursor:= crDefault;
+    SetCursorAll(crDefault);
 
     ReadingMode:= eReadMode(cbReadingsMode.ItemIndex);
 
@@ -1125,20 +1125,8 @@ begin
           begin
             v:= Buffer(DataList.Items[i * 2 + 1]^)[j];
 
-            //WriteProgramLog('');
+            CoordinateSources[ParToRead[j]].Add(v);
             //WriteProgramLog('i ' + strf(i) + ' j ' + strf(j));
-
-            for k:= (lk + 1) to high(ReadPars) do        { TODO 1 -cImprovement : can optimize with partoread since threads only read }
-            begin
-              //WriteProgramLog('lk ' + strf(lk)+' k '+strf(k));
-              if ReadPars[k] then
-              begin
-                //writeprogramlog('k' + strf(k));
-                CoordinateSources[k].Add(v);
-                lk:= k;
-                break;
-              end;
-            end;
           end;
 
           dispose(PBuffer(DataList.Items[i * 2 + 1]));
@@ -1220,8 +1208,11 @@ begin
     //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  {sleep(60 + random(30));
-  s:= strf(random)+',' +strf(random)+',' + strf(random);}
+  {if debug then
+  begin
+    sleep(60 + random(30));
+    s:= strf(random)+',' +strf(random)+',' + strf(random);
+  end;   }
   //writeprogramlog(s);
   if s = '' then
   begin
@@ -1314,7 +1305,7 @@ begin
   EnterCriticalSection(CommCS);
     AddCommand(dResetStorage);
     PassCommands;
-  LeaveCriticalSection(CommCS);      { TODO 1 -cBug : do you need this??? }
+  LeaveCriticalSection(CommCS);
 end;
 
 procedure TDetControlForm.btClearClick(Sender: TObject);
@@ -1344,7 +1335,7 @@ var
   st, l: tDateTime;
 begin
   EnableControls(false);
-  Cursor:= crHourGlass;
+  SetCursorAll(crHourGlass);
   EnterCriticalSection(CommCS);
     AddCommand(dAutoSensitivity, false);
     PassCommands;
@@ -1370,7 +1361,7 @@ begin
 
   btQueryClick(Self);
   EnableControls(true);
-  Cursor:= crDefault;
+  SetCursorAll(crDefault);
   StatusBar.Panels[spStatus].Text:= '';
 end;
 

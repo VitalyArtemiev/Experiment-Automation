@@ -5,7 +5,7 @@ unit serconf;
 interface
 
 uses
-  Classes, SysUtils, variants, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
+  Classes, SysUtils, variants, Controls, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
   ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, blcksock, {visa, session,}
   {libusboop, libusb,} StatusF, CustomCommandF, MenuH;
 
@@ -122,6 +122,8 @@ type
     property TimeOutErrors: longword read fTimeOuts write SetTOE;
     property CurrentDevice: pDevice read GetCurDev;
 
+    procedure SetCursorAll(Cur: tCursor);
+
     procedure GetSupportedDevices(Kind: eDeviceKind);
     procedure GetDeviceParams; virtual; abstract;
     procedure InitDevice;
@@ -193,7 +195,7 @@ var
 implementation
 
 uses
-  sockets, Math, Controls, EditBtn, StrUtils, DeviceF, MainF;
+  sockets, Math, EditBtn, StrUtils, DeviceF, MainF;
 
 function strf(x: double): string; inline;
 begin
@@ -318,8 +320,8 @@ var
   Result: integer;
   Crutch: integer absolute Result;
 begin
-  Cursor:= crHourGlass;
-  Update;
+  SetCursorAll(crHourGlass);
+
   btnDisconnectClick(Sender);
   if cbPortSelect.ItemIndex >= 0 then
   begin
@@ -350,7 +352,7 @@ begin
   end
   else
     WriteProgramLog('Подключение - результат: ' + strf(Result));
-  Cursor:= crDefault;
+  SetCursorAll(crDefault);
 end;
 
 procedure tSerConnectForm.btnDisconnectClick(Sender: TObject);
@@ -444,6 +446,29 @@ begin
   StatusBar.Panels[spTimeouts].Text:= 'Таймаутов: ' + strf(AValue);
   WriteProgramLog('Timeout receiving string');
   fTimeOuts:= AValue;
+end;
+
+procedure tSerConnectForm.SetCursorAll(Cur: tCursor);
+var
+   i, j: Integer;
+begin
+  Cursor := Cur;
+  for i := 0 to ControlCount - 1 do
+  begin
+    if (Controls[i].ClassType <> TBitBtn) then
+      Controls[i].Cursor := Cur;
+
+    if Controls[i] is tPanel then
+    with Controls[i] as tPanel do
+    begin
+      for j := 0 to ControlCount - 1 do
+      begin
+        if (Controls[j].ClassType <> TBitBtn) then
+           Controls[j].Cursor := Cur;
+       // showmessage(Controls[j].name);
+      end;
+    end;
+  end;
 end;
 
 function tSerConnectForm.GetCurDev: pDevice;
@@ -762,9 +787,8 @@ begin
         TelNetClient.TargetPort:= Port;
         TelNetClient.Timeout:= TimeOut;
 
-        TelNetClient.Sock.OnCreateSocket:= @CreateSocket;
+        //TelNetClient.Sock.OnCreateSocket:= @CreateSocket;  no noticable effect
 
-                           { TODO 1 -c??? : remove after test }
         TelNetClient.Login;
 
         InitDevice;
@@ -1166,25 +1190,30 @@ end;
 procedure tSerConnectForm.PassCommands;
 begin
   CommandString+= CurrentDevice^.Terminator;
-  case ConnectionKind of
-    //cNone: ;
-    cSerial:
-      begin
-        if (serport.instanceactive) and (serport.CTS) then
+  try
+    case ConnectionKind of
+      //cNone: ;
+      cSerial:
+        begin
+          if (serport.instanceactive) and (serport.CTS) then
+          begin
+            WriteProgramLog('Строка на устройство ' + TestResult);
+            WriteProgramLog(CommandString);
+            WriteProgramLog('');
+            SerPort.SendString(CommandString);        //cts????
+          end;
+        end;
+      cTelNet:
         begin
           WriteProgramLog('Строка на устройство ' + TestResult);
           WriteProgramLog(CommandString);
           WriteProgramLog('');
-          SerPort.SendString(CommandString);        //cts????
+          TelNetClient.Send(CommandString);
         end;
-      end;
-    cTelNet:
-      begin
-        WriteProgramLog('Строка на устройство ' + TestResult);
-        WriteProgramLog(CommandString);
-        WriteProgramLog('');
-        TelNetClient.Send(CommandString);
-      end;
+    end;
+  except
+    on E: Exception do
+      WriteProgramLog('RecvString exception: ' + E.Message);
   end;
   CommandString:= '';
 end;
@@ -1246,7 +1275,7 @@ begin
   end
   except
     on E: Exception do
-      writeprogramlog('recvstr ' + e.message);
+      WriteProgramLog('RecvString exception: ' + E.Message);
   end;
 end;
 
