@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 487
+  Left = 843
   Height = 600
-  Top = 165
+  Top = 183
   Width = 500
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -1208,7 +1208,6 @@ object MainForm: TMainForm
       Width = 86
       BorderSpacing.Left = 8
       Caption = 'Авто'
-      Visible = False
       OnClick = btAutoConnectClick
     end
   end

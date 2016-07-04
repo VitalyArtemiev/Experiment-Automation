@@ -1,7 +1,7 @@
 object DetControlForm: TDetControlForm
-  Left = 570
+  Left = 207
   Height = 600
-  Top = 162
+  Top = 161
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -16,7 +16,6 @@ object DetControlForm: TDetControlForm
   OnShow = FormShow
   ShowInTaskBar = stAlways
   LCLVersion = '1.6.0.4'
-  Visible = True
   object StatusBar: TStatusBar
     Left = 0
     Height = 23
@@ -45,10 +44,10 @@ object DetControlForm: TDetControlForm
     AnchorSideBottom.Control = StatusBar
     Left = 706
     Height = 23
-    Top = 548
+    Top = 545
     Width = 90
     Anchors = [akRight, akBottom]
-    BorderSpacing.Bottom = 6
+    BorderSpacing.Bottom = 9
     Caption = 'Применить'
     Default = True
     Enabled = False

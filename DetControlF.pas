@@ -257,6 +257,8 @@ begin
   btCustomCommand.Caption:= 'Польз.' + LineEnding + 'команда';
   btStatus.Caption:= 'Состояние' + LineEnding + ' прибора';
 
+  DisplayMessages:= true;
+  ParamsApplied:= false;
   MaxSimultPars:= -1;
   DeviceKind:= dDetector;
   DeviceIndex:= iDefaultDevice;

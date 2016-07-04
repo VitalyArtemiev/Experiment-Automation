@@ -110,7 +110,7 @@ procedure TOptionForm.btSaveClick(Sender: TObject);
 begin
   Save:= true;
   if CloseQuery then
-    Close;
+    Close;        //onclosequery checks
 end;
 
 procedure TOptionForm.eDeviceChange(Sender: TObject);
@@ -255,6 +255,15 @@ begin
     LoadConfig(DefaultConfig);
     LoadProfile(DefaultParams);
   end;
+
+  with MainForm do
+    GetSupportedDevices(DeviceKind);
+  with DetControlForm do
+    GetSupportedDevices(DeviceKind);
+  with TempControlForm do
+    GetSupportedDevices(DeviceKind);
+  ReloadDeviceList;
+
   GetOptions;
   ShowMessage('Загружено:' + LineEnding + DefaultConfig
               + LineEnding + DefaultParams);

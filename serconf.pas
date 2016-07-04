@@ -95,6 +95,7 @@ type
     procedure btResetClick(Sender: TObject);
     procedure btStatusClick(Sender: TObject);
   protected
+    DisplayMessages: boolean; //only for connect procedures
     procedure CreateSocket(Sender: TObject);
   private
     TestResult: string;
@@ -401,7 +402,7 @@ begin
   StatusForm.Show;
 end;
 
-procedure tSerConnectForm.CreateSocket(Sender: TObject);
+procedure tSerConnectForm.CreateSocket(Sender: TObject);    //this was supposed to solve winxp telnet delay problem
 var
   Socket: TSocket;
   f: longint;
@@ -505,7 +506,7 @@ begin
           'LF':   Terminator:= LF;
           'CRLF': Terminator:= CRLF;
         end;
-        TimeOut:=       valf(Cells[i, longint(hTimeout)]);
+        TimeOut:= valf(Cells[i, longint(hTimeout)]);
 
         case Cells[i, longint(hInterface)] of
           TelnetString:
@@ -656,114 +657,126 @@ begin
 
   SerPort.TestDsr:= true;
   SerPort.RaiseExcept:= false;
-  SerPort.Connect(cbPortSelect.Text);
-  if SerPort.LastError = 0 then
-  begin
-    for i:= 1 to high(SupportedDevices) do
+  try
+    SerPort.Connect(cbPortSelect.Text);
+    if SerPort.LastError = 0 then
     begin
-      DeviceIndex:= i;
-      with CurrentDevice^ do
-        if Connection = cSerial then
-        begin
-          s:= 'Попытка подключения к ' + Model;
-          StatusBar.Panels[spStatus].Text:= s;
-          StatusBar.Update;
-          WriteProgramLog(s);
-          case Parity of
-            0: P:= 'N';   //none, odd, even, mark, space
-            1: P:= 'O';
-            2: P:= 'E';
-            3: P:= 'M';
-            4: P:= 'S';
-          end;
-
-          SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
-          InitDevice;
-          TestResult:= RequestIdentity(seRecvTimeout.Value);
-          WriteProgramLog('Ответ устройства: ' + TestResult);
-
-          if not IsEmptyStr(TestResult, [' ']) then
+      for i:= 1 to high(SupportedDevices) do
+      begin
+        DeviceIndex:= i;
+        with CurrentDevice^ do
+          if Connection = cSerial then
           begin
-            if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
+            s:= 'Попытка подключения к ' + Model;
+            StatusBar.Panels[spStatus].Text:= s;
+            StatusBar.Update;
+            WriteProgramLog(s);
+            case Parity of
+              0: P:= 'N';   //none, odd, even, mark, space
+              1: P:= 'O';
+              2: P:= 'E';
+              3: P:= 'M';
+              4: P:= 'S';
+            end;
+
+            SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
+            InitDevice;
+            TestResult:= RequestIdentity(seRecvTimeout.Value);
+            WriteProgramLog('Ответ устройства: ' + TestResult);
+
+            if not IsEmptyStr(TestResult, [' ']) then
             begin
-              Result:= 0;
-              WriteProgramLog('Успешно');
-              break;
+              if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
+              begin
+                Result:= 0;
+                WriteProgramLog('Успешно');
+                break;
+              end
+              else
+              begin
+                Result:= -2; //not found
+                DeviceIndex:= iDefaultDevice;
+              end;
             end
             else
             begin
-              Result:= -2; //not found
+              Result:= -1; //no answer
               DeviceIndex:= iDefaultDevice;
             end;
           end
           else
           begin
-            Result:= -1; //no answer
+            Result:= -3; //none with this interface
             DeviceIndex:= iDefaultDevice;
           end;
-        end
-        else
-        begin
-          Result:= -3; //none with this interface
-          DeviceIndex:= iDefaultDevice;
-        end;
+      end;
     end;
-  end;
 
-  if SerPort.LastError <> 0 then
-  begin
-    s:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
-    WriteProgramLog(s);
-    StatusBar.Panels[spStatus].Text:= s;
-    ShowMessage(s);
-    SerPort.CloseSocket;
+    if SerPort.LastError <> 0 then
+    begin
+      s:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
+      WriteProgramLog(s);
+      StatusBar.Panels[spStatus].Text:= s;
+      if DisplayMessages then
+        ShowMessage(s);
+      SerPort.CloseSocket;
+      SerPort.RaiseExcept:= true;
+      ConnectionKind:= cNone;
+      freeandnil(SerPort);
+      exit(-4) //synaser error
+    end;
+
+    if SerPort.InstanceActive and (Result = 0) then
+    begin
+      StatusBar.Panels[spConnection].Text:= 'Подключено к ' + cbPortSelect.Text;
+      Result:= 0;
+      TimeOutErrors:= 0;
+      EnableControls(true);
+
+      case Config.OnConnect of
+        AQuery: btQueryClick(Self);
+        AReset: btResetClick(Self);
+      end;
+
+      CurrentDevice^.Port:= cbPortSelect.Text;
+      CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
+    end
+    else
+    begin
+      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+      case Result of
+        -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
+        -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
+        -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - COM';
+      end;
+      if DisplayMessages then
+        ShowMessage(StatusBar.Panels[spStatus].Text);
+
+      SerPort.CloseSocket;
+      ConnectionKind:= cNone;
+      freeandnil(SerPort);
+      if Result = 0 then
+        Result:= -5; //this should never happen; instance not active
+      exit;
+    end;
     SerPort.RaiseExcept:= true;
-    ConnectionKind:= cNone;
-    freeandnil(SerPort);
-    exit(-4) //synaser error
-  end;
 
-  if SerPort.InstanceActive and (Result = 0) then
-  begin
-    StatusBar.Panels[spConnection].Text:= 'Подключено к ' + cbPortSelect.Text;
-    Result:= 0;
-    TimeOutErrors:= 0;
-    EnableControls(true);
-
-    case Config.OnConnect of
-      AQuery: btQueryClick(Self);
-      AReset: btResetClick(Self);
+  except
+    on E:Exception do
+    begin
+      WriteProgramLog(E.Message);
+      ShowMessage(E.Message);
+      SerPort.CloseSocket;
+      ConnectionKind:= cNone;
+      freeandnil(SerPort);
+      Result:= -6; //driver error: receive framing error
     end;
-
-    CurrentDevice^.Port:= cbPortSelect.Text;
-    CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
-  end
-  else
-  begin
-    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-    case Result of
-      -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
-      -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
-      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - COM';
-    end;
-
-    ShowMessage(StatusBar.Panels[spStatus].Text);
-
-    SerPort.CloseSocket;
-    ConnectionKind:= cNone;
-    freeandnil(SerPort);
-    if Result = 0 then
-      Result:= -5; //this should never happen; instance not active
-    exit;
   end;
-  SerPort.RaiseExcept:= true;
 end;
 
 function tSerConnectForm.ConnectTelNet: longint;
 var
-  i, f: integer;
-  a: int64;
-  sock: ptruint;
+  i: integer;
   s: string;
 begin
   DeviceIndex:= iDefaultDevice;
@@ -843,7 +856,8 @@ begin
       -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
       -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - TelNet';
     end;
-    ShowMessage(StatusBar.Panels[spStatus].Text);
+    if DisplayMessages then
+      ShowMessage(StatusBar.Panels[spStatus].Text);
 
     ConnectionKind:= cNone;
     freeandnil(TelNetClient);
@@ -967,8 +981,50 @@ begin
 end;
 
 function tSerConnectForm.AutoConnect: longint;
+var
+  i, Crutch: integer;
 begin
+  btnDisconnectClick(Self);
+  DisplayMessages:= false;
 
+  for i:= 0 to cbPortSelect.Items.Count - 1 do
+  begin
+    cbPortSelect.ItemIndex:= i;
+    Update;
+    if pos('Ethernet', cbPortSelect.Text) <> 0 then
+      Result:= ConnectTelNet
+    else
+      Result:= ConnectSerial;
+    if Result = 0 then
+      break;
+  end;
+
+  DisplayMessages:= true;
+
+  if ConnectionKind <> cNone then
+  begin
+    StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
+    StatusBar.Panels[spStatus].Text:= '';
+  end;
+
+  if (Result = 0) or debug then
+  begin
+    Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
+    GetDeviceParams;
+    try
+      if FileExists(MainForm.FullCfgDir + Config.ParamFile) then
+        RestoreState(MainForm.FullCfgDir + Config.ParamFile)
+      else
+        writeprogramlog('File ' + MainForm.FullCfgDir + Config.ParamFile + ' not found');
+    except
+      on E: Exception do
+        ShowMessage(E.Message);
+    end;
+    cbPortSelect.ItemIndex:= Crutch;
+  end
+  else
+    WriteProgramLog('Подключение - результат: ' + strf(Result));
+  Update;
 end;
 
 function tSerConnectForm.GetCommandName(c: variant): string;

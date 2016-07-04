@@ -1,7 +1,7 @@
 object TempControlForm: TTempControlForm
-  Left = 1009
+  Left = 942
   Height = 600
-  Top = 168
+  Top = 45
   Width = 500
   Caption = 'Управление термоконтроллером'
   ClientHeight = 600
@@ -14,7 +14,6 @@ object TempControlForm: TTempControlForm
   OnShow = FormShow
   ShowInTaskBar = stAlways
   LCLVersion = '1.6.0.4'
-  Visible = True
   object pnConnection: TPanel
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
@@ -183,10 +182,10 @@ object TempControlForm: TTempControlForm
     AnchorSideBottom.Control = StatusBar
     Left = 406
     Height = 23
-    Top = 548
+    Top = 545
     Width = 90
     Anchors = [akRight, akBottom]
-    BorderSpacing.Bottom = 6
+    BorderSpacing.Bottom = 9
     Caption = 'Применить'
     Default = True
     Enabled = False
@@ -195,9 +194,10 @@ object TempControlForm: TTempControlForm
   end
   object pnGraphControl: TPanel
     AnchorSideLeft.Control = Owner
+    AnchorSideBottom.Control = StatusBar
     Left = 4
     Height = 126
-    Top = 450
+    Top = 447
     Width = 320
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 4
@@ -497,7 +497,7 @@ object TempControlForm: TTempControlForm
     Width = 140
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 8
-    BorderSpacing.Bottom = 11
+    BorderSpacing.Bottom = 8
     ItemHeight = 15
     ItemIndex = 0
     Items.Strings = (
@@ -610,8 +610,8 @@ object TempControlForm: TTempControlForm
     AnchorSideBottom.Control = Chart
     AnchorSideBottom.Side = asrBottom
     Left = 360
-    Height = 199
-    Top = 217
+    Height = 195
+    Top = 221
     Width = 136
     HorzScrollBar.Increment = 10
     HorzScrollBar.Page = 106
@@ -622,8 +622,9 @@ object TempControlForm: TTempControlForm
     VertScrollBar.Smooth = True
     VertScrollBar.Tracking = True
     Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Top = 4
     BorderStyle = bsNone
-    ClientHeight = 199
+    ClientHeight = 195
     ClientWidth = 136
     TabOrder = 8
     object cgTransfer: TCheckGroup

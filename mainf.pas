@@ -538,7 +538,7 @@ begin
 
   Top:= Screen.Height div 2 - Height div 2;
   Left:= 8;
-  btAutoConnect.Caption:= 'Автомат.' + LineEnding + 'подключение';
+  btAutoConnect.Caption:= 'Автоматич.' + LineEnding + 'подключение';
   btQuery.Caption:= 'Запрос' + LineEnding + 'текущих' + LineEnding + 'значений';
   btProgram.Caption:= 'Включить' + LineEnding + 'управление';
   btReset.Caption:= 'Сбросить' + LineEnding + '‌настройки'+ LineEnding + 'прибора';
@@ -550,6 +550,8 @@ begin
   InitCriticalSection(LogCS);
   InitCriticalSection(CommCS);
 
+  DisplayMessages:= true;
+  ParamsApplied:= false;
   DeviceKind:= dGenerator;
   DeviceIndex:= iDefaultDevice;
   ConnectionKind:= cNone;
@@ -739,7 +741,6 @@ end;
 
 procedure tMainForm.btAutoConnectClick(Sender: TObject);
 begin
-  ShowMessage('В разработке');
                   SetCursorAll(crHourGlass);
   DetControlForm. SetCursorAll(crHourGlass);
   TempControlForm.SetCursorAll(crHourGlass);
@@ -1300,6 +1301,9 @@ begin
   eStepChange(Self);
   FrequencyTabChange(Self);
   DetControlForm.cbReadingsModeChange(DetControlForm);
+
+  DetControlForm.Show;
+  TempControlForm.Show;
 end;
 
 procedure tMainForm.btnConnectClick(Sender: TObject);
