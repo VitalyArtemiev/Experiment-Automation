@@ -24,13 +24,13 @@ object DeviceForm: TDeviceForm
     Height = 784
     Top = 4
     Width = 377
-    ActivePage = tsDetectors
+    ActivePage = tsGenerators
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 12
     BorderSpacing.Bottom = 4
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 0
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet

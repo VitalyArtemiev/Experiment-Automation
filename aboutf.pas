@@ -42,6 +42,9 @@ var
 
 implementation
 
+uses
+  BaseConF;
+
 {$R *.lfm}
 
 { TAboutForm }
@@ -60,9 +63,14 @@ begin
     {$IFOPT D+}
     FileVerInfo.FileName:= 'EADebug.exe';
     {$ELSE}
-    FileVerInfo.FileName:= 'Experiment Automation.exe';
+    FileVerInfo.FileName:= 'Experiment-Automation.exe';
     {$ENDIF}
-    FileVerInfo.ReadFileInfo;
+    try
+      FileVerInfo.ReadFileInfo;
+    except
+      on E: Exception do
+        WriteProgramLog(E.Message);
+    end;
     lProgramVersion.Caption:= 'Версия программы:  ' +  FileVerInfo.VersionStrings.Values['FileVersion'];
     lCompany.Caption:= LineEnding + FileVerInfo.VersionStrings.Values['CompanyName'];
     lCopyright.Caption:= LineEnding + FileVerInfo.VersionStrings.Values['LegalCopyright'];

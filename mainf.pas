@@ -7,12 +7,12 @@ interface
 uses
   Classes, SysUtils, FileUtil, DividerBevel, IDEWindowIntf, StrUtils, Forms,
   Controls, Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, ActnList, Synaser, SerConF, DeviceF;
+  ExtCtrls, Buttons, ActnList, Synaser, BaseConF, DeviceF;
 
 type
   { TMainForm }
 
-  tMainForm = class(TSerConnectForm)
+  tMainForm = class(tConnectionForm)
     btProgram: TSpeedButton;
     btAutoConnect: TSpeedButton;
 
@@ -832,8 +832,15 @@ begin
 end;
 
 procedure tMainForm.StatusBarHint(Sender: TObject);
+var
+  i: integer;
 begin
-
+ { with StatusBar do
+  begin
+    i:= GetPanelIndexAt(Mouse.CursorPos.x, Mouse.CursorPos.y);
+    if i >= 0 then
+      Hint:= Panels[i].Text;
+  end; }
 end;
 
 function tMainForm.FullCfgDir: string;
@@ -965,8 +972,6 @@ begin                                                  { TODO 2 -cImprovement : 
 end;
 
 procedure tMainForm.btApplyClick(Sender: TObject);
-var
-  s: string;
 begin
   with Params do
   begin
@@ -1134,18 +1139,13 @@ begin
     ParamsApplied:= true;
   end;
 
-  str(eAmplitude.Value:0:2, s);     { TODO 2 -cImprovement : To events? properties? }
-  AmplitudeReading.Caption:= s;
-  str(eOffset.Value:0:2, s);
-  OffsetReading.Caption:= s;
-  str(eFrequency.Value:0:2, s);
-  FrequencyReading.Caption:= s;
-  str(eSweepStartF.Value:0:2, s);
-  SweepStartFReading.Caption:= s;
-  str(eSweepStopF.Value:0:2, s);
-  SweepStopFReading.Caption:= s;
-  str(eSweepRate.Value:0:2, s);
-  SweepRateReading.Caption:= s;
+  { TODO 2 -cImprovement : To events? properties? }
+  AmplitudeReading.Caption:= eAmplitude.Text;
+  OffsetReading.Caption:= eOffset.Text;
+  FrequencyReading.Caption:= eFrequency.Text;
+  SweepStartFReading.Caption:= eSweepStartF.Text;
+  SweepStopFReading.Caption:= eSweepStopF.Text;
+  SweepRateReading.Caption:= eSweepRate.Text;
 end;
 
 procedure tMainForm.btProgramClick(Sender: TObject);
@@ -1409,11 +1409,6 @@ begin
   end;
 
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
-  {cbImpedance.Items.Clear;
-  cbFuncSelect.Items.Clear;
-  cbSweepType.Items.Clear;
-  cbSweepDirection.Items.Clear;
-  cbModulation.Items.Clear;   }
 
   with DeviceForm.sgGenCommands do
   begin

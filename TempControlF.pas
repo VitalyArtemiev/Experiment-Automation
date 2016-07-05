@@ -7,13 +7,13 @@ interface
 uses
   Classes, SysUtils, FileUtil, TASources, TATools, TAGraph, TASeries, Forms,
   Controls, Graphics, Dialogs, ExtCtrls, Buttons, StdCtrls, Spin, Menus,
-  ComCtrls, EditBtn, Types, SerConF, LogModule, TACustomSource, AxisSource;
+  ComCtrls, EditBtn, Types, BaseConF, LogModule, TACustomSource, AxisSource;
 
 type
 
   { TTempControlForm }
 
-  TTempControlForm = class(TSerConnectForm)
+  TTempControlForm = class(tConnectionForm)
     btClear: TButton;
     btStartPauseLog: TButton;
     btStopLog: TButton;
@@ -61,6 +61,8 @@ type
     procedure cbReadingsModeChange(Sender: TObject);
     procedure cbSampleRateChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
+    procedure DataPointHintToolHint(ATool: TDataPointHintTool;
+      const APoint: TPoint; var AHint: String);
     procedure fneDataFileStubAcceptDirectory(Sender: TObject; var Value: String);
     procedure fneDataFileStubButtonClick(Sender: TObject);
     procedure fneDataFileStubEditingDone(Sender: TObject);
@@ -157,7 +159,8 @@ begin
   for i:= 0 to PortCount - 1 do
     cbPortSelect.AddItem(MainForm.cbPortSelect.Items[i], nil);
 
-  if cbPortSelect.ItemIndex < 0 then cbPortSelect.ItemIndex:= 0;
+  if cbPortSelect.ItemIndex < 0 then
+    cbPortSelect.ItemIndex:= 0;
 
   if PortCount = 1 then
     StatusBar.Panels[spStatus].Text:= 'Нет доступных COM-портов';
@@ -1018,10 +1021,6 @@ begin
     telnetclient:= tTelNetSend.create;
   end;
 
- { cbSampleRate.Items.Clear;;
-  cgTransfer.Items.Clear;
-  cbChartShow.Items.Clear; }
-
   for i:= 4 to pmChart.Items.Count - 1 do
     pmChart.Items.Delete(4);
 
@@ -1236,6 +1235,20 @@ begin
   ChartLineSeries.ShowPoints:= cbShowPoints.Checked;
 end;
 
+procedure TTempControlForm.DataPointHintToolHint(ATool: TDataPointHintTool;
+  const APoint: TPoint; var AHint: String);
+var
+  s: string;
+  Point: TDoublePoint;
+begin
+  AHint:= cbChartShow.Text;
+  Point:= Atool.NearestGraphPoint;
+  str(Point.X:0:0, s);
+  AHint:= ' ' + cbXAxis.Text + ': ' + s + '; ' + AHint + ': ';
+  str(Point.Y:0:0, s);
+  AHint+= s;
+end;
+
 procedure TTempControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;
   var Value: String);
 begin
@@ -1246,10 +1259,8 @@ begin
 end;
 
 procedure TTempControlForm.fneDataFileStubButtonClick(Sender: TObject);
-var
-  s: string;
 begin
-  with fneDataFileStub do
+  with fneDataFileStub do   //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
   begin
     if pos('\', DataFolder) = 0 then
       RootDir:= GetCurrentDir + '\' + DataFolder
@@ -1282,7 +1293,7 @@ begin
       RootDir:= DataFolder;
       if pos(GetCurrentDir, DataFolder) <> 0 then
         delete(DataFolder, 1, length(GetCurrentDir) + 1);
-      Text:= LogStub + LogExtension;
+      Text:= LogStub + LogExtension; //see comment above
     end;
   end;
 end;

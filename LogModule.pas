@@ -45,14 +45,10 @@ type
     //Data arrays
     CoordinateSources: array of TAxisSource;
     srcTime: tAxisSource;                                                       //not necessarily time, maybe # of point
-    //Points read by the working thread, points passed to data arrays
-    ReadPoints, ProcessedPoints: longword;
-    //Set FilePath in OnCreateFile
-    Filename, FilePath: string;
-    //Assign the working thread to this
-    ReadingsThread: TThread;
-    //Pass data through this
-    ThreadList: TThreadList;
+    ReadPoints, ProcessedPoints: longword;                                      //Points read by the working thread, points passed to data arrays
+    Filename, FilePath: string;                                                 //Set FilePath in OnCreateFile
+    ReadingsThread: TThread;                                                    //Assign the working thread to this
+    ThreadList: TThreadList;                                                    //Pass data through this
     DataList: TList;
 
     constructor Create;
@@ -80,7 +76,8 @@ type
     property OnCreateFile: TLogEvent read fOnCreateFile write fOnCreateFile;    //here you can modify path, timeformat, stub, extension and header
     property OnSaveLog: TLogEventEC read fOnSaveLog write fOnSaveLog;
     property OnStateChange: TLogEvent read FOnStateChange write FOnStateChange; //to manage interface
-    property OnProcessBuffers: TLogEvent read FOnProcessBuffers write FOnProcessBuffers;//receive data from threads and pass to data arrays
+    property OnProcessBuffers: TLogEvent read FOnProcessBuffers                 //receive data from threads and pass to data arrays
+                                         write FOnProcessBuffers;
     property State: eLogState read FState write SetState;
     property ElapsedTime: TDateTime read GetTime;
   end;
@@ -93,7 +90,7 @@ const
 implementation
 
 uses
-  SerConF;
+  BaseConF;
 
 { tLogModule }
 
@@ -178,7 +175,7 @@ begin
   except
     on E:Exception do
     begin
-      showmessage('Файл ' + FileName + ' не создан: ' + E.Message);
+      ShowMessage('Файл ' + FileName + ' не создан: ' + E.Message);
       exit(1);
     end;
   end;

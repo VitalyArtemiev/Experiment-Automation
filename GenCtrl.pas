@@ -29,7 +29,7 @@ uses
   Interfaces, // this includes the LCL widgetset
   Windows, Forms, menuh, MainF, memof, stepf, optionf,
 DetControlF, CustomCommandF, StatusF,
-  serconf, AboutF, DeviceF, dialogs, lazcontrols,
+  BaseConF, AboutF, DeviceF, dialogs, lazcontrols,
   OffsetF, TempControlF{, FileM};
 
 {$R *.res}
@@ -41,7 +41,7 @@ begin
   Application.Title:= 'Experiment Automation';
   RequireDerivedFormResource:= True;
   Application.Initialize;
-  Ex:= GetWindowLong(FindWindow(nil, 'Experiment Automation'), GWL_EXSTYLE);
+  Ex:= GetWindowLong(FindWindow(nil, 'Experiment Automation'), GWL_EXSTYLE);    //this gets rid of an extra icon in taskbar
   SetWindowLong(FindWindow(nil, 'Experiment Automation'), GWL_EXSTYLE, Ex or WS_EX_TOOLWINDOW and not WS_EX_APPWINDOW);
 
   Application.CreateForm(TMainForm, MainForm);

@@ -34,8 +34,6 @@ type
     eInt1: TSpinEdit;
     eTimeout: TSpinEdit;
 
-
-
     procedure btAddClick(Sender: TObject);
     procedure btClearClick(Sender: TObject);
     procedure btSendClick(Sender: TObject);
@@ -54,7 +52,7 @@ var
 
 implementation
 
-uses MainF, SerConF;
+uses MainF, BaseConF;
 
 {$R *.lfm}
 
@@ -65,7 +63,7 @@ var
   i, t: longint;
   s: ansistring;
 begin
-  with TSerConnectForm(Form) do
+  with tConnectionForm(Form) do
   begin
     for i:= 0 to mCustomCommand.Lines.Count - 1 do
       Command+= mCustomCommand.Lines[i];
@@ -146,8 +144,8 @@ end;
 
 procedure TCustomCommandForm.FormShow(Sender: TObject);
 begin
-  Label2.Caption:= TSerConnectForm(Form).CurrentDevice^.Manufacturer + ' ' +
-                   TSerConnectForm(Form).CurrentDevice^.Model;
+  Label2.Caption:= tConnectionForm(Form).CurrentDevice^.Manufacturer + ' ' +
+                   tConnectionForm(Form).CurrentDevice^.Model;
   if Label2.Caption = '' then Label2.Caption:= 'Устройство не опознано';
   GetCommands;
 end;
@@ -155,7 +153,7 @@ end;
 procedure TCustomCommandForm.GetCommands;
 begin
   cbCommands.Clear;
-  with TSerConnectForm(Form).CurrentDevice^ do
+  with tConnectionForm(Form).CurrentDevice^ do
   begin
     cbCommands.Items.AddStrings(Commands);
     case Terminator of

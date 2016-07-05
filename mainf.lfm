@@ -44,6 +44,7 @@ object MainForm: TMainForm
     ParentShowHint = False
     SimplePanel = False
     SizeGrip = False
+    ShowHint = True
     OnHint = StatusBarHint
   end
   object btApply: TButton
@@ -688,6 +689,7 @@ object MainForm: TMainForm
         AnchorSideRight.Side = asrBottom
         Left = 0
         Height = 19
+        Hint = 'Синхронизировать генератор и детектор'
         Top = 140
         Width = 172
         Alignment = taLeftJustify
@@ -706,12 +708,13 @@ object MainForm: TMainForm
         AnchorSideRight.Side = asrBottom
         Left = 196
         Height = 19
+        Hint = 'Синхронизировать генератор и термоконтроллер'
         Top = 140
-        Width = 121
+        Width = 122
         Alignment = taLeftJustify
         BorderSpacing.Left = 24
         BorderSpacing.Top = 16
-        Caption = 'Темп. контроллер'
+        Caption = 'Термоконтроллер'
         Enabled = False
         OnChange = cbPointPerStepDetChange
         TabOrder = 8

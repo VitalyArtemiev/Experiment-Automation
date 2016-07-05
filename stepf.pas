@@ -59,7 +59,7 @@ var
 implementation
 
 uses
-  math, DeviceF, MainF, DetControlF, TempControlF, LogModule, ReadingThreads, SerConF;
+  math, DeviceF, MainF, DetControlF, TempControlF, LogModule, ReadingThreads, BaseConF;
 
 {$R *.lfm}
 

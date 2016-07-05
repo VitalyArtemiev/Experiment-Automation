@@ -672,6 +672,7 @@ object DetControlForm: TDetControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
+      AnchorSideTop.Control = fneDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15

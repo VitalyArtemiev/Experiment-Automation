@@ -44,7 +44,7 @@ implementation
 
 {$R *.lfm}
 
-uses StrUtils, DeviceF, SerConF, DetControlF;
+uses StrUtils, DeviceF, BaseConF, DetControlF;
 
 { TOffsetForm }
 

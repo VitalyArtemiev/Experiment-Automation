@@ -97,7 +97,7 @@ object AboutForm: TAboutForm
       Width = 388
       Anchors = [akTop, akLeft, akRight]
       AutoSize = False
-      Caption = 'Версия программы:'
+      Caption = 'Версия программы: 3.0'
       Color = clWhite
       ParentColor = False
       Transparent = False

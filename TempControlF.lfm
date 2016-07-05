@@ -222,6 +222,7 @@ object TempControlForm: TTempControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
+      AnchorSideTop.Control = fneDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
@@ -740,6 +741,7 @@ object TempControlForm: TTempControlForm
       RestoreExtentOn = [zreClick]
     end
     object DataPointHintTool: TDataPointHintTool
+      OnHint = DataPointHintToolHint
     end
   end
 end

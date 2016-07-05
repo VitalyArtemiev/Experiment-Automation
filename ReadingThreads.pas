@@ -5,7 +5,7 @@ unit ReadingThreads;
 interface
 
 uses
-  Classes, SysUtils, serconf, blcksock;
+  Classes, SysUtils, BaseConF, blcksock;
 
 type
 

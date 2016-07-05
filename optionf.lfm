@@ -51,9 +51,9 @@ object OptionForm: TOptionForm
     Height = 328
     Top = 0
     Width = 350
-    ActivePage = ConnectionTab
+    ActivePage = GeneralTab
     Anchors = [akTop, akLeft, akRight]
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 2
     object GeneralTab: TTabSheet
       Caption = 'Общие настройки'
@@ -220,10 +220,10 @@ object OptionForm: TOptionForm
         Height = 263
         Top = 37
         Width = 342
-        ActivePage = TempTab
+        ActivePage = GenTab
         Anchors = [akTop, akLeft, akRight, akBottom]
         BorderSpacing.Top = 8
-        TabIndex = 2
+        TabIndex = 0
         TabOrder = 0
         object GenTab: TTabSheet
           AnchorSideTop.Side = asrBottom

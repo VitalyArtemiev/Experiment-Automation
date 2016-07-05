@@ -59,7 +59,7 @@ var
 
 implementation
 
-Uses DeviceF, MainF, SerConF;
+Uses DeviceF, MainF, BaseConF;
 
 {$R *.lfm}
 
@@ -87,7 +87,7 @@ begin
   val('%' + eESB.Text,   eErrSB);
   val('%' + eDDS.Text,   eDDSB);
 
-  with TSerConnectForm(Form) do
+  with tConnectionForm(Form) do
   begin
     EnterCriticalSection(CommCS);
       AddCommand(cSerialPollEnable, false, eSerPollSB);
@@ -110,7 +110,7 @@ end;
 
 procedure TStatusForm.FormShow(Sender: TObject);
 begin
-  with TSerConnectForm(Form) do
+  with tConnectionForm(Form) do
   begin
     if DeviceIndex <> iDefaultDevice then
       Label5.Caption:= CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model
@@ -171,7 +171,7 @@ procedure TStatusForm.GetStatus;
 var
   s: string;
 begin
-  with TSerConnectForm(Form) do
+  with tConnectionForm(Form) do
   begin
     Purge;
     pSerPollSB:= SerPollSB;

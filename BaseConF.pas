@@ -1,4 +1,4 @@
-unit serconf;
+unit BaseConF;
 
 {$mode objfpc}{$H+}
 
@@ -69,9 +69,9 @@ type
     uNone = -1, uVPeak, uVRms, udBm
             );
 
-  { TSerConnectForm }
+  { tConnectionForm }
 
-  tSerConnectForm = class(tForm)
+  tConnectionForm = class(tForm)
     btApply: TButton;
     btnConnect: TButton;
     btnDisconnect: TButton;
@@ -152,6 +152,7 @@ type
     procedure SaveState(FileStream: tFileStream);
     function RestoreState(FileStream: tFileStream): integer;
     function RestoreState(FileName: string): integer;
+    procedure EnsureValidItemIndices;
   end;
 
   procedure WriteProgramLog(Log: string; Force: boolean = false);
@@ -316,7 +317,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.btnConnectClick(Sender: TObject);
+procedure tConnectionForm.btnConnectClick(Sender: TObject);
 var
   Result: integer;
   Crutch: integer absolute Result;
@@ -349,6 +350,8 @@ begin
       on E: Exception do
         ShowMessage(E.Message);
     end;
+    EnsureValidItemIndices;
+
     cbPortSelect.ItemIndex:= Crutch;
   end
   else
@@ -356,7 +359,7 @@ begin
   SetCursorAll(crDefault);
 end;
 
-procedure tSerConnectForm.btnDisconnectClick(Sender: TObject);
+procedure tConnectionForm.btnDisconnectClick(Sender: TObject);
 begin
   ParamsApplied:= false;
   if assigned(SerPort) then
@@ -381,7 +384,7 @@ begin
   StatusBar.Panels[spConnection].Text:= 'Нет подключения';
 end;
 
-procedure tSerConnectForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
+procedure tConnectionForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
 begin
   if ConnectionKind = cNone then
   begin
@@ -394,7 +397,7 @@ begin
     ShowMessage('Подключено к ' + TestResult);
 end;
 
-procedure tSerConnectForm.btStatusClick(Sender: TObject);
+procedure tConnectionForm.btStatusClick(Sender: TObject);
 begin
   if StatusForm.Visible then
     StatusForm.Hide;
@@ -402,7 +405,7 @@ begin
   StatusForm.Show;
 end;
 
-procedure tSerConnectForm.CreateSocket(Sender: TObject);    //this was supposed to solve winxp telnet delay problem
+procedure tConnectionForm.CreateSocket(Sender: TObject);    //this was supposed to solve winxp telnet delay problem
 var
   Socket: TSocket;
   f: longint;
@@ -425,7 +428,7 @@ begin
     end;
 end;
 
-procedure tSerConnectForm.btResetClick(Sender: TObject);
+procedure tConnectionForm.btResetClick(Sender: TObject);
 begin
   Purge;
   EnterCriticalSection(CommCS);
@@ -434,7 +437,7 @@ begin
   LeaveCritiCalSection(CommCS);
 end;
 
-procedure tSerConnectForm.btCustomCommandClick(Sender: TObject);
+procedure tConnectionForm.btCustomCommandClick(Sender: TObject);
 begin
   if CustomCommandForm.Visible then
     CustomCommandForm.Hide;
@@ -442,14 +445,14 @@ begin
   CustomCommandForm.Show;
 end;
 
-procedure tSerConnectForm.SetTOE(AValue: longword);
+procedure tConnectionForm.SetTOE(AValue: longword);
 begin
   StatusBar.Panels[spTimeouts].Text:= 'Таймаутов: ' + strf(AValue);
   WriteProgramLog('Timeout receiving string');
   fTimeOuts:= AValue;
 end;
 
-procedure tSerConnectForm.SetCursorAll(Cur: tCursor);
+procedure tConnectionForm.SetCursorAll(Cur: tCursor);
 var
    i, j: Integer;
 begin
@@ -472,12 +475,12 @@ begin
   end;
 end;
 
-function tSerConnectForm.GetCurDev: pDevice;
+function tConnectionForm.GetCurDev: pDevice;
 begin
   Result:= @SupportedDevices[DeviceIndex];
 end;
 
-procedure tSerConnectForm.GetSupportedDevices(Kind: eDeviceKind);
+procedure tConnectionForm.GetSupportedDevices(Kind: eDeviceKind);
 var
   i, j: integer;
   sg: tStringGrid;
@@ -570,7 +573,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.InitDevice;
+procedure tConnectionForm.InitDevice;
 var
   s: string;
 begin
@@ -598,7 +601,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.RequestIdentity(TimeOut: longword): string;
+function tConnectionForm.RequestIdentity(TimeOut: longword): string;
 begin
   Purge;
   case ConnectionKind of
@@ -639,7 +642,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.ConnectSerial: longint;
+function tConnectionForm.ConnectSerial: longint;
 var
   P: char;
   i: integer;
@@ -774,7 +777,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.ConnectTelNet: longint;
+function tConnectionForm.ConnectTelNet: longint;
 var
   i: integer;
   s: string;
@@ -864,7 +867,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.ConnectVXI: longint;
+function tConnectionForm.ConnectVXI: longint;
 var
   i: integer;
 begin
@@ -911,7 +914,7 @@ begin
   end; }
 end;
 
-function tSerConnectForm.ConnectUSB: longint;
+function tConnectionForm.ConnectUSB: longint;
 var
   i, USBDeviceCount: integer;
  // USBDevices: PPlibusb_device ;
@@ -980,7 +983,7 @@ begin
   end; }
 end;
 
-function tSerConnectForm.AutoConnect: longint;
+function tConnectionForm.AutoConnect: longint;
 var
   i, Crutch: integer;
 begin
@@ -1027,7 +1030,7 @@ begin
   Update;
 end;
 
-function tSerConnectForm.GetCommandName(c: variant): string;
+function tConnectionForm.GetCommandName(c: variant): string;
 begin
   case c of
     0..integer(cTrigger):
@@ -1059,7 +1062,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.CommandSupported(c: variant): boolean; { TODO 1 -cImprovement : change some visibility stuff to this? }
+function tConnectionForm.CommandSupported(c: variant): boolean; { TODO 1 -cImprovement : change some visibility stuff to this? }
 begin                                                              //currently only used in offsetf
   if (c > high(CurrentDevice^.Commands)) or
      (CurrentDevice^.Commands[c] = '') then
@@ -1068,7 +1071,7 @@ begin                                                              //currently o
     Result:= true;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean);
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean);
 begin
   with CurrentDevice^ do
   begin
@@ -1087,7 +1090,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; s: string);
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean; s: string);
 begin
   with CurrentDevice^ do
   begin
@@ -1108,7 +1111,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; i: longint);
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean; i: longint);
 begin
   with CurrentDevice^ do
   begin
@@ -1129,7 +1132,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean;
   var a: tIntegerArray);
 var
   i: longint;
@@ -1157,7 +1160,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean;
   var a: tStringArray);
 var
   i: longint;
@@ -1185,7 +1188,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean;
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean;
   var a: tVariantArray);
 var
   i: longint;
@@ -1221,7 +1224,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.AddCommand(c: variant; Query: boolean; x: double;
+procedure tConnectionForm.AddCommand(c: variant; Query: boolean; x: double;
   Units: eUnits = uNone);
 begin
   with CurrentDevice^ do
@@ -1243,7 +1246,7 @@ begin
   end;
 end;
 
-procedure tSerConnectForm.PassCommands;
+procedure tConnectionForm.PassCommands;
 begin
   CommandString+= CurrentDevice^.Terminator;
   try
@@ -1274,7 +1277,7 @@ begin
   CommandString:= '';
 end;
 
-procedure tSerConnectForm.Purge;
+procedure tConnectionForm.Purge;
 begin
   case ConnectionKind of
     //cNone: ;
@@ -1298,7 +1301,7 @@ begin
   end
 end;
 
-function tSerConnectForm.RecvString: string;
+function tConnectionForm.RecvString: string;
 begin
   try
   case ConnectionKind of
@@ -1335,7 +1338,7 @@ begin
   end;
 end;
 
-function tSerConnectForm.RecvString(TimeOut: longword): string;
+function tConnectionForm.RecvString(TimeOut: longword): string;
 var
   t: longword;
 begin
@@ -1367,7 +1370,7 @@ begin
   end
 end;
 
-procedure tSerConnectForm.SaveState(FileStream: tFileStream);
+procedure tConnectionForm.SaveState(FileStream: tFileStream);
 var
   i, j: integer;
   s: string;
@@ -1437,7 +1440,7 @@ begin
   FileStream.Write(s[1], length(s));
 end;
 
-function tSerConnectForm.RestoreState(FileStream: tFileStream): integer;
+function tConnectionForm.RestoreState(FileStream: tFileStream): integer;
 var
   i, j, p, v, e: integer;
   d: double;
@@ -1577,13 +1580,26 @@ begin
   StringStream.Destroy;
 end;
 
-function tSerConnectForm.RestoreState(FileName: string): integer;
+function tConnectionForm.RestoreState(FileName: string): integer;
 var
   FileStream: tFileStream;
 begin
   FileStream:= TFilestream.Create(FileName, fmOpenRead);
   Result:= RestoreState(FileStream);
   FileStream.Destroy;
+end;
+
+procedure tConnectionForm.EnsureValidItemIndices;
+var
+  i: integer;
+begin
+  for i:= 0 to ComponentCount - 1 do
+    begin
+      if Components[i] is TComboBox then
+      with TComboBox(Components[i]) do
+        if ItemIndex < 0 then
+          ItemIndex:= 0;
+    end;
 end;
 
 end.

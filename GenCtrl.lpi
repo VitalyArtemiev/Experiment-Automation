@@ -21,7 +21,6 @@
       <MajorVersionNr Value="3"/>
       <BuildNr Value="9"/>
       <Language Value="0419"/>
-      <Attributes pvaPreRelease="True"/>
       <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Generator-Amplifier Control" ProductVersion=""/>
     </VersionInfo>
     <BuildModes Count="3">
@@ -68,7 +67,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="Experiment Automation"/>
+            <Filename Value="Experiment-Automation"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -188,7 +187,7 @@
         <UnitName Value="StatusF"/>
       </Unit7>
       <Unit8>
-        <Filename Value="serconf.pas"/>
+        <Filename Value="BaseConF.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>

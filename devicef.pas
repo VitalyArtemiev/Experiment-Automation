@@ -238,7 +238,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLType, Math, StrUtils, SynaIP, MainF, DetControlF, TempControlF, OptionF, serconf, MemoF, ButtonPanel;
+  LCLType, Math, StrUtils, SynaIP, MainF, DetControlF, TempControlF, OptionF, BaseConF, MemoF, ButtonPanel;
 
 const
   InputQueryWidth = 300;

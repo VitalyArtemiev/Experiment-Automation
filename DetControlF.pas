@@ -8,12 +8,12 @@ uses
   Classes, SysUtils, FileUtil, TAGraph, TASeries, TASources, TATools,
   TATransformations, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, Spin, PairSplitter, Buttons, ComCtrls, Menus, EditBtn, MainF,
-  SerConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
+  BaseConF, ReadingThreads, TACustomSource, AxisSource, Types, LogModule;
 
 type
   { TDetControlForm }
 
-  TDetControlForm = class(TSerConnectForm)
+  TDetControlForm = class(tConnectionForm)
     btAutoPhase: TButton;
     btAutoRange: TButton;
     btAutoReserve1: TButton;
@@ -145,6 +145,8 @@ type
 
     ReadPars: array of boolean;
     srcFreq, srcAmpl, srcCH1, srcCH2: TAxisSource;
+
+    procedure CheckTransferCount;
 
     procedure BeforeStart(Sender: tLogModule);
     procedure Start(Sender: tLogModule);
@@ -386,19 +388,6 @@ var
   i, c: integer;
   s: string;
 begin
-  {cgTransfer.Items.Clear;
-  cbCh1.Items.Clear;
-  cbCh2.Items.Clear;
-  cbRatio1.Items.Clear;
-  cbRatio2.Items.Clear;
-  cbChart1Show.Items.Clear;
-  cbChart2Show.Items.Clear;
-  cbSensitivity.Items.Clear;
-  cbTimeConstant.Items.Clear;
-  cbReserve1.Items.Clear;
-  cbReserve2.Items.Clear;
-  cbInputRange.Items.Clear;}
-
   if Debug then
   if DeviceIndex = 0 then
   begin
@@ -439,7 +428,6 @@ begin
       Items[Items.Count - 1].Caption:= cgTransfer.Items[i];
       Items[Items.Count - 1].OnClick:= @ChartMenuItemClick;
     end;
-
 
     //cbCh1.Items.AddText(Cells[DeviceIndex, integer(hCH1Options)]);
     SeparateIndices(Cells[DeviceIndex, integer(hCH1Options)], cbCh1.Items, iCH1);
@@ -616,6 +604,34 @@ begin
 
     LogicalExtent:= Rect;
   end;
+end;
+
+procedure TDetControlForm.CheckTransferCount;
+var
+  i, ParNum: word;
+begin
+  ParNum:= 0;
+  with cgTransfer do
+  begin
+    for i:= 0 to Items.Count - 1 do
+      if Checked[i] then
+        inc(ParNum);
+    if ParNum = MaxSimultPars then
+    begin
+      for i:= 0 to Items.Count - 1 do
+        if not Checked[i] then
+          CheckEnabled[i]:= false;
+    end
+    else
+    for i:= 0 to Items.Count - 1 do
+      CheckEnabled[i]:= true;
+    if ParNum < 2 then
+    begin
+     cbReadingsMode.ItemIndex:= 0;
+     cgTransfer.Enabled:= false;
+    end;
+  end;
+  cbReadingsModeChange(Self);
 end;
 
 procedure TDetControlForm.RestoreScaleClick(Sender: TObject);
@@ -837,8 +853,6 @@ begin
     end;
     inc(ExperimentNumber);
   end;
-  //btStartPauseLog.Caption:= 'Начать снятие';
-  //btApply.Enabled:= true;
 end;
 
 procedure TDetControlForm.CreateFile(Sender: tLogModule);
@@ -1192,8 +1206,6 @@ begin
   num:= i;
   setlength(ParamArr, num);
 
-  //WriteProgramLog(strf(num) + ' SNAP elements');
-
   for i:= 0 to high(ParamArr) do
     ParamArr[i]:= ipa[p[i]];
 
@@ -1201,20 +1213,19 @@ begin
     WriteProgramLog(ParamArr[i]);}
 
   try
-  EnterCriticalSection(CommCS);
-    AddCommand(dReadSimultaneous, true, ParamArr);
-    PassCommands;
-    s:= RecvString;
+    EnterCriticalSection(CommCS);
+      AddCommand(dReadSimultaneous, true, ParamArr);
+      PassCommands;
+      s:= RecvString;
   finally
     LeaveCriticalSection(CommCS);
-    //WriteProgramLog('Error: ' + serport.lasterrordesc);
   end;
 
-  {if debug then
+  if debug then
   begin
     sleep(60 + random(30));
-    s:= strf(random)+',' +strf(random)+',' + strf(random);
-  end;   }
+    s:= strf(1)+',' +strf(0.51)+',' + strf(1.5);
+  end;
   //writeprogramlog(s);
   if s = '' then
   begin
@@ -1294,7 +1305,7 @@ begin
   OptionForm.TabControl.TabIndex:= 1;
   OptionForm.DevicePage.TabIndex:= 1;
 
-  inherited btnConnectClick(Sender);      //only override getdeviceparams
+  inherited btnConnectClick(Sender);                                            //only override getdeviceparams
 
   if DeviceIndex = iDefaultDevice then
     exit;
@@ -1303,6 +1314,7 @@ begin
   Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
 
   OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
+  CheckTransferCount;                                                           //this needs to happen after restorestate
 
   EnterCriticalSection(CommCS);
     AddCommand(dResetStorage);
@@ -1359,7 +1371,7 @@ begin
       ShowMessage('Устройство не ответило');
       break;
     end;
-  until ((SerPollSB div %10) mod %10 = %1);  //interface ready bit
+  until ((SerPollSB div %10) mod %10 = %1);                                     //interface ready bit
 
   btQueryClick(Self);
   EnableControls(true);
@@ -1399,7 +1411,7 @@ begin
   {if cbSampleRate.ItemIndex <> cbSampleRate.Items.Count - 1 then
     SampleRate:= (intpower(2, cbSampleRate.ItemIndex)) * 0.0625
   else SampleRate:= 0; }
-  SampleRate:= 1; //no way to get real sample rate in a compatible way; SR865 needs to be polled
+  SampleRate:= 1;                                                               //no way to get real sample rate in a compatible way; SR865 needs to be polled
   with Params do
   begin
     GenFreq:= UseGenFreq;
@@ -1440,7 +1452,7 @@ begin
       AddCommand(dSampleRate, false, iBF[SampleRate]);
       AddCommand(dSensitivity, false, iSe[Sensitivity]);
       AddCommand(dTimeConstant, false, iTC[TimeConstant]);
-      AddCommand(dReferenceSource, false, 0);   //external ref freq
+      AddCommand(dReferenceSource, false, 0);                                   //external ref freq
       if cbReserve1.Visible then
         AddCommand(dCloseReserve, false, iCR[CloseReserve]);
       if cbReserve2.Visible then
@@ -1462,7 +1474,7 @@ end;
 procedure TDetControlForm.btQueryClick(Sender: TObject);
 var
   s1, s2, s3: string;
-  i, e: integer;
+  i: integer;
 begin
   Purge;
   EnterCriticalSection(CommCS);
@@ -1566,7 +1578,7 @@ begin
   Log.Stop;
 end;
 
-procedure TDetControlForm.cbChart1ShowChange(Sender: TObject); //FIXIT  how what even wtf
+procedure TDetControlForm.cbChart1ShowChange(Sender: TObject);                  //FIXIT  how what even wtf
 begin
   if (Log.State = lActive) and (ReadingMode = rBuffer) then
   with cbChart1Show do
@@ -1651,12 +1663,17 @@ procedure TDetControlForm.DataPointHintToolHint(
   ATool: TDataPointHintTool; const APoint: TPoint; var AHint: String);
 var
   s: string;
+  Point: TDoublePoint;
 begin
   case Atool.Series.ParentChart.Name of
-    'Chart1': s:= cbChart1Show.Text;
-    'Chart2': s:= cbChart2Show.Text;
+    'Chart1': AHint:= cbChart1Show.Text;
+    'Chart2': AHint:= cbChart2Show.Text;
   end;
-  AHint:= ' ' + cbXAxis.Text + ': ' + strf(APoint.x) + '; ' + s + ': ' + strf(APoint.Y);
+  Point:= Atool.NearestGraphPoint;
+  str(Point.X:0:6, s);
+  AHint:= ' ' + cbXAxis.Text + ': ' + s + '; ' + AHint + ': ';
+  str(Point.Y:0:6, s);
+  AHint+= s;
 end;
 
 procedure TDetControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;
@@ -1669,10 +1686,8 @@ begin
 end;
 
 procedure TDetControlForm.fneDataFileStubButtonClick(Sender: TObject);
-var
-  s: string;
 begin
-  with fneDataFileStub do
+  with fneDataFileStub do  //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
   begin
     if pos('\', DataFolder) = 0 then
       RootDir:= GetCurrentDir + '\' + DataFolder
@@ -1705,7 +1720,7 @@ begin
       RootDir:= DataFolder;
       if pos(GetCurrentDir, DataFolder) <> 0 then
         delete(DataFolder, 1, length(GetCurrentDir) + 1);
-      Text:= LogStub + LogExtension;
+      Text:= LogStub + LogExtension;                                            //see comment above
     end;
   end;
 end;
@@ -1754,28 +1769,7 @@ begin
     if not UseGenFreq then
       LogFreq:= false;
 
-  ParNum:= 0;
-  with cgTransfer do
-  begin
-    for i:= 0 to Items.Count - 1 do
-      if Checked[i] then
-        inc(ParNum);
-    if ParNum = MaxSimultPars then
-    begin
-      for i:= 0 to Items.Count - 1 do
-        if not Checked[i] then
-          CheckEnabled[i]:= false;
-    end
-    else
-    for i:= 0 to Items.Count - 1 do
-      CheckEnabled[i]:= true;
-    if ParNum < 2 then
-    begin
-     cbReadingsMode.ItemIndex:= 0;
-     cgTransfer.Enabled:= false;
-    end;
-  end;
-  cbReadingsModeChange(Self);
+  CheckTransferCount;
 end;
 
 {$R *.lfm}
