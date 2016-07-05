@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, variants, Controls, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, blcksock, {visa, session,}
+  ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, blcksock,
   {libusboop, libusb,} StatusF, CustomCommandF, MenuH;
 
 type

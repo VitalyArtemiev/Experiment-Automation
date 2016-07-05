@@ -1,7 +1,7 @@
 object TempControlForm: TTempControlForm
-  Left = 942
+  Left = 1023
   Height = 600
-  Top = 45
+  Top = 161
   Width = 500
   Caption = 'Управление термоконтроллером'
   ClientHeight = 600
@@ -127,6 +127,7 @@ object TempControlForm: TTempControlForm
   end
   object Chart: TChart
     AnchorSideLeft.Control = pnConnection
+    AnchorSideTop.Control = pnConnection
     AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideBottom.Control = cbChartShow
@@ -164,6 +165,7 @@ object TempControlForm: TTempControlForm
     )
     Toolset = ChartToolset
     Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Top = 31
     BorderSpacing.Right = 38
     DoubleBuffered = True
     ParentShowHint = False
