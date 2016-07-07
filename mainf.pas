@@ -464,7 +464,6 @@ if ReportFolder <> '' then
       writeln(f, 'Конечная амплитуда:   ' + s + ' В');
       str(eAStep.Value:0:2, s);
       writeln(f, 'Шаг:                  ' + s + ' В');
-      writeln(f, 'Данные в файле: ', DetControlForm.Log.FileName);  { TODO : test }
     end;
   end;
 
@@ -493,6 +492,7 @@ if ReportFolder <> '' then
       for i:= 0 to cbParams.Items.Count - 1 do
         writeln(f, cbParams.Items[i],' Смещение: ', Offsets[i],' Множитель: ', Expands[i]);
     end;
+    writeln(f, 'Данные в файле: ', Log.FileName);
     writeln(f);
   end;
 
@@ -503,6 +503,7 @@ if ReportFolder <> '' then
     writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
     writeln(f);
     writeln(f, Label3.Caption, ' ', cbSamplerate.Text);
+    writeln(f, 'Данные в файле: ', Log.FileName);
     writeln(f);
   end;
 

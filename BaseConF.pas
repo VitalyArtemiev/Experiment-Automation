@@ -1351,14 +1351,18 @@ begin
       begin
         if (serport.instanceactive) and (serport.CTS) then
         begin
-          SerPort.RaiseExcept:= false;  { TODO 1 -cImprovement : best to replace all of theese with try except, also add to telnet }
+          SerPort.RaiseExcept:= false;
           Result:= SerPort.RecvString(CurrentDevice^.Timeout);
           SerPort.RaiseExcept:= true;
 
           writeprogramlog('Получена строка ' + Result);
 
-          if SerPort.LastError = ErrTimeOut then
-            TimeOutErrors:= TimeOutErrors + 1;
+          case SerPort.LastError of
+            0: ;
+            ErrTimeOut: TimeOutErrors:= TimeOutErrors + 1;
+            else
+              WriteProgramLog('RecvString Error' + SerPort.LastErrorDesc);
+          end;
         end;
       end;
     cTelNet:
@@ -1369,8 +1373,12 @@ begin
 
         writeprogramlog('Получена строка ' + Result);
 
-        if TelNetClient.Sock.LastError = ErrTimeOut then
-            TimeOutErrors:= TimeOutErrors + 1;
+        case TelNetClient.Sock.LastError of
+          0: ;
+          ErrTimeOut: TimeOutErrors:= TimeOutErrors + 1;
+          else
+            WriteProgramLog('RecvString Error' + SerPort.LastErrorDesc);
+        end;
       end;
 
     cVXI:
@@ -1400,8 +1408,12 @@ begin
 
           writeprogramlog('Получена строка ' + Result);
 
-          if SerPort.LastError = ErrTimeOut then
-            TimeOutErrors:= TimeOutErrors + 1;
+          case SerPort.LastError of
+            0: ;
+            ErrTimeOut: TimeOutErrors:= TimeOutErrors + 1;
+            else
+              WriteProgramLog('RecvString Error' + SerPort.LastErrorDesc);
+          end;
         end;
       end;
     cTelNet:
@@ -1417,8 +1429,12 @@ begin
 
         writeprogramlog('Получена строка ' + Result);
 
-        if TelNetClient.Sock.LastError = ErrTimeOut then
-            TimeOutErrors:= TimeOutErrors + 1;
+        case TelNetClient.Sock.LastError of
+          0: ;
+          ErrTimeOut: TimeOutErrors:= TimeOutErrors + 1;
+          else
+            WriteProgramLog('RecvString Error' + SerPort.LastErrorDesc);
+        end;
       end
   end
 end;

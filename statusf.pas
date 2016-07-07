@@ -83,7 +83,7 @@ procedure TStatusForm.btApplyClick(Sender: TObject);
 begin
   val('%' + eSPSB.Text,  eSerPollSB);
   val('%' + eSESB.Text,  eStdEventSB);
-  val('%' + eLIAS.Text, eLiaSB);
+  val('%' + eLIAS.Text,  eLiaSB);
   val('%' + eESB.Text,   eErrSB);
   val('%' + eDDS.Text,   eDDSB);
 
@@ -125,32 +125,47 @@ begin
     lESB.Caption:=   '?';
     lDDSB.Caption:=  '?';
 
-    if DeviceKind = dDetector then
-    begin
-      Label10.Show;
-      eLIAS.Show;
-      lLIASb.Show;
-      Label4.Show;
-      eESB.Show;
-      lESB.Show;
+    case DeviceKind of
+      dDetector:
+      begin
+        Label10.Show;
+        eLIAS.Show;
+        lLIASb.Show;
+        Label4.Show;
+        eESB.Show;
+        lESB.Show;
 
-      label9.Hide;
-      eDDS.Hide;
-      lDDSB.Hide;
-    end
-    else
-    if DeviceKind = dGenerator then
-    begin
-      Label10.Hide;
-      eLIAS.Hide;
-      lLIASb.Hide;
-      Label4.Hide;
-      eESB.Hide;
-      lESB.Hide;
+        label9.Hide;
+        eDDS.Hide;
+        lDDSB.Hide;
+      end;
+      dGenerator:
+      begin
+        Label10.Hide;
+        eLIAS.Hide;
+        lLIASb.Hide;
+        Label4.Hide;
+        eESB.Hide;
+        lESB.Hide;
 
-      label9.Show;
-      eDDS.Show;
-      lDDSB.Show;
+        label9.Show;
+        eDDS.Show;
+        lDDSB.Show;
+      end;
+      dTempController:
+      begin
+        Label9.Hide;
+        Label10.Hide;
+        eLIAS.Hide;
+        lLIASb.Hide;
+        Label4.Hide;
+        eESB.Hide;
+        lESB.Hide;
+
+        Label8.Hide;
+        eDDS.Hide;
+        lDDSB.Hide;
+      end;
     end;
 
     if DeviceIndex = iDefaultDevice then
