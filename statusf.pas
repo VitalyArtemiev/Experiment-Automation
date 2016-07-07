@@ -112,6 +112,8 @@ procedure TStatusForm.FormShow(Sender: TObject);
 begin
   with tConnectionForm(Form) do
   begin
+    Self.Top:= Top;
+    Self.Left:= Left;
     if DeviceIndex <> iDefaultDevice then
       Label5.Caption:= CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model
     else
@@ -153,6 +155,7 @@ begin
 
     if DeviceIndex = iDefaultDevice then
     begin
+      Label9.Hide;
       Label10.Hide;
       eLIAS.Hide;
       lLIASb.Hide;

@@ -9,7 +9,7 @@ object CustomCommandForm: TCustomCommandForm
   ClientHeight = 264
   ClientWidth = 386
   OnShow = FormShow
-  Position = poOwnerFormCenter
+  Position = poDefault
   LCLVersion = '1.6.0.4'
   object mCustomCommand: TMemo
     AnchorSideLeft.Control = Label2

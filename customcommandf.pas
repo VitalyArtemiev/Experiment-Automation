@@ -122,16 +122,20 @@ var
 begin
   Params:= '';
 
-  if cbQuery.Checked then Params:= '?';
+  if cbQuery.Checked then
+    Params:= '?';
 
   str(eInt1.Value, s);
-  if cbInt1.Checked then Params+= ' ' + s;    //;!!
+  if cbInt1.Checked then
+    Params+= ' ' + s;    //;!!
 
   str(eInt2.Value, s);
-  if cbInt2.Checked then Params+= ' ' + s;
+  if cbInt2.Checked then
+    Params+= ' ' + s;
 
   str(eFloat.Value, s);
-  if cbFloat.Checked then Params+= ' ' + s;
+  if cbFloat.Checked then
+    Params+= ' ' + s;
   if mCustomCommand.Lines.Count > 0 then
     mCustomCommand.Lines.Append(';');
   mCustomCommand.Lines.AddText(cbCommands.Text + Params);
@@ -144,9 +148,15 @@ end;
 
 procedure TCustomCommandForm.FormShow(Sender: TObject);
 begin
-  Label2.Caption:= tConnectionForm(Form).CurrentDevice^.Manufacturer + ' ' +
-                   tConnectionForm(Form).CurrentDevice^.Model;
-  if Label2.Caption = '' then Label2.Caption:= 'Устройство не опознано';
+  with tConnectionForm(Form) do
+  begin
+    Self.Top:= Top;
+    Self.Left:= Left;
+
+    Label2.Caption:= CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model;
+  end;
+  if Label2.Caption = '' then
+    Label2.Caption:= 'Устройство не опознано';
   GetCommands;
 end;
 
@@ -165,7 +175,8 @@ begin
   end;
 
   if cbCommands.Items.Count > 0 then
-    while cbCommands.Items[0] = '' do cbCommands.Items.Delete(0);
+    while cbCommands.Items[0] = '' do
+      cbCommands.Items.Delete(0);
 end;
 
 end.

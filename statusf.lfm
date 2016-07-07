@@ -8,7 +8,7 @@ object StatusForm: TStatusForm
   ClientHeight = 254
   ClientWidth = 363
   OnShow = FormShow
-  Position = poOwnerFormCenter
+  Position = poDefault
   LCLVersion = '1.6.0.4'
   object btPoll: TButton
     AnchorSideTop.Control = Label5
@@ -148,11 +148,13 @@ object StatusForm: TStatusForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label1
-      AnchorSideTop.Control = eESB
+      AnchorSideTop.Control = Label9
+      AnchorSideTop.Side = asrBottom
       Left = 4
       Height = 15
-      Top = 104
+      Top = 108
       Width = 155
+      BorderSpacing.Top = 12
       Caption = 'Байт проверки исправности'
       ParentColor = False
     end
@@ -308,21 +310,25 @@ object StatusForm: TStatusForm
     end
     object Label10: TLabel
       AnchorSideLeft.Control = Label1
-      AnchorSideTop.Control = eLIAS
+      AnchorSideTop.Control = Label2
+      AnchorSideTop.Side = asrBottom
       Left = 4
       Height = 15
-      Top = 77
+      Top = 81
       Width = 142
+      BorderSpacing.Top = 12
       Caption = 'Байт состояния детектора'
       ParentColor = False
     end
     object Label9: TLabel
       AnchorSideLeft.Control = Label1
-      AnchorSideTop.Control = eDDS
+      AnchorSideTop.Control = Label2
+      AnchorSideTop.Side = asrBottom
       Left = 4
       Height = 15
-      Top = 77
+      Top = 81
       Width = 50
+      BorderSpacing.Top = 12
       Caption = 'Байт DDS'
       ParentColor = False
     end

@@ -494,7 +494,7 @@ begin
           EnterCriticalSection(CommCS);
             AddCommand(tResetStorage);
             //AddCommand(tStartRealTime);
-            commandstring+= '; name RTAMacro; while (1) { ' + s;
+            commandstring+= '; while (1) { ' + s;
             MacroCrutch:= CommandString; //needed to continue
             PassCommands;
           LeaveCriticalSection(CommCS);
@@ -533,7 +533,7 @@ begin
       if CurrentDevice^.Model = 'PTC10' then
       begin
         EnterCriticalSection(CommCS);
-          CommandString:= 'kill RTAMacro';
+          CommandString:= 'abort';
           PassCommands;
         LeaveCriticalSection(CommCS);
       end

@@ -100,7 +100,7 @@ var
 
 implementation
 
-uses StrUtils, SynaIP, MainF, DetControlF, TempControlF, BaseConF, DeviceF;
+uses SynaIP, MainF, DetControlF, TempControlF, BaseConF, DeviceF;
 
 {$R *.lfm}
 
