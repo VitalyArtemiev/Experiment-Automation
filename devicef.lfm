@@ -1,13 +1,13 @@
 object DeviceForm: TDeviceForm
-  Left = 147
-  Height = 792
-  Top = 46
+  Left = 587
+  Height = 790
+  Top = 74
   Width = 651
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
-  ClientHeight = 792
+  ClientHeight = 790
   ClientWidth = 651
-  Constraints.MinHeight = 566
+  Constraints.MinHeight = 612
   Constraints.MinWidth = 650
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -21,7 +21,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 784
+    Height = 782
     Top = 4
     Width = 377
     ActivePage = tsGenerators
@@ -35,7 +35,7 @@ object DeviceForm: TDeviceForm
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
       Caption = 'Генераторы'
-      ClientHeight = 756
+      ClientHeight = 754
       ClientWidth = 369
       object sgGenCommands: TStringGrid
         AnchorSideLeft.Control = tsGenerators
@@ -45,7 +45,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsGenerators
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 752
+        Height = 750
         Top = 2
         Width = 367
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -1632,7 +1632,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btDone
     Left = 393
     Height = 25
-    Top = 709
+    Top = 707
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 24
@@ -1646,7 +1646,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 369
+    Top = 417
     Width = 68
     Caption = 'Терминатор'
     Color = clWhite
@@ -1659,7 +1659,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 365
+    Top = 413
     Width = 125
     BorderSpacing.Top = 8
     ItemHeight = 15
@@ -1679,7 +1679,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 404
+    Top = 452
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1695,7 +1695,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 200
+    Top = 248
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 4
@@ -1710,7 +1710,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 272
+    Top = 320
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 8
@@ -1730,7 +1730,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 303
+    Top = 351
     Width = 125
     BorderSpacing.Top = 8
     ItemHeight = 15
@@ -1751,7 +1751,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 334
+    Top = 382
     Width = 125
     BorderSpacing.Top = 8
     ItemHeight = 15
@@ -1772,7 +1772,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = cbStopBits
     Left = 393
     Height = 15
-    Top = 276
+    Top = 324
     Width = 60
     Caption = 'Стоп-биты'
     Color = clWhite
@@ -1785,7 +1785,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 307
+    Top = 355
     Width = 53
     Caption = 'Парность'
     Color = clWhite
@@ -1798,7 +1798,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 338
+    Top = 386
     Width = 59
     Caption = 'Handshake'
     Color = clWhite
@@ -1811,7 +1811,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     Left = 393
     Height = 25
-    Top = 200
+    Top = 248
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1825,7 +1825,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btSaveToFile
     Left = 393
     Height = 25
-    Top = 676
+    Top = 674
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 8
@@ -1839,7 +1839,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btLoadFromFile
     Left = 522
     Height = 25
-    Top = 676
+    Top = 674
     Width = 125
     BorderSpacing.Left = 4
     Caption = 'Уст. по умолчанию'
@@ -1853,7 +1853,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Side = asrBottom
     Left = 393
     Height = 25
-    Top = 758
+    Top = 756
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 5
@@ -1868,7 +1868,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrCenter
     Left = 393
     Height = 15
-    Top = 245
+    Top = 293
     Width = 62
     Caption = 'Интерфейс'
     Color = clWhite
@@ -1882,7 +1882,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 23
-    Top = 241
+    Top = 289
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1902,7 +1902,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btSaveToFile
     Left = 522
     Height = 25
-    Top = 709
+    Top = 707
     Width = 125
     Caption = 'Сбросить'
     OnClick = btResetDefaultFileClick
@@ -1914,13 +1914,13 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
     Left = 393
-    Height = 156
+    Height = 204
     Top = 28
     Width = 254
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Top = 24
     BorderStyle = sbsSingle
-    Caption = ' Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10' Если функция не поддерживается прибором, оставьте поле пустым.'#13#10#13#10'Детекторы:'#13#10' Заполните поля "Опции отношения" только если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
+    Caption = ' Поля "Модель" и "Изготовитель" должны '#13#10'совпадать со строкой, возвращаемой '#13#10'прибором на запрос идентификации (*IDN?).'#13#10' Если функция не поддерживается прибором, оставьте поле пустым.'#13#10' Если индексы параметров строковые либо '#13#10'начинаются не с нуля, запишите их перед '#13#10'названием параметра с разделителем " - ".'#13#10#13#10'Детекторы:'#13#10' Заполните поля "Опции отношения" только если этот параметр (Ratio) требуется для'#13#10'переключения каналов (CH1, CH2).'
     Color = clWhite
     ParentColor = False
     TabOrder = 14
@@ -1932,7 +1932,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 433
+    Top = 481
     Width = 254
     BorderSpacing.Top = 4
     Font.Style = [fsBold]
@@ -1944,7 +1944,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrBottom
     Left = 393
     Height = 15
-    Top = 738
+    Top = 736
     Width = 254
     BorderSpacing.Top = 4
     Font.Style = [fsBold]

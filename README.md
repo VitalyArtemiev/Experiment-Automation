@@ -1,7 +1,7 @@
 # Experiment-Automation
 Automated device control for laboratory work
 
-This program intends to help automate experimentation by providing means to control lab equipment, 
+This program intends to help automate experimentation by enabling users to control lab equipment, 
 namely function generators, lock-in amplifiers and temperature controllers. 
 It also provides means to incorporate new devices into the process, allowing users to create and modify tables 
 with device parameters, such as command strings.
@@ -16,7 +16,10 @@ temperature controller PTC10.
 
 
 This program was created with Lazarus RAD IDE and uses the Lazarus Component Library (lazarus-ide.org).
-In order to compile it, one needs at least the Freepascal Compiler 3.0 (freepascal.org) with RTL, FCL and LCL from Lazarus.  
-It also has a dependency on ARARAT Synapse library (synapse.ararat.cz).
-This program can be compiled and run on Windows x86 and x64 machines. It might work on Linux machines with minor modifications.
+In order to compile it, one needs at least the Freepascal Compiler 3.0 (freepascal.org) with RTL, FCL (included) and LCL from Lazarus.
+The easier method is to just install Lazarus, which comes with the compiler by default. If you want to compile for targets different 
+from your machine, though, you'll have to download th according compiler version and put the files accordingly 
+in \Lazarus\fpc\<compiler version>\bin\<target>, then switch the target in Lazarus project properties.
+The program also has a dependency on ARARAT Synapse library (synapse.ararat.cz).
+It can be compiled and run on Windows x86 and x64 machines. It might work on Linux machines with minor modifications.
 

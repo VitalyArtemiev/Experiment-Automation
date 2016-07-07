@@ -565,9 +565,9 @@ begin
         for j:= 0 to RowCount - SGHeaderLength  - 1 do
           Commands[j]:= Cells[i, j + SGHeaderLength];
 
-        {writeprogramlog(model);
+        {writeprogramlog(model, true);   //this checks if commands are matched correctly
         for j:= 0 to high(Commands) do
-          writeProgramLog(getcommandname(j) + '  ' + Commands[j]);}
+          writeProgramLog(getcommandname(j) + '  ' + Commands[j], true);}
       end;
     end;
   end;
@@ -682,6 +682,7 @@ begin
               4: P:= 'S';
             end;
 
+            Serport.Purge;
             SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
             InitDevice;
             TestResult:= RequestIdentity(seRecvTimeout.Value);
@@ -717,16 +718,8 @@ begin
 
     if SerPort.LastError <> 0 then
     begin
-      s:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
-      WriteProgramLog(s);
-      StatusBar.Panels[spStatus].Text:= s;
-      if DisplayMessages then
-        ShowMessage(s);
-      SerPort.CloseSocket;
       SerPort.RaiseExcept:= true;
-      ConnectionKind:= cNone;
-      freeandnil(SerPort);
-      exit(-4) //synaser error
+      Result:= -4   //synaser error
     end;
 
     if SerPort.InstanceActive and (Result = 0) then
@@ -735,6 +728,8 @@ begin
       Result:= 0;
       TimeOutErrors:= 0;
       EnableControls(true);
+
+      SerPort.RaiseExcept:= true;
 
       case Config.OnConnect of
         AQuery: btQueryClick(Self);
@@ -751,9 +746,11 @@ begin
         -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
         -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
         -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - COM';
+        -4: StatusBar.Panels[spStatus].Text:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
       end;
       if DisplayMessages then
         ShowMessage(StatusBar.Panels[spStatus].Text);
+      WriteProgramLog(StatusBar.Panels[spStatus].Text);
 
       SerPort.CloseSocket;
       ConnectionKind:= cNone;
@@ -762,12 +759,13 @@ begin
         Result:= -5; //this should never happen; instance not active
       exit;
     end;
-    SerPort.RaiseExcept:= true;
 
   except
     on E:Exception do
     begin
-      WriteProgramLog(E.Message);
+      WriteProgramLog(E.Message, true);
+      WriteProgramLog(SerPort.LastError, true);
+      WriteProgramLog(SerPort.LineBuffer, true);
       ShowMessage(E.Message);
       SerPort.CloseSocket;
       ConnectionKind:= cNone;
@@ -786,84 +784,110 @@ begin
   TestResult:= '';
   ConnectionKind:= cTelNet;
   TelNetClient:= tTelNetSend.Create;
-  for i:= 1 to high(SupportedDevices) do
-  begin
-    DeviceIndex:= i;
-    with CurrentDevice^ do
-      if Connection = cTelNet then
-      begin
-        s:= 'Попытка подключения к ' + Model;
-        StatusBar.Panels[spStatus].Text:= s;
-        StatusBar.Update;
-        WriteProgramLog(s);
-        WriteProgramLog(Host + ':' + Port);
+  TelNetClient.Sock.RaiseExcept:= false;
 
-        TelNetClient.TermType:= '';
-        TelNetClient.TargetHost:= Host;
-        TelNetClient.TargetPort:= Port;
-        TelNetClient.Timeout:= TimeOut;
-
-        //TelNetClient.Sock.OnCreateSocket:= @CreateSocket;  no noticable effect
-
-        TelNetClient.Login;
-
-        InitDevice;
-        TestResult:= RequestIdentity(seRecvTimeout.Value);
-        WriteProgramLog('Ответ устройства: ' + TestResult);
-
-        if not IsEmptyStr(TestResult, [' ']) then
+  try
+    for i:= 1 to high(SupportedDevices) do
+    begin
+      DeviceIndex:= i;
+      with CurrentDevice^ do
+        if Connection = cTelNet then
         begin
-          if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
+          s:= 'Попытка подключения к ' + Model;
+          StatusBar.Panels[spStatus].Text:= s;
+          StatusBar.Update;
+          WriteProgramLog(s);
+          WriteProgramLog(Host + ':' + Port);
+
+          TelNetClient.TermType:= '';
+          TelNetClient.TargetHost:= Host;
+          TelNetClient.TargetPort:= Port;
+          TelNetClient.Timeout:= TimeOut;
+
+          //TelNetClient.Sock.OnCreateSocket:= @CreateSocket;  no noticable effect
+
+          TelNetClient.Login;
+
+          InitDevice;
+          TestResult:= RequestIdentity(seRecvTimeout.Value);
+          WriteProgramLog('Ответ устройства: ' + TestResult);
+
+          if not IsEmptyStr(TestResult, [' ']) then
           begin
-            Result:= 0;
-            DeviceIndex:= i;
-            break;
+            if (pos(Manufacturer, TestResult) > 0) and (pos(Model, TestResult) > 0) then
+            begin
+              Result:= 0;
+              DeviceIndex:= i;
+              break;
+            end
+            else
+            begin
+              Result:= -2; //not found
+              DeviceIndex:= iDefaultDevice;
+            end;
           end
           else
           begin
-            Result:= -2; //not found
+            Result:= -1; //no answer
             DeviceIndex:= iDefaultDevice;
           end;
         end
         else
         begin
-          Result:= -1; //no answer
+          Result:= -3;  //no compatible devices
           DeviceIndex:= iDefaultDevice;
         end;
-      end
-      else
-      begin
-        Result:= -3;  //no compatible devices
-        DeviceIndex:= iDefaultDevice;
+    end;
+
+    if TelNetClient.Sock.LastError <> 0 then
+    begin
+      TelNetClient.Sock.RaiseExcept:= true;
+      Result:= -4 //synaser error
+    end;
+
+    if Result = 0 then
+    begin
+      StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
+      TimeOutErrors:= 0;
+      EnableControls(true);
+
+      TelNetClient.Sock.RaiseExcept:= true;
+
+      case Config.OnConnect of
+        AQuery: btQueryClick(Self);
+        AReset: btResetClick(Self);
       end;
-  end;
 
-  if Result = 0 then
-  begin
-    StatusBar.Panels[spConnection].Text:= CurrentDevice^.Host;
-    TimeOutErrors:= 0;
-    EnableControls(true);
+      CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
+    end
+    else
+    begin
+      StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+      case Result of
+        -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
+        -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
+        -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - TelNet';
+        -4: StatusBar.Panels[spStatus].Text:= 'Ошибка подключения: ' + TelNetClient.Sock.LastErrorDesc;
+      end;
+      if DisplayMessages then
+        ShowMessage(StatusBar.Panels[spStatus].Text);
+      WriteProgramLog(StatusBar.Panels[spStatus].Text);
 
-    case Config.OnConnect of
-      AQuery: btQueryClick(Self);
-      AReset: btResetClick(Self);
+      ConnectionKind:= cNone;
+      freeandnil(TelNetClient);
     end;
-
-    CurrentDevice^.TimeOut:= seRecvTimeOut.Value;
-  end
-  else
-  begin
-    StatusBar.Panels[spConnection].Text:= 'Нет подключения';
-    case Result of
-      -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
-      -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
-      -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - TelNet';
+  except
+    on E:Exception do
+    begin
+      WriteProgramLog(E.Message, true);
+      WriteProgramLog(TelNetClient.Sock.LastError, true);
+      WriteProgramLog(TelNetClient.Sock.LineBuffer, true);
+      ShowMessage(E.Message);
+      TelNetClient.Sock.CloseSocket;
+      ConnectionKind:= cNone;
+      freeandnil(TelNetClient);
+      Result:= -6; //driver error
     end;
-    if DisplayMessages then
-      ShowMessage(StatusBar.Panels[spStatus].Text);
-
-    ConnectionKind:= cNone;
-    freeandnil(TelNetClient);
   end;
 end;
 
@@ -1082,11 +1106,13 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
   end;
 end;
 
@@ -1101,11 +1127,13 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
 
     CommandString+= s;
   end;
@@ -1122,11 +1150,13 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
 
     CommandString+= strf(i);
   end;
@@ -1146,15 +1176,18 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
 
     for i:= 0 to high(a) do
     begin
-      if i <> 0 then CommandString+= ParSeparator;
+      if i <> 0 then
+        CommandString+= ParSeparator;
       CommandString+= strf(a[i]);
     end;
   end;
@@ -1174,15 +1207,18 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
 
     for i:= 0 to high(a) do
     begin
-      if i <> 0 then CommandString+= ParSeparator;
+      if i <> 0 then
+        CommandString+= ParSeparator;
       CommandString+= a[i];
     end;
   end;
@@ -1202,15 +1238,18 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
 
     for i:= 0 to high(a) do
     begin
-      if i <> 0 then CommandString+= ParSeparator;
+      if i <> 0 then
+        CommandString+= ParSeparator;
 
       if VarIsOrdinal(a[i]) then
         CommandString+= strf(integer(a[i]))
@@ -1236,11 +1275,13 @@ begin
       exit
     end;
 
-    if CommandString <> '' then CommandString+= CommSeparator;
+    if CommandString <> '' then
+      CommandString+= CommSeparator;
 
     CommandString+= Commands[c];
 
-    if Query then CommandString+= '?';
+    if Query then
+      CommandString+= '?';
 
     CommandString+= strf(x) + AmplitudeUnits[integer(Units)]; //does this work ???
   end;
@@ -1272,7 +1313,7 @@ begin
     end;
   except
     on E: Exception do
-      WriteProgramLog('RecvString exception: ' + E.Message);
+      WriteProgramLog('PassCommands exception: ' + E.Message);
   end;
   CommandString:= '';
 end;
@@ -1322,9 +1363,14 @@ begin
       end;
     cTelNet:
       begin
+        TelNetClient.Sock.RaiseExcept:= false;
         Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+        TelNetClient.Sock.RaiseExcept:= true;
 
         writeprogramlog('Получена строка ' + Result);
+
+        if TelNetClient.Sock.LastError = ErrTimeOut then
+            TimeOutErrors:= TimeOutErrors + 1;
       end;
 
     cVXI:
@@ -1362,10 +1408,17 @@ begin
       begin;
         t:= TelNetClient.Timeout;
         TelNetClient.Timeout:= TimeOut;;
+
+        TelNetClient.Sock.RaiseExcept:= false;
         Result:= TelNetClient.RecvTerminated(CurrentDevice^.Terminator);
+        TelNetClient.Sock.RaiseExcept:= true;
+
         TelNetClient.Timeout:= t;
 
         writeprogramlog('Получена строка ' + Result);
+
+        if TelNetClient.Sock.LastError = ErrTimeOut then
+            TimeOutErrors:= TimeOutErrors + 1;
       end
   end
 end;

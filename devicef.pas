@@ -1144,16 +1144,6 @@ begin
         exit(-$20);
       end;
 
-      {val(Cells[i, integer(hFirstIndex)], o, e);
-      if (e <> 0) or (o < 0) then
-      begin
-        pcDevice.TabIndex:= 1;
-        Row:= integer(hFirstIndex);
-        Col:= i;
-        ShowMessage('Ошибка в поле "Индекс 1-го параметра"');
-        exit(-$21);
-      end; }
-
       s:= Cells[i, integer(hIndices)];
       if pos(',', s) = 0 then
       begin
