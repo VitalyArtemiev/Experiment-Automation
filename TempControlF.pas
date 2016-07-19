@@ -679,7 +679,7 @@ begin
       if CurrentDevice^.Model = 'PTC10' then
       begin
         EnterCriticalSection(CommCS);
-          CommandString:= 'kill RTAMacro';
+          CommandString:= 'abort';
           PassCommands;
         LeaveCriticalSection(CommCS);
       end
