@@ -1301,6 +1301,8 @@ begin
   Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
 
   OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
+
+  cbReadingsModeChange(Self);
   CheckTransferCount;                                                           //this needs to happen after restorestate
 
   EnterCriticalSection(CommCS);

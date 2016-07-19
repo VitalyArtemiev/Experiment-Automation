@@ -1224,6 +1224,7 @@ begin
 
   OptionForm.eDevice2.ItemIndex:= DeviceIndex - 1;
 
+  cbReadingsModeChange(Self);
   CheckTransferCount;
 end;
 

@@ -345,9 +345,9 @@ begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
     case DeviceKind of
-      dGenerator:      Caption:= GenCaption + CurrentDevice^.Model;
-      dDetector:       Caption:= DetCaption + CurrentDevice^.Model;
-      dTempController: Caption:= TempCaption + CurrentDevice^.Model;
+      dGenerator:      Caption:= GenCaption + ' ' + CurrentDevice^.Model;
+      dDetector:       Caption:= DetCaption + ' ' + CurrentDevice^.Model;
+      dTempController: Caption:= TempCaption + ' ' + CurrentDevice^.Model;
     end;
   end;
   if (Result = 0) or debug then
