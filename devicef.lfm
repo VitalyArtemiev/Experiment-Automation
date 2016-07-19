@@ -1,11 +1,11 @@
 object DeviceForm: TDeviceForm
   Left = 587
-  Height = 790
-  Top = 74
+  Height = 720
+  Top = 144
   Width = 651
   BorderStyle = bsSizeToolWin
   Caption = 'Устройства'
-  ClientHeight = 790
+  ClientHeight = 720
   ClientWidth = 651
   Constraints.MinHeight = 612
   Constraints.MinWidth = 650
@@ -21,7 +21,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 782
+    Height = 712
     Top = 4
     Width = 377
     ActivePage = tsGenerators
@@ -35,7 +35,7 @@ object DeviceForm: TDeviceForm
     OnChange = pcDeviceChange
     object tsGenerators: TTabSheet
       Caption = 'Генераторы'
-      ClientHeight = 754
+      ClientHeight = 686
       ClientWidth = 369
       object sgGenCommands: TStringGrid
         AnchorSideLeft.Control = tsGenerators
@@ -45,7 +45,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsGenerators
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 750
+        Height = 682
         Top = 2
         Width = 367
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -528,7 +528,7 @@ object DeviceForm: TDeviceForm
     end
     object tsDetectors: TTabSheet
       Caption = 'Детекторы'
-      ClientHeight = 756
+      ClientHeight = 686
       ClientWidth = 369
       object sgDetCommands: TStringGrid
         AnchorSideLeft.Control = tsDetectors
@@ -538,7 +538,7 @@ object DeviceForm: TDeviceForm
         AnchorSideBottom.Control = tsDetectors
         AnchorSideBottom.Side = asrBottom
         Left = 0
-        Height = 752
+        Height = 682
         Top = 2
         Width = 367
         Anchors = [akTop, akLeft, akRight, akBottom]
@@ -578,7 +578,7 @@ object DeviceForm: TDeviceForm
           70
         )
         Cells = (
-          251
+          254
           0
           0
           'Модель'
@@ -817,6 +817,9 @@ object DeviceForm: TDeviceForm
           11
           '300'
           1
+          12
+          '400'
+          1
           13
           ','
           1
@@ -974,7 +977,7 @@ object DeviceForm: TDeviceForm
           '8'
           2
           5
-          '1'
+          '2'
           2
           6
           'Отсутствует'
@@ -986,6 +989,9 @@ object DeviceForm: TDeviceForm
           'OUTX0'
           2
           11
+          '800'
+          2
+          12
           '800'
           2
           13
@@ -1166,7 +1172,7 @@ object DeviceForm: TDeviceForm
           '8'
           3
           5
-          '1'
+          '2'
           3
           6
           'Отсутствует'
@@ -1178,6 +1184,9 @@ object DeviceForm: TDeviceForm
           'OUTX0'
           3
           11
+          '800'
+          3
+          12
           '800'
           3
           13
@@ -1632,7 +1641,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btDone
     Left = 393
     Height = 25
-    Top = 707
+    Top = 637
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 24
@@ -1645,9 +1654,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbTerminator
     AnchorSideTop.Side = asrCenter
     Left = 393
-    Height = 15
-    Top = 417
-    Width = 68
+    Height = 13
+    Top = 385
+    Width = 60
     Caption = 'Терминатор'
     Color = clWhite
     ParentColor = False
@@ -1658,11 +1667,11 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbHandshake
     AnchorSideTop.Side = asrBottom
     Left = 522
-    Height = 23
-    Top = 413
+    Height = 21
+    Top = 381
     Width = 125
     BorderSpacing.Top = 8
-    ItemHeight = 15
+    ItemHeight = 13
     ItemIndex = 0
     Items.Strings = (
       'CR'
@@ -1679,7 +1688,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 452
+    Top = 418
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1695,7 +1704,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Side = asrBottom
     Left = 522
     Height = 25
-    Top = 248
+    Top = 224
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Right = 4
@@ -1709,12 +1718,12 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
     Left = 522
-    Height = 23
-    Top = 320
+    Height = 21
+    Top = 294
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 8
-    ItemHeight = 15
+    ItemHeight = 13
     ItemIndex = 0
     Items.Strings = (
       '1'
@@ -1729,11 +1738,11 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbStopBits
     AnchorSideTop.Side = asrBottom
     Left = 522
-    Height = 23
-    Top = 351
+    Height = 21
+    Top = 323
     Width = 125
     BorderSpacing.Top = 8
-    ItemHeight = 15
+    ItemHeight = 13
     ItemIndex = 0
     Items.Strings = (
       'Отсутствует'
@@ -1750,11 +1759,11 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbParity
     AnchorSideTop.Side = asrBottom
     Left = 522
-    Height = 23
-    Top = 382
+    Height = 21
+    Top = 352
     Width = 125
     BorderSpacing.Top = 8
-    ItemHeight = 15
+    ItemHeight = 13
     ItemIndex = 0
     Items.Strings = (
       'Отсутствует'
@@ -1771,9 +1780,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = cbStopBits
     Left = 393
-    Height = 15
-    Top = 324
-    Width = 60
+    Height = 13
+    Top = 298
+    Width = 55
     Caption = 'Стоп-биты'
     Color = clWhite
     ParentColor = False
@@ -1784,9 +1793,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbParity
     AnchorSideTop.Side = asrCenter
     Left = 393
-    Height = 15
-    Top = 355
-    Width = 53
+    Height = 13
+    Top = 327
+    Width = 48
     Caption = 'Парность'
     Color = clWhite
     ParentColor = False
@@ -1797,9 +1806,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbHandshake
     AnchorSideTop.Side = asrCenter
     Left = 393
-    Height = 15
-    Top = 386
-    Width = 59
+    Height = 13
+    Top = 356
+    Width = 53
     Caption = 'Handshake'
     Color = clWhite
     ParentColor = False
@@ -1811,7 +1820,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     Left = 393
     Height = 25
-    Top = 248
+    Top = 224
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
@@ -1825,7 +1834,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Control = btSaveToFile
     Left = 393
     Height = 25
-    Top = 674
+    Top = 604
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 8
@@ -1839,7 +1848,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btLoadFromFile
     Left = 522
     Height = 25
-    Top = 674
+    Top = 604
     Width = 125
     BorderSpacing.Left = 4
     Caption = 'Уст. по умолчанию'
@@ -1853,7 +1862,7 @@ object DeviceForm: TDeviceForm
     AnchorSideBottom.Side = asrBottom
     Left = 393
     Height = 25
-    Top = 756
+    Top = 686
     Width = 125
     Anchors = [akLeft, akBottom]
     BorderSpacing.Bottom = 5
@@ -1867,9 +1876,9 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = cbInterface
     AnchorSideTop.Side = asrCenter
     Left = 393
-    Height = 15
-    Top = 293
-    Width = 62
+    Height = 13
+    Top = 269
+    Width = 56
     Caption = 'Интерфейс'
     Color = clWhite
     ParentColor = False
@@ -1881,12 +1890,12 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
     Left = 522
-    Height = 23
-    Top = 289
+    Height = 21
+    Top = 265
     Width = 125
     Anchors = [akTop, akRight]
     BorderSpacing.Top = 16
-    ItemHeight = 15
+    ItemHeight = 13
     ItemIndex = 0
     Items.Strings = (
       'RS232'
@@ -1902,7 +1911,7 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btSaveToFile
     Left = 522
     Height = 25
-    Top = 707
+    Top = 637
     Width = 125
     Caption = 'Сбросить'
     OnClick = btResetDefaultFileClick
@@ -1914,7 +1923,7 @@ object DeviceForm: TDeviceForm
     AnchorSideRight.Control = btDeleteDevice
     AnchorSideRight.Side = asrBottom
     Left = 393
-    Height = 204
+    Height = 180
     Top = 28
     Width = 254
     Anchors = [akTop, akLeft, akRight]
@@ -1931,8 +1940,8 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btApply
     AnchorSideTop.Side = asrBottom
     Left = 393
-    Height = 15
-    Top = 481
+    Height = 13
+    Top = 447
     Width = 254
     BorderSpacing.Top = 4
     Font.Style = [fsBold]
@@ -1943,8 +1952,8 @@ object DeviceForm: TDeviceForm
     AnchorSideTop.Control = btResetDefaultFile
     AnchorSideTop.Side = asrBottom
     Left = 393
-    Height = 15
-    Top = 736
+    Height = 13
+    Top = 666
     Width = 254
     BorderSpacing.Top = 4
     Font.Style = [fsBold]

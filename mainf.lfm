@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 843
+  Left = 301
   Height = 600
-  Top = 183
+  Top = 101
   Width = 500
   HorzScrollBar.Visible = False
   BorderIcons = [biSystemMenu, biMinimize]
@@ -52,9 +52,9 @@ object MainForm: TMainForm
     Left = 306
     Height = 23
     Hint = 'Начинает снятие показаний, если включена'#13#10'соответствующая опция в настройках'
-    Top = 524
-    Width = 90
-    Caption = 'Применить'
+    Top = 528
+    Width = 185
+    Caption = 'Применить / Начать снятие'
     Default = True
     Enabled = False
     OnClick = btApplyClick
@@ -65,9 +65,9 @@ object MainForm: TMainForm
     AnchorSideTop.Side = asrBottom
     Left = 185
     Height = 23
-    Top = 524
+    Top = 528
     Width = 90
-    BorderSpacing.Top = 8
+    BorderSpacing.Top = 12
     Caption = 'Триггер'
     Enabled = False
     OnClick = btTriggerClick
@@ -84,12 +84,12 @@ object MainForm: TMainForm
     Height = 192
     Top = 324
     Width = 410
-    ActivePage = tsStep
+    ActivePage = tsSweep
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
-    BorderSpacing.Top = 16
+    BorderSpacing.Top = 20
     BorderSpacing.Right = 4
-    TabIndex = 2
+    TabIndex = 1
     TabOrder = 2
     OnChange = FrequencyTabChange
     object tsConstantFrequency: TTabSheet
@@ -210,12 +210,12 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = cbSweepType
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbSweepType
-        Left = 190
+        Left = 199
         Height = 23
         Hint = 'Направление'
         Top = 125
-        Width = 90
-        BorderSpacing.Left = 4
+        Width = 98
+        BorderSpacing.Left = 5
         Enabled = False
         ItemHeight = 15
         ItemIndex = 0
@@ -237,7 +237,7 @@ object MainForm: TMainForm
         Height = 23
         Hint = 'Тип сканирования'
         Top = 125
-        Width = 90
+        Width = 98
         BorderSpacing.Top = 16
         Enabled = False
         ItemHeight = 15
@@ -395,12 +395,12 @@ object MainForm: TMainForm
         AnchorSideLeft.Control = cbSweepDirection
         AnchorSideLeft.Side = asrBottom
         AnchorSideTop.Control = cbSweepType
-        Left = 284
+        Left = 302
         Height = 23
         Hint = 'Модуляция'
         Top = 125
-        Width = 90
-        BorderSpacing.Left = 4
+        Width = 98
+        BorderSpacing.Left = 5
         Enabled = False
         ItemHeight = 15
         ItemIndex = 0
@@ -743,7 +743,7 @@ object MainForm: TMainForm
     AnchorSideTop.Side = asrBottom
     Left = 4
     Height = 54
-    Top = 248
+    Top = 244
     Width = 74
     BorderSpacing.Top = 8
     Caption = 'Управление'
@@ -766,7 +766,7 @@ object MainForm: TMainForm
     AnchorSideTop.Control = pnBaseParams
     Left = 4
     Height = 54
-    Top = 124
+    Top = 120
     Width = 74
     Caption = 'Запрос'
     Enabled = False
@@ -795,11 +795,11 @@ object MainForm: TMainForm
     AnchorSideRight.Side = asrBottom
     Left = 86
     Height = 184
-    Top = 124
+    Top = 120
     Width = 410
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
-    BorderSpacing.Top = 24
+    BorderSpacing.Top = 20
     BorderSpacing.Right = 4
     BevelOuter = bvNone
     BorderStyle = bsSingle
@@ -1088,7 +1088,7 @@ object MainForm: TMainForm
     AnchorSideTop.Side = asrBottom
     Left = 4
     Height = 54
-    Top = 186
+    Top = 182
     Width = 74
     BorderSpacing.Top = 8
     Caption = 'Статус'
@@ -1214,8 +1214,43 @@ object MainForm: TMainForm
       OnClick = btAutoConnectClick
     end
   end
+  object fneReportFileStub: TDirectoryEdit
+    AnchorSideLeft.Control = Label30
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btTrigger
+    Left = 65
+    Height = 23
+    Hint = 'Указать папку для сохранения и шаблон '#13#10'для имени файла'
+    Top = 528
+    Width = 104
+    RootDir = 'Data'
+    OnAcceptDirectory = fneReportFileStubAcceptDirectory
+    ShowHidden = False
+    ButtonWidth = 23
+    NumGlyphs = 1
+    BorderSpacing.Left = 16
+    MaxLength = 0
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 7
+    OnButtonClick = fneReportFileStubButtonClick
+    OnEditingDone = fneReportFileStubEditingDone
+  end
+  object Label30: TLabel
+    AnchorSideLeft.Control = btReset
+    AnchorSideTop.Control = fneReportFileStub
+    AnchorSideTop.Side = asrCenter
+    Left = 4
+    Height = 30
+    Top = 524
+    Width = 45
+    Caption = 'Шаблон'#13#10'отчета'
+    Color = clWhite
+    ParentColor = False
+    Transparent = False
+  end
   object MainMenu: TMainMenu
-    top = 448
+    top = 72
     object miFile: TMenuItem
       Caption = 'Файл'
       object miNewReport: TMenuItem
@@ -1284,17 +1319,18 @@ object MainForm: TMainForm
     end
   end
   object OpenDialog: TOpenDialog
-    top = 496
+    left = 24
+    top = 72
   end
   object SaveDialog: TSaveDialog
     Title = 'Сохранить файл конфигурации как'
-    left = 48
-    top = 504
+    left = 56
+    top = 72
   end
   object ReadingTimer: TTimer
     OnTimer = ReadingTimerTimer
     OnStartTimer = ReadingTimerStartTimer
-    left = 48
-    top = 448
+    left = 272
+    top = 528
   end
 end

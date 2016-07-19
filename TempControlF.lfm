@@ -1,5 +1,5 @@
 object TempControlForm: TTempControlForm
-  Left = 1023
+  Left = 1015
   Height = 600
   Top = 161
   Width = 500
@@ -127,14 +127,12 @@ object TempControlForm: TTempControlForm
   end
   object Chart: TChart
     AnchorSideLeft.Control = pnConnection
-    AnchorSideTop.Control = pnConnection
-    AnchorSideTop.Side = asrBottom
     AnchorSideRight.Control = cbReadingsMode
     AnchorSideBottom.Control = cbChartShow
     Left = 4
-    Height = 285
+    Height = 287
     Hint = 'Выделите участок ЛКМ для увеличения'#13#10'Перетащите ПКМ для прокрутки'#13#10'Сбросить масштаб - клик ЛКМ'
-    Top = 131
+    Top = 129
     Width = 318
     AxisList = <    
       item
@@ -165,7 +163,6 @@ object TempControlForm: TTempControlForm
     )
     Toolset = ChartToolset
     Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Top = 31
     BorderSpacing.Right = 38
     DoubleBuffered = True
     ParentShowHint = False
@@ -362,7 +359,8 @@ object TempControlForm: TTempControlForm
       BorderSpacing.Top = 3
       BorderSpacing.Right = 4
       Increment = 50
-      MaxValue = 10000
+      MaxValue = 30000
+      MinValue = 500
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -670,6 +668,7 @@ object TempControlForm: TTempControlForm
         '3C'
         '3D'
       )
+      OnItemClick = cgTransferItemClick
       TabOrder = 0
       Data = {
         09000000020202020202020202

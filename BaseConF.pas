@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, variants, Controls, Forms, StdCtrls, ComCtrls, DbCtrls, Spin,
   ExtCtrls, Buttons, Dialogs, Grids, synaser, tlntsend, blcksock,
-  {libusboop, libusb,} StatusF, CustomCommandF, MenuH;
+  {libusboop, libusb,} StatusF, CustomCommandF{, MenuH};
 
 type
   tIntegerArray = array of integer;
@@ -129,11 +129,13 @@ type
     procedure GetDeviceParams; virtual; abstract;
     procedure InitDevice;
     function RequestIdentity(TimeOut: longword): string;
+
     function ConnectSerial: longint; virtual;
     function ConnectTelNet: longint; virtual;
     function ConnectVXI: longint; virtual;
     function ConnectUSB: longint; virtual;
     function AutoConnect: longint; virtual;
+
     procedure EnableControls(Enable: boolean); virtual; abstract;
     function GetCommandName(c: variant): string;
     function CommandSupported(c: variant): boolean;
@@ -144,7 +146,7 @@ type
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tStringArray);
     procedure AddCommand(c: variant{tCommand}; Query: boolean; var a: tVariantArray);  //supports ordinal, float, string
     procedure AddCommand(c: variant{tCommand}; Query: boolean; x: double; Units: eUnits = uNone);
-    procedure PassCommands;
+    procedure PassCommands;                                                     //Sometimes there's a framing error when communicating with devices. (In call ClearCommError) I added a crutch to synaser to ignore it as it seems not to affect communications
     procedure Purge;
     function RecvString: string;
     function RecvString(TimeOut: longword): string;
@@ -174,10 +176,16 @@ type
  // function SubstrCount(const aString, aSubstring: string): Integer;
 
 const
+  iDefaultDevice = 0;
+
   spConnection = 0;
   spDevice = 1;
   spTimeOuts = 2;
   spStatus = 3;
+
+  GenCaption = 'Управление генератором';
+  DetCaption = 'Управление детектором';
+  TempCaption = 'Управление термоконтроллером';
 
   StartCaption = 'Начать снятие';
   PauseCaption = 'Приостановить';
@@ -197,7 +205,7 @@ var
 implementation
 
 uses
-  sockets, Math, EditBtn, StrUtils, DeviceF, MainF;
+  sockets, LConvEncoding, Math, EditBtn, StrUtils, DeviceF, MainF;
 
 function strf(x: double): string; inline;
 begin
@@ -336,6 +344,11 @@ begin
   begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
+    case DeviceKind of
+      dGenerator:      Caption:= GenCaption + CurrentDevice^.Model;
+      dDetector:       Caption:= DetCaption + CurrentDevice^.Model;
+      dTempController: Caption:= TempCaption + CurrentDevice^.Model;
+    end;
   end;
   if (Result = 0) or debug then
   begin
@@ -382,6 +395,12 @@ begin
   DeviceIndex:= iDefaultDevice;
   StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model; //why? iunno. whats yo case anyway, m8? why do you care? i dont. look at me, im nick wilde and i dont care. just look at how much i dont care. its astonishing. one could even say its un-'care'-cteristic of me to care so little. get it? actually, i dont care if you get it. buzz off. get off ma case, pal! or else!
   StatusBar.Panels[spConnection].Text:= 'Нет подключения';
+
+  case DeviceKind of
+    dGenerator:      Caption:= GenCaption;
+    dDetector:       Caption:= DetCaption;
+    dTempController: Caption:= TempCaption;
+  end;
 end;
 
 procedure tConnectionForm.btnTestClick(Sender: TObject);//проверку на правильность настройки
@@ -614,6 +633,8 @@ begin
             AddCommand(cIdentify, true);
             PassCommands;
             Result:= RecvString(TimeOut);
+            if Result = '' then
+              Result:= RecvString(TimeOut);
           LeaveCriticalSection(CommCS);
           //if SerPort.CanRead(seRecvTimeout.Value) then
         end;
@@ -647,6 +668,7 @@ var
   P: char;
   i: integer;
   s: string;
+  enc: boolean;
 begin
   WriteProgramLog('Подключение...');
 
@@ -654,12 +676,10 @@ begin
   TestResult:= '';
   ConnectionKind:= cSerial;
   SerPort:= TBlockSerial.Create;
-  SerPort.RaiseExcept:= true;
   SerPort.ConvertLineEnd:= true;
-  SerPort.DeadLockTimeOut:= 10000;
+  SerPort.DeadLockTimeOut:= 2000;
 
   SerPort.TestDsr:= true;
-  SerPort.RaiseExcept:= false;
   try
     SerPort.Connect(cbPortSelect.Text);
     if SerPort.LastError = 0 then
@@ -667,6 +687,7 @@ begin
       for i:= 1 to high(SupportedDevices) do
       begin
         DeviceIndex:= i;
+        SerPort.RaiseExcept:= false;   //because this resets in recvstring
         with CurrentDevice^ do
           if Connection = cSerial then
           begin
@@ -681,9 +702,9 @@ begin
               3: P:= 'M';
               4: P:= 'S';
             end;
-
-            Serport.Purge;
             SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
+
+            if Serport.raiseexcept then showmessage('HOWWW');
             InitDevice;
             TestResult:= RequestIdentity(seRecvTimeout.Value);
             WriteProgramLog('Ответ устройства: ' + TestResult);
@@ -714,11 +735,9 @@ begin
             DeviceIndex:= iDefaultDevice;
           end;
       end;
-    end;
-
-    if SerPort.LastError <> 0 then
+    end
+    else
     begin
-      SerPort.RaiseExcept:= true;
       Result:= -4   //synaser error
     end;
 
@@ -746,7 +765,12 @@ begin
         -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
         -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
         -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - COM';
-        -4: StatusBar.Panels[spStatus].Text:= 'Ошибка подключения: ' + SerPort.LastErrorDesc;
+        -4:  //problems with encoding from win drivers
+          begin
+            s:= SerPort.LastErrorDesc;
+            s:= ConvertEncodingToUTF8(s, GuessEncoding(s), enc);
+            StatusBar.Panels[spStatus].Text:= 'Ошибка подключения: ' + s;
+          end;
       end;
       if DisplayMessages then
         ShowMessage(StatusBar.Panels[spStatus].Text);
@@ -765,7 +789,7 @@ begin
     begin
       WriteProgramLog(E.Message, true);
       WriteProgramLog(SerPort.LastError, true);
-      WriteProgramLog(SerPort.LineBuffer, true);
+      WriteProgramLog('LB' + SerPort.LineBuffer, true);
       ShowMessage(E.Message);
       SerPort.CloseSocket;
       ConnectionKind:= cNone;
@@ -1014,17 +1038,23 @@ begin
   btnDisconnectClick(Self);
   DisplayMessages:= false;
 
-  for i:= 0 to cbPortSelect.Items.Count - 1 do
-  begin
-    cbPortSelect.ItemIndex:= i;
-    Update;
-    if pos('Ethernet', cbPortSelect.Text) <> 0 then
+  if pos('Ethernet', cbPortSelect.Text) <> 0 then                               //first connect to last saved
       Result:= ConnectTelNet
     else
       Result:= ConnectSerial;
-    if Result = 0 then
-      break;
-  end;
+
+  if Result <> 0 then
+    for i:= 0 to cbPortSelect.Items.Count - 1 do
+    begin
+      cbPortSelect.ItemIndex:= i;
+      Update;
+      if pos('Ethernet', cbPortSelect.Text) <> 0 then
+        Result:= ConnectTelNet
+      else
+        Result:= ConnectSerial;
+      if Result = 0 then
+        break;
+    end;
 
   DisplayMessages:= true;
 
@@ -1377,7 +1407,7 @@ begin
           0: ;
           ErrTimeOut: TimeOutErrors:= TimeOutErrors + 1;
           else
-            WriteProgramLog('RecvString Error' + SerPort.LastErrorDesc);
+            WriteProgramLog('RecvString Error' + TelNetClient.Sock.LastErrorDesc);
         end;
       end;
 
@@ -1433,7 +1463,7 @@ begin
           0: ;
           ErrTimeOut: TimeOutErrors:= TimeOutErrors + 1;
           else
-            WriteProgramLog('RecvString Error' + SerPort.LastErrorDesc);
+            WriteProgramLog('RecvString Error' + TelNetClient.Sock.LastErrorDesc);
         end;
       end
   end
@@ -1666,8 +1696,11 @@ begin
     begin
       if Components[i] is TComboBox then
       with TComboBox(Components[i]) do
+      begin
+        writeprogramlog(name, true);
         if ItemIndex < 0 then
           ItemIndex:= 0;
+      end;
     end;
 end;
 

@@ -61,6 +61,7 @@ type
     procedure cbReadingsModeChange(Sender: TObject);
     procedure cbSampleRateChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
+    procedure cgTransferItemClick(Sender: TObject; Index: integer);
     procedure DataPointHintToolHint(ATool: TDataPointHintTool;
       const APoint: TPoint; var AHint: String);
     procedure fneDataFileStubAcceptDirectory(Sender: TObject; var Value: String);
@@ -91,6 +92,8 @@ type
 
     iPA, iBu: array of string;
 
+    procedure CheckTransferCount;
+    //methods for logmodule events
     procedure BeforeStart(Sender: tLogModule);
     procedure Start(Sender: tLogModule);
     procedure Pause(Sender: tLogModule);
@@ -121,7 +124,11 @@ implementation
 
 uses
   Dateutils, StrUtils, TAChartUtils, DeviceF, MainF, StepF, DetControlF, OptionF,
-  {remove}tlntsend, ReadingThreads;
+  ReadingThreads
+  {$IFOPT D+}
+  ,tlntsend
+  {$ENDIF}
+  ;
 
 {$R *.lfm}
 
@@ -194,6 +201,7 @@ end;
 procedure TTempControlForm.FormShow(Sender: TObject);
 begin
   GetSupportedDevices(DeviceKind);
+  Chart.Height:= DetControlForm.Chart1.Height;                                  //crutch to avoid misalignment in different OS's
 end;
 
 procedure TTempControlForm.btQueryClick(Sender: TObject);
@@ -326,6 +334,52 @@ begin
     Rect.b.y:= (Rect.b.y - Center.y) * ChartZoomFactor + Center.Y;
 
     LogicalExtent:= Rect;
+  end;
+end;
+
+procedure TTempControlForm.CheckTransferCount;
+var
+  i, ParNum: integer;
+begin
+  ParNum:= 0;
+  with cgTransfer do
+  begin
+    for i:= 0 to Items.Count - 1 do
+      if Checked[i] then
+        inc(ParNum);
+    {if ParNum = MaxSimultPars then
+    begin
+      for i:= 0 to Items.Count - 1 do
+        if not Checked[i] then
+          CheckEnabled[i]:= false;
+    end
+    else
+    for i:= 0 to Items.Count - 1 do
+      CheckEnabled[i]:= true; }
+
+    case ParNum of
+      0:
+        begin
+          ShowMessage('Ошибка: не выбрано ни одного параметра');
+          Checked[0]:= true;
+        end;
+      1:
+        begin
+          for i:= 0 to Items.Count - 1 do
+            if Checked[i] then
+              CheckEnabled[i]:= false
+            else
+              CheckEnabled[i]:= true;
+        end;
+      else
+        for i:= 0 to Items.Count - 1 do
+            CheckEnabled[i]:= true;
+    end;
+
+    if ParNum < 1 then
+    begin
+
+    end;
   end;
 end;
 
@@ -668,6 +722,9 @@ var
 begin
   with Sender do
   begin
+    Stub:= LogStub;
+    FilePath:= DataFolder;
+
     if Config.AutoExportParams then
     begin
       if ReportNumber = 0 then
@@ -700,9 +757,6 @@ begin
       FileName+= '_' + s1;
     end;
     FileName+= LogExtensions[integer(dTempController)];
-
-    Stub:= LogStub;
-    FilePath:= DataFolder;
 
     if LogTime then
       Header:= Header + cbXAxis.Items.Strings[0] + HT;
@@ -1011,15 +1065,17 @@ end;
 
 procedure TTempControlForm.GetDeviceParams;
 var
-  i: integer;
+  i, c: integer;
   s: string;
 begin
+  {$IFOPT D+}
   if (DeviceIndex =0) and debug then
   begin
     deviceindex:= 1;
     connectionkind:= ctelnet;
     telnetclient:= tTelNetSend.create;
   end;
+  {$ENDIF}
 
   for i:= 4 to pmChart.Items.Count - 1 do
     pmChart.Items.Delete(4);
@@ -1052,6 +1108,16 @@ begin
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eDelay.MinValue:= MinDelay;
+  end;
+
+  c:= 0;
+  for i:= 0 to cgTransfer.Items.Count - 1 do
+    if cgTransfer.Checked[i] then
+      inc(c);
+
+  if c < 1 then
+  begin
+    cgTransfer.Checked[0]:= true;
   end;
 
   fneDataFileStubEditingDone(Self);
@@ -1157,6 +1223,8 @@ begin
   Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
 
   OptionForm.eDevice2.ItemIndex:= DeviceIndex - 1;
+
+  CheckTransferCount;
 end;
 
 procedure TTempControlForm.btClearClick(Sender: TObject);
@@ -1235,6 +1303,11 @@ begin
   ChartLineSeries.ShowPoints:= cbShowPoints.Checked;
 end;
 
+procedure TTempControlForm.cgTransferItemClick(Sender: TObject; Index: integer);
+begin
+  CheckTransferCount;
+end;
+
 procedure TTempControlForm.DataPointHintToolHint(ATool: TDataPointHintTool;
   const APoint: TPoint; var AHint: String);
 var
@@ -1243,7 +1316,11 @@ var
 begin
   AHint:= cbChartShow.Text;
   Point:= Atool.NearestGraphPoint;
-  str(Point.X:0:0, s);
+  if cbXAxis.Text = 'Номер точки' then
+    str(trunc(Point.X), s)
+  else
+    str(Point.X:0:6, s);
+
   AHint:= ' ' + cbXAxis.Text + ': ' + s + '; ' + AHint + ': ';
   str(Point.Y:0:0, s);
   AHint+= s;

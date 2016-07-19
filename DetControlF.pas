@@ -147,7 +147,7 @@ type
     srcFreq, srcAmpl, srcCH1, srcCH2: TAxisSource;
 
     procedure CheckTransferCount;
-
+    //methods for logmodule events
     procedure BeforeStart(Sender: tLogModule);
     procedure Start(Sender: tLogModule);
     procedure Pause(Sender: tLogModule);
@@ -181,7 +181,11 @@ implementation
 
 uses
   DateUtils, StrUtils, TAChartUtils, stepf, optionf, DeviceF, TempControlF,
-  OffsetF, synaser{remove};
+  OffsetF
+  {$IFOPT D+}
+  ,synaser
+  {$ENDIF}
+  ;
 
 procedure TDetControlForm.Source1GetChartDataItem(
   ASource: TUserDefinedChartSource; AIndex: Integer; var AItem: TChartDataItem);
@@ -388,6 +392,7 @@ var
   i, c: integer;
   s: string;
 begin
+  {$IFOPT D+}
   if Debug then
   if DeviceIndex = 0 then
   begin
@@ -395,19 +400,15 @@ begin
    connectionkind:= cserial;
    DetControlForm.serport:= tblockserial.create;
   end;
+  {$ENDIF}
 
   for i:= 4 to pmChart.Items.Count - 1 do
     pmChart.Items.Delete(4);
 
   with DeviceForm.sgDetCommands do
   begin
-    //cbTimeConstant.Items.AddText(Cells[DeviceIndex, integer(hTimeConstOptions)]);
     SeparateIndices(Cells[DeviceIndex, integer(hTimeConstOptions)], cbTimeConstant.Items, iTC);
-
-    //cbSensitivity.Items.AddText(Cells[DeviceIndex, integer(hSensitivityOptions)]);
     SeparateIndices(Cells[DeviceIndex, integer(hSensitivityOptions)], cbSensitivity.Items, iSe);
-
-    //cgTransfer.Items.AddText(Cells[DeviceIndex, integer(hTransferParams)]);
     SeparateIndices(Cells[DeviceIndex, integer(hTransferParams)], cgTransfer.Items, iPa);
 
     if cgTransfer.Width < 90 then
@@ -429,29 +430,14 @@ begin
       Items[Items.Count - 1].OnClick:= @ChartMenuItemClick;
     end;
 
-    //cbCh1.Items.AddText(Cells[DeviceIndex, integer(hCH1Options)]);
     SeparateIndices(Cells[DeviceIndex, integer(hCH1Options)], cbCh1.Items, iCH1);
-
-    //cbCh2.Items.AddText(Cells[DeviceIndex, integer(hCH2Options)]);
     SeparateIndices(Cells[DeviceIndex, integer(hCH2Options)], cbCh2.Items, iCH2);
-
-    //cbRatio1.Items.AddText(Cells[DeviceIndex, integer(hRatio1Options)]);
     SeparateIndices(Cells[DeviceIndex, integer(hRatio1Options)], cbRatio1.Items, iRCH1);
-
-    //cbRatio2.Items.AddText(Cells[DeviceIndex, integer(hRatio2Options)]);
     SeparateIndices(Cells[DeviceIndex, integer(hRatio2Options)], cbRatio2.Items, iRCH2);
-
     SeparateIndices(Cells[DeviceIndex, integer(hBufferRateOptions)], cbSampleRate.Items, iBF);
-
-    //cbReserve1.Items.AddText(Cells[DeviceIndex, integer(hCloseReserveOptions)]);
     SeparateIndices(Cells[DeviceIndex, integer(hCloseReserveOptions)], cbReserve1.Items, iCR);
-
-    //cbReserve2.Items.AddText(Cells[DeviceIndex, integer(hWideReserveOptions)]);
     SeparateIndices(Cells[DeviceIndex, integer(hWideReserveOptions)], cbReserve2.Items, iWR);
-
-    //cbInputRange.Items.AddText(Cells[DeviceIndex, integer(hRangeOptions)]);
     SeparateIndices(Cells[DeviceIndex, integer(hRangeOptions)], cbInputRange.Items, iRa);
-
 
     MinDelay:= valf(Cells[DeviceIndex, integer(hMinDelay)]);
     eDelay.MinValue:= MinDelay;
@@ -862,6 +848,10 @@ var
 begin
   with Sender do
   begin
+
+    Stub:= LogStub;
+    FilePath:= DataFolder;
+
     if Config.AutoExportParams then
     begin
       if ReportNumber = 0 then
@@ -894,9 +884,6 @@ begin
       FileName+= '_' + s1;
     end;
     FileName+= LogExtensions[integer(dDetector)];
-
-    Stub:= LogStub;
-    FilePath:= DataFolder;
 
     if LogTime then
       Header:= Header + cbXAxis.Items.Strings[0] + HT;
@@ -1669,11 +1656,15 @@ begin
     'Chart1': AHint:= cbChart1Show.Text;
     'Chart2': AHint:= cbChart2Show.Text;
   end;
-  Point:= Atool.NearestGraphPoint;
-  str(Point.X:0:6, s);
-  AHint:= ' ' + cbXAxis.Text + ': ' + s + '; ' + AHint + ': ';
-  str(Point.Y:0:6, s);
-  AHint+= s;
+  Point:= ATool.NearestGraphPoint;
+  if cbXAxis.Text = 'Номер точки' then
+    str(trunc(Point.X), s)
+  else
+    str(Point.X:0:6, s);
+
+    AHint:= ' ' + cbXAxis.Text + ': ' + s + '; ' + AHint + ': ';
+    str(Point.Y:0:6, s);
+    AHint+= s;
 end;
 
 procedure TDetControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;

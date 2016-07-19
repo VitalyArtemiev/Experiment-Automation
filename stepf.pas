@@ -222,14 +222,22 @@ begin
   ProgressBar.Position:= 0;
   PauseTime:= 0;
 
+  Finished:= false;
+
   Cursor:= crHourGlass;
   if Config.AutoReadingStep then
   begin
     sleep(MainForm.MinDelay);
-    DetControlForm.btApplyClick(Self);
-    TempControlForm.btApplyClick(Self);
-    sleep(max(DetControlForm.eDelay.Value, TempControlForm.eDelay.Value));
-   // Params.OnePoint:= MainForm.cbPointPerStep.Checked;
+    with DetControlForm do
+      if ConnectionKind <> cNone then
+        btApplyClick(Self);
+    with TempControlForm do
+      if ConnectionKind <> cNone then
+        btApplyClick(Self);
+
+    sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
+             TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
+
     with DetControlForm do
     begin
       AutoApply:= false;
@@ -245,8 +253,6 @@ begin
     {if MainForm.cbPointPerStepDet.Checked then
       DetControlForm.UpdateTimer.Enabled:= false; }
   end;
-
-  Finished:= false;
 
   sleep(Params.TimeStep);
   Cursor:= crDefault;

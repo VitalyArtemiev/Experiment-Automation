@@ -1,7 +1,7 @@
 object DetControlForm: TDetControlForm
-  Left = 207
+  Left = 817
   Height = 600
-  Top = 161
+  Top = 292
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -60,9 +60,9 @@ object DetControlForm: TDetControlForm
     AnchorSideTop.Side = asrBottom
     Left = 660
     Height = 23
-    Top = 204
+    Top = 200
     Width = 136
-    BorderSpacing.Top = 8
+    BorderSpacing.Top = 4
     Enabled = False
     ItemHeight = 15
     ItemIndex = 13
@@ -522,6 +522,7 @@ object DetControlForm: TDetControlForm
     BorderStyle = bsSingle
     ClientHeight = 96
     ClientWidth = 316
+    ParentColor = False
     TabOrder = 0
     object Label8: TLabel
       AnchorSideLeft.Control = Label3
@@ -813,7 +814,8 @@ object DetControlForm: TDetControlForm
       BorderSpacing.Top = 3
       BorderSpacing.Right = 4
       Increment = 50
-      MaxValue = 10000
+      MaxValue = 30000
+      MinValue = 500
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0

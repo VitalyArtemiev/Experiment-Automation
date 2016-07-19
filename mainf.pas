@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, DividerBevel, IDEWindowIntf, StrUtils, Forms,
   Controls, Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, ActnList, Synaser, BaseConF, DeviceF;
+  ExtCtrls, Buttons, ActnList, EditBtn, BaseConF, Synaser, DeviceF;
 
 type
   { TMainForm }
@@ -42,6 +42,7 @@ type
     eStepStopA: TFloatSpinEdit;
     eAStep: TFloatSpinEdit;
     eTimeStep: TSpinEdit;
+    fneReportFileStub: TDirectoryEdit;
     FrequencyTab: TPageControl;
     Label1: TLabel;
     Label10: TLabel;
@@ -64,6 +65,7 @@ type
 
     About: TMenuItem;
     Label29: TLabel;
+    Label30: TLabel;
     miShowTempControlF: TMenuItem;
     pnConnection: TPanel;
     Separator1: TMenuItem;
@@ -113,6 +115,10 @@ type
     procedure btAutoConnectClick(Sender: TObject);
     procedure cbPointPerStepDetChange(Sender: TObject);
     procedure cbAmplUnitChange(Sender: TObject);
+    procedure fneReportFileStubAcceptDirectory(Sender: TObject;
+      var Value: String);
+    procedure fneReportFileStubButtonClick(Sender: TObject);
+    procedure fneReportFileStubEditingDone(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
 
@@ -147,12 +153,12 @@ type
     procedure StatusBarHint(Sender: TObject);
   private
     { private declarations }
-    iIm, iFu, iST, iSD, iMF: tStringArray;
+    iIm, iFu, iST, iSD, iMF: tStringArray;                                      //Index parameters for impedance, func commands etc.
     FrequencyLimits, MinAmplitudeLimits, MaxAmplitudeLimits: array of double;
   public
     { public declarations }
     FileResult: integer;
-    ReportFolder: string;
+    ReportStub, ReportFolder: string;
 
     function FullCfgDir: string; inline;
     function SaveProfile(FileName: ansistring): integer;
@@ -168,9 +174,6 @@ type
 
 
 const
-
-  iDefaultDevice = 0;
-
   ConstFTab = 0;
   SweepTab = 1;
   StepTab = 2;
@@ -180,7 +183,7 @@ const
   DefaultConfig = 'Default.cfg';
   DefaultParams = 'Last.prm';
 
-  HT = #09;
+  HT = #09;                                                                     //Horizontal tab
 
 var
   AmplitudeUnit: eUnits;
@@ -197,7 +200,8 @@ var
 implementation
 
 uses
-  Math, Variants, MemoF, StepF, OptionF, DetControlF, TempControlF, LogModule, OffsetF, AboutF;
+  Math, Variants, MemoF, StepF, OptionF, DetControlF, TempControlF, LogModule,
+  OffsetF, AboutF;
 
 {$R *.lfm}
 
@@ -219,7 +223,7 @@ begin
       Result+= TempControlForm.RestoreState(FileStream);
       StringStream:= tStringStream.Create('');
 
-      StringStream.CopyFrom(FileStream, 0);    //0 = whole
+      StringStream.CopyFrom(FileStream, 0);    //0 = whole stream
 
       p:= pos('Internal', StringStream.DataString);
       s:= CopyFromTo(StringStream.DataString, p, '(', ')');
@@ -300,26 +304,6 @@ begin
       ShowMessage('Ошибка сохранения параметров: ' + s);
 end;
 
-function tMainForm.SaveConfig(FileName: ansistring): integer;
-var
-  f: file;
-  s: string;
-begin
-  system.assign(f, FileName);
-  {$I-}
-  rewrite(f, sizeof(RConfig));
-
-  blockwrite(f, Config, 1);
-
-  system.close(f);
-  {$I+}
-  Result:= IOResult;
-
-  str(Result, s);
-  if Result <> 0 then
-    ShowMessage('Ошибка сохранения конфигурации. Код ошибки ' + s);
-end;
-
 function tMainForm.LoadConfig(FileName: ansistring): integer;
 var
   f: file;
@@ -348,6 +332,26 @@ begin
     ShowMessage('Ошибка загрузки конфигурации. Код ошибки ' + s);
 end;
 
+function tMainForm.SaveConfig(FileName: ansistring): integer;
+var
+  f: file;
+  s: string;
+begin
+  system.assign(f, FileName);
+  {$I-}
+  rewrite(f, sizeof(RConfig));
+
+  blockwrite(f, Config, 1);
+
+  system.close(f);
+  {$I+}
+  Result:= IOResult;
+
+  str(Result, s);
+  if Result <> 0 then
+    ShowMessage('Ошибка сохранения конфигурации. Код ошибки ' + s);
+end;
+
 function tMainForm.SaveReport(Manual: boolean; Header: boolean): integer;
 var
   i: integer;
@@ -355,13 +359,19 @@ var
   FileName, s: string;
 begin
   DateTimeToString(FileName, 'yyyy_mm_dd', Now);
-if ReportFolder <> '' then
+  if ReportFolder <> '' then
   begin
-    if CreateDir(ReportFolder) then
-      FileName:= ReportFolder + '\' + FileName
+    if not DirectoryExists(ReportFolder) then
+    begin
+      if CreateDir(ReportFolder) then
+        FileName:= ReportFolder + '\' + FileName
+      else
+        WriteProgramLog('Error creating folder ' + ReportFolder);
+    end
     else
-      WriteProgramLog('Error creating folder ' + ReportFolder);
+      FileName:= ReportFolder + '\' + FileName;
   end;
+  FileName+= '_' + ReportStub;
 
   if ReportNumber = 0 then
   begin
@@ -558,6 +568,12 @@ begin
   ConnectionKind:= cNone;
   PortList:= //'COM1,COM2,COM3,COM4';
              GetSerialPortNames;
+
+  {$IFOPT D+}
+  if pos('COM', portlist) = 0 then
+    portlist+= 'COM1,COM2,COM3,COM4';
+  {$ENDIF}
+
   PortCount:= 0;
 
   if IsEmptyStr(PortList, [' ']) then
@@ -609,10 +625,24 @@ begin
     else
     begin
       ShowMessage('Не найдены файлы кофигурации.' + LineEnding +
-                  'Создана папка по умолчанию ' + DefaultCfgFolder + '.');
+                  'Создана папка по умолчанию ''' + DefaultCfgFolder + '''.');
       FileResult:= -1; //to still load defaults from optionform oncreate
     end;
   end;
+end;
+
+procedure tMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+begin
+  if Config.SaveParamsOnExit then
+  begin
+    FileResult:= SaveProfile(FullCfgDir + Config.ParamFile);
+    WriteProgramLog('Сохранение параметров в ' + FullCfgDir + Config.ParamFile +
+                    '; Результат: ' + strf(FileResult));
+  end;
+
+  FileResult:= SaveConfig(FullCfgDir + Config.WorkConfig);
+  WriteProgramLog('Сохранение конфигурации в ' + FullCfgDir + Config.WorkConfig +
+                  '; Результат: ' + strf(FileResult));
 end;
 
 procedure tMainForm.FormDestroy(Sender: TObject);
@@ -636,13 +666,15 @@ procedure tMainForm.miNewReportClick(Sender: TObject);
 begin
   ReportNumber:= 0; //so that it checks for existing file internally?
   ExperimentNumber:= 1;
-  if DetControlForm.ConnectionKind <> cNone then
-    ReportFolder:= DetControlForm.Log.FilePath
-  else
-    if TempControlForm.ConnectionKind <> cNone then
-      ReportFolder:= TempControlForm.Log.FilePath
-  else
-    ReportFolder:= '';
+
+  if ReportFolder = '' then
+  begin
+    if DetControlForm.ConnectionKind <> cNone then
+      ReportFolder:= DetControlForm.Log.FilePath
+    else
+      if TempControlForm.ConnectionKind <> cNone then
+        ReportFolder:= TempControlForm.Log.FilePath
+  end;
   SaveReport(true);
 end;
 
@@ -666,18 +698,47 @@ begin
       ShowMessage('Единица ' + cbAmplUnit.Text + ' не поддерживается прибором');
 end;
 
-procedure tMainForm.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+procedure tMainForm.fneReportFileStubAcceptDirectory(Sender: TObject;
+  var Value: String);
 begin
-  if Config.SaveParamsOnExit then
-  begin
-    FileResult:= SaveProfile(FullCfgDir + Config.ParamFile);
-    WriteProgramLog('Сохранение параметров в ' + FullCfgDir + Config.ParamFile +
-                    '; Результат: ' + strf(FileResult));
-  end;
+  ReportFolder:= Value;
+  if pos(GetCurrentDir, ReportFolder) <> 0 then
+    delete(ReportFolder, 1, length(GetCurrentDir) + 1);
+  Value:= fneReportFileStub.Text;
+end;
 
-  FileResult:= SaveConfig(FullCfgDir + Config.WorkConfig);
-  WriteProgramLog('Сохранение конфигурации в ' + FullCfgDir + Config.WorkConfig +
-                  '; Результат: ' + strf(FileResult));
+procedure tMainForm.fneReportFileStubButtonClick(Sender: TObject);
+begin
+   with fneReportFileStub do  //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
+  begin
+    if pos('\', ReportFolder) = 0 then
+      RootDir:= GetCurrentDir + '\' + ReportFolder
+    else
+      RootDir:= ReportFolder;
+
+    Directory:= '';
+  end;
+end;
+
+procedure tMainForm.fneReportFileStubEditingDone(Sender: TObject);
+begin
+  with fneReportFileStub do
+  begin
+    if (pos('.', Text) = 0) and (pos('\', Text) = 0) then
+    begin
+      ReportStub:= Text;
+    end
+    else
+    begin
+      ReportStub:= ExtractFileName(Text);
+
+      ReportFolder:= ExtractFileDir(Text);
+      RootDir:= ReportFolder;
+      if pos(GetCurrentDir, ReportFolder) <> 0 then
+        delete(ReportFolder, 1, length(GetCurrentDir) + 1);
+      Text:= ReportStub;                                            //see comment above
+    end;
+  end;
 end;
 
 procedure tMainForm.eOffsetChange(Sender: TObject);
@@ -1020,14 +1081,19 @@ begin
         StepA:=      eAStep.Value;
         TimeStep:=   eTimeStep.Value;
 
+        SetCursorAll(crHourGlass);
         StepForm.Show;
+        SetCursorAll(crDefault);
+
         if Config.AutoExportParams and not Config.AutoReadingStep then
         begin
           SaveReport(false);
         end;
       end
       else
-        ShowMessage('Введены неверные параметры');
+        ShowMessage('Введены неверные параметры: ' + LineEnding +
+                    'Начальное и конечное значение должно различаться' + LineEnding +
+                    'и шаг не должен равняться нулю');
     end
     else
     begin
@@ -1061,9 +1127,32 @@ begin
         begin
           SetCursorAll(crHourGlass);
           sleep(MinDelay);
+
+          with DetControlForm do
+            if ConnectionKind <> cNone then
+              btApplyClick(Self);
+          with TempControlForm do
+            if ConnectionKind <> cNone then
+              btApplyClick(Self);
+
+          sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
+                   TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
+
+          with DetControlForm do
+          begin
+            AutoApply:= false;
+            if ConnectionKind <> cNone then
+              Log.Start;
+          end;
+          with TempControlForm do
+          begin
+            AutoApply:= false;
+            if ConnectionKind <> cNone then
+              Log.Start;
+          end;
+
           SetCursorAll(crDefault);
-          DetControlForm.Log.Start;
-          TempControlForm.Log.Start;
+
           if ReadingTime > 0 then
           begin
             ReadingTimer.Interval:= ReadingTime;
@@ -1114,9 +1203,32 @@ begin
         begin
           SetCursorAll(crHourGlass);
           sleep(MinDelay);
+
+          with DetControlForm do
+            if ConnectionKind <> cNone then
+              btApplyClick(Self);
+          with TempControlForm do
+            if ConnectionKind <> cNone then
+              btApplyClick(Self);
+
+          sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
+                   TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
+
+          with DetControlForm do
+          begin
+            AutoApply:= false;
+            if ConnectionKind <> cNone then
+              Log.Start;
+          end;
+          with TempControlForm do
+          begin
+            AutoApply:= false;
+            if ConnectionKind <> cNone then
+              Log.Start;
+          end;
+
           SetCursorAll(crDefault);
-          DetControlForm.Log.Start;
-          TempControlForm.Log.Start;
+
           if ReadingTime > 0 then
           begin
             ReadingTimer.Interval:= ReadingTime;
@@ -1369,7 +1481,6 @@ begin
   eFrequency.Enabled:=         Enable;
   cbSweepRate.Enabled:=        Enable;
   eSweepRate.Enabled:=         Enable;
-  SweepRateReading.Enabled:=   Enable;
   cbSweepType.Enabled:=        Enable;
   cbSweepDirection.Enabled:=   Enable;
   cbModulation.Enabled:=       Enable;
@@ -1401,6 +1512,7 @@ var
   i: integer;
   s: string;
 begin
+  {$IFOPT D+}
   if debug then
   if DeviceIndex = 0 then
   begin
@@ -1408,6 +1520,8 @@ begin
    connectionkind:= cserial;
    serport:= tblockserial.create;
   end;
+  {$ENDIF}
+
 
   OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
 
@@ -1508,7 +1622,7 @@ begin
     cbModulation.Show;
     cbSweepType.Width:= cbModulation.Width;
     cbSweepDirection.Width:= cbModulation.Width;
-    cbSweepDirection.BorderSpacing.Left:= 4;
+    cbSweepDirection.BorderSpacing.Left:= 5;
   end;
 end;
 

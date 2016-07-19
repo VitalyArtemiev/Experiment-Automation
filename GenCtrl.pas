@@ -27,7 +27,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Windows, Forms, menuh, MainF, memof, stepf, optionf,
+  Windows, Forms, {menuh,} MainF, memof, stepf, optionf,
 DetControlF, CustomCommandF, StatusF,
   BaseConF, AboutF, DeviceF, dialogs, lazcontrols,
   OffsetF, TempControlF{, FileM};

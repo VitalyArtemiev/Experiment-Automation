@@ -73,3 +73,9 @@ ProgramLog.txt
 *.detlog
 *.txt
 *.lps
+sertest.res
+sertest.lpi
+sertest.ico
+sertest.lpr
+unit1.lfm
+unit1.pas
