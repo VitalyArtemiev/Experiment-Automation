@@ -84,12 +84,12 @@ object MainForm: TMainForm
     Height = 192
     Top = 324
     Width = 410
-    ActivePage = tsSweep
+    ActivePage = tsStep
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 8
     BorderSpacing.Top = 20
     BorderSpacing.Right = 4
-    TabIndex = 1
+    TabIndex = 2
     TabOrder = 2
     OnChange = FrequencyTabChange
     object tsConstantFrequency: TTabSheet

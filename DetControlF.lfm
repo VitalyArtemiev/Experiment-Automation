@@ -481,7 +481,7 @@ object DetControlForm: TDetControlForm
     BorderSpacing.Top = 4
     BorderSpacing.Right = 4
     ItemHeight = 15
-    ItemIndex = 0
+    ItemIndex = 1
     Items.Strings = (
       'Внутренний буфер'
       'Одновременный запрос'
@@ -490,7 +490,7 @@ object DetControlForm: TDetControlForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
-    Text = 'Внутренний буфер'
+    Text = 'Одновременный запрос'
   end
   object cbUseGenFreq: TCheckBox
     AnchorSideLeft.Control = cbReadingsMode
