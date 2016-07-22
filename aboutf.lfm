@@ -81,7 +81,7 @@ object AboutForm: TAboutForm
       Width = 388
       Anchors = [akTop, akLeft, akRight]
       AutoSize = False
-      Caption = #13#10'E-mail:  vitaly.artemiev@yandex.ru'#13#10'GitHub: https://github.com/VitalyArtemiev/Generator-Amplifier-Control'
+      Caption = #13#10'E-mail:  vitaly.artemiev@yandex.ru'#13#10'GitHub: https://github.com/VitalyArtemiev/Experiment-Automation'
       Color = clWhite
       ParentColor = False
       Transparent = False

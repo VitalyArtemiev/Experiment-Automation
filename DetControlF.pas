@@ -42,7 +42,7 @@ type
     cbRatio2: TComboBox;
     ChartToolset: TChartToolset;
     DataPointHintTool: TDataPointHintTool;
-    fneDataFileStub: TDirectoryEdit;
+    deDataFileStub: TDirectoryEdit;
     ZoomDragTool: TZoomDragTool;
     PanDragTool: TPanDragTool;
     eDelay: TSpinEdit;
@@ -105,10 +105,9 @@ type
     procedure ChartMenuItemClick(Sender: TObject);
     procedure DataPointHintToolHint(ATool: TDataPointHintTool;
       const APoint: TPoint; var AHint: String);
-    procedure fneDataFileStubAcceptDirectory(Sender: TObject; var Value: String
+    procedure deDataFileStubAcceptDirectory(Sender: TObject; var Value: String
       );
-    procedure fneDataFileStubButtonClick(Sender: TObject);
-    procedure fneDataFileStubEditingDone(Sender: TObject);
+    procedure deDataFileStubEditingDone(Sender: TObject);
     procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
     procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
     procedure ParamsChange(Sender: TObject);
@@ -133,7 +132,7 @@ type
 
   private
     { private declarations }
-    ReportHeader, ForceStop: boolean;
+    ForceStop: boolean;
     DrawnBuffers: longword;//for continuous buffer (not implemented)
     t, SampleRate: double; //t for buffer and writing to sources
     ReadingMode: eReadMode;
@@ -153,7 +152,7 @@ type
     procedure Pause(Sender: tLogModule);
     procedure Continue(Sender: tLogModule);
     procedure Stop(Sender: tLogModule);
-    procedure CreateFile(Sender: tLogModule);
+    //Also createFile
     function SaveLog(Sender: tLogModule):integer;
     procedure StateChange(Sender: tLogModule);
     procedure ProcessBuffers(Sender: tLogModule);
@@ -167,9 +166,12 @@ type
     LogTime, LogFreq, LogAmpl, UseGenFreq, OnePointPerStep, OffsetTracked,
       AutoApply: boolean;
     TimeStep: double;
+    //for logmodule event
+    procedure CreateFile(Sender: tLogModule);
 
     procedure EnableControls(Enable: boolean); override;
     procedure GetDeviceParams; override;
+    procedure AfterConnect; override;
 
     function RecvSnap(p: array of shortint): PBuffer;
   end;
@@ -273,7 +275,6 @@ begin
   t:= 0;
   DataFolder:= DefaultLogFolder;
   LogStub:= '';
-  ExperimentNumber:= 1;
   ReportSaved:= false;
 
   LogFreq:= false;
@@ -307,11 +308,9 @@ end;
 procedure TDetControlForm.FormDestroy(Sender: TObject);
 begin
   Log.Stop;
-  btClearClick(Self); //log stops here
+  btClearClick(Self);
   btnDisconnectClick(Self);
 
-  {SerPort.Free;
-  TelNetClient.Free; }
   Log.Free;
 
   DoneCriticalSection(CommCS);
@@ -538,7 +537,25 @@ begin
       cgTransfer.Checked[CH2Index]:= true;
   end;
 
-  fneDataFileStubEditingDone(Self);
+  deDataFileStubEditingDone(Self);
+end;
+
+procedure TDetControlForm.AfterConnect;
+begin
+  inherited AfterConnect;
+
+  Params.DetectorPort:= DetControlForm.CurrentDevice^.Port;
+  Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
+
+  OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
+
+  cbReadingsModeChange(Self);
+  CheckTransferCount;                                                           //this needs to happen after restorestate
+
+  EnterCriticalSection(CommCS);
+    AddCommand(dResetStorage);
+    PassCommands;
+  LeaveCriticalSection(CommCS);
 end;
 
 procedure TDetControlForm.UpdateTimerTimer(Sender: TObject);
@@ -609,8 +626,26 @@ begin
           CheckEnabled[i]:= false;
     end
     else
-    for i:= 0 to Items.Count - 1 do
-      CheckEnabled[i]:= true;
+    if ParNum < MaxSimultPars then
+    begin
+      for i:= 0 to Items.Count - 1 do
+        CheckEnabled[i]:= true;
+    end
+    else
+    begin
+      Showmessage('Превышено максимальное число параметров - сброс');
+      for i:= 0 to Items.Count - 1 do
+        Checked[i]:= false;
+
+      cgTransfer.Checked[ReferenceIndex]:= true;
+      if CH1Index >= 0 then
+        cgTransfer.Checked[CH1Index]:= true
+      else
+        cgTransfer.Checked[0]:= true;
+
+      for i:= 0 to Items.Count - 1 do
+        CheckEnabled[i]:= true;
+    end;
     if ParNum < 2 then
     begin
      cbReadingsMode.ItemIndex:= 0;
@@ -745,6 +780,7 @@ begin
 
     t:= 0;
   end;
+  ReportSaved:= false;
 end;
 
 procedure TDetControlForm.Start(Sender: tLogModule);
@@ -831,12 +867,11 @@ begin
 
   if Log.State <> lInActive then
   begin
-    if Config.AutoExportParams then
+    if Config.AutoReport then       { TODO 2 -cImprovement : a new texperiment class to keep track of conflicting shit like this }
     begin
-      MainForm.ReportFolder:= Log.FilePath;
-      MainForm.SaveReport(false, ReportHeader);
-      ReportSaved:= true;
+      MainForm.SaveReport(false, MainForm.ReportHeader);
     end;
+    ReportSaved:= true;  //dont move this, it prevents double increase in expnum
     inc(ExperimentNumber);
   end;
 end;
@@ -848,42 +883,14 @@ var
 begin
   with Sender do
   begin
-
-    Stub:= LogStub;
     FilePath:= DataFolder;
+    DateTimeToString(FileName, DefaultTimeFormat, Now);
+    Stub:= LogStub;
 
-    if Config.AutoExportParams then
-    begin
-      if ReportNumber = 0 then
-      begin
-        inc(ReportNumber);
-        str(ReportNumber, s1);
-        while FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + '.txt') or
-              FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + '_1' + LogExtensions[integer(dDetector)]) do
-        begin
-          inc(ReportNumber);
-          str(ReportNumber, s1);
-        end;
-      end;
-
-      ReportHeader:= true;
-      str(ReportNumber, s1);
-      str(ExperimentNumber, s2);
-      FileName+= '_' + s1 + '_' + s2;
-    end
+    if LogExtension <> '' then
+      Extension:= LogExtension
     else
-    begin
-      str(ExperimentNumber, s1);
-      while FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + LogExtensions[integer(dDetector)]) do
-      begin
-        inc(ExperimentNumber);
-        str(ExperimentNumber, s1);
-      end;
-
-      ReportHeader:= false;
-      FileName+= '_' + s1;
-    end;
-    FileName+= LogExtensions[integer(dDetector)];
+      Extension:= LogExtensions[integer(dDetector)];
 
     if LogTime then
       Header:= Header + cbXAxis.Items.Strings[0] + HT;
@@ -1037,7 +1044,6 @@ begin
         btClear.Enabled:=         true;
         pnConnection.Enabled:=    true;
         btStartPauseLog.Caption:= StartCaption;
-        ReportSaved:= false;
       end
       else
         btStartPauseLog.Caption:= ContinueCaption;
@@ -1168,7 +1174,6 @@ begin
         end;}
         WriteProgramLog('pb done');
     StatusBar.Panels[spStatus].Text:= 'Точек: ' + strf(ProcessedPoints);
-
   end;
 end;
 
@@ -1208,11 +1213,14 @@ begin
     LeaveCriticalSection(CommCS);
   end;
 
+  {$IFOPT D+}
   if debug then
   begin
     sleep(60 + random(30));
     s:= strf(1)+',' +strf(0.51)+',' + strf(1.5);
   end;
+  {$ENDIF}
+
   //writeprogramlog(s);
   if s = '' then
   begin
@@ -1289,26 +1297,7 @@ begin
     end;
   end;
 
-  OptionForm.TabControl.TabIndex:= 1;
-  OptionForm.DevicePage.TabIndex:= 1;
-
-  inherited btnConnectClick(Sender);                                            //only override getdeviceparams
-
-  if DeviceIndex = iDefaultDevice then
-    exit;
-
-  Params.DetectorPort:= DetControlForm.CurrentDevice^.Port;
-  Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
-
-  OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
-
-  cbReadingsModeChange(Self);
-  CheckTransferCount;                                                           //this needs to happen after restorestate
-
-  EnterCriticalSection(CommCS);
-    AddCommand(dResetStorage);
-    PassCommands;
-  LeaveCriticalSection(CommCS);
+  inherited btnConnectClick(Sender);
 end;
 
 procedure TDetControlForm.btClearClick(Sender: TObject);
@@ -1465,8 +1454,8 @@ var
   s1, s2, s3: string;
   i: integer;
 begin
-  Purge;
   EnterCriticalSection(CommCS);
+    Purge;
     AddCommand(dDisplaySelect, true, 1);
     AddCommand(dDisplaySelect, true, 2);
     AddCommand(dSampleRate, true);
@@ -1484,24 +1473,24 @@ begin
     s2:= RecvString;
 
     s3:= RecvString;
-    i:= AnsiIndexStr(s3, iBF);
+    i:= AnsiIndexText(s3, iBF);
     if i>= 0 then
       cbSampleRate.ItemIndex:= i;
 
     s3:= RecvString;
-    i:= AnsiIndexStr(s3, iSe);
+    i:= AnsiIndexText(s3, iSe);
     if i>= 0 then
       cbSensitivity.ItemIndex:= i;
 
     s3:= RecvString;
-    i:= AnsiIndexStr(s3, iTC);
+    i:= AnsiIndexText(s3, iTC);
     if i>= 0 then
       cbTimeConstant.ItemIndex:= i;
 
     if cbReserve1.Visible then
     begin
       s3:= RecvString;
-      i:= AnsiIndexStr(s3, iCR);
+      i:= AnsiIndexText(s3, iCR);
       if i>= 0 then
         cbReserve1.ItemIndex:= i;
     end;
@@ -1509,7 +1498,7 @@ begin
     if cbReserve2.Visible then
     begin
       s3:= RecvString;
-      i:= AnsiIndexStr(s3, iWR);
+      i:= AnsiIndexText(s3, iWR);
       if i>= 0 then
         cbReserve2.ItemIndex:= i;
     end;
@@ -1517,7 +1506,7 @@ begin
     if cbInputRange.Visible then
     begin
       s3:= RecvString;
-      i:= AnsiIndexStr(s3, iRa);
+      i:= AnsiIndexText(s3, iRa);
       if i>= 0 then
         cbInputRange.ItemIndex:= i;
     end;
@@ -1527,35 +1516,35 @@ begin
   begin
     s3:= CurrentDevice^.ParSeparator;
 
-    i:= AnsiIndexStr(copy(s1, 1, pos(s3, s1) - 1), iCH1);
+    i:= AnsiIndexText(copy(s1, 1, pos(s3, s1) - 1), iCH1);
     if i < 0 then
       exit;
     cbCh1.ItemIndex:= i;
     delete(s1, 1, pos(s3, s1));
 
-    i:= AnsiIndexStr(s1, iRCH1);
+    i:= AnsiIndexText(s1, iRCH1);
     if i < 0 then
       exit;
     cbRatio1.ItemIndex:= i;
 
-    i:= AnsiIndexStr(copy(s1, 1, pos(s3, s2) - 1), iCH2);
+    i:= AnsiIndexText(copy(s1, 1, pos(s3, s2) - 1), iCH2);
     if i < 0 then
       exit;
     cbCh2.ItemIndex:= i;
     delete(s2, 1, pos(s3, s2));
 
-    i:= AnsiIndexStr(s2, iRCH2);
+    i:= AnsiIndexText(s2, iRCH2);
     if i < 0 then
       exit;
     cbRatio2.ItemIndex:= i;
   end
   else
   begin
-    i:= AnsiIndexStr(s1, iCH1);
+    i:= AnsiIndexText(s1, iCH1);
     if i >= 0 then
       cbCh1.ItemIndex:= i;
 
-    i:= AnsiIndexStr(s2, iCH2);
+    i:= AnsiIndexText(s2, iCH2);
     if i >= 0 then
       cbCh2.ItemIndex:= i;
   end;
@@ -1669,31 +1658,17 @@ begin
     AHint+= s;
 end;
 
-procedure TDetControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;
+procedure TDetControlForm.deDataFileStubAcceptDirectory(Sender: TObject;
   var Value: String);
-begin
+begin                                    //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
   DataFolder:= Value;
   if pos(GetCurrentDir, DataFolder) <> 0 then
     delete(DataFolder, 1, length(GetCurrentDir) + 1);
-  Value:= fneDataFileStub.Text;
 end;
 
-procedure TDetControlForm.fneDataFileStubButtonClick(Sender: TObject);
+procedure TDetControlForm.deDataFileStubEditingDone(Sender: TObject);
 begin
-  with fneDataFileStub do  //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
-  begin
-    if pos('\', DataFolder) = 0 then
-      RootDir:= GetCurrentDir + '\' + DataFolder
-    else
-      RootDir:= DataFolder;
-
-    Directory:= '';
-  end;
-end;
-
-procedure TDetControlForm.fneDataFileStubEditingDone(Sender: TObject);
-begin
-  with fneDataFileStub do
+  with deDataFileStub do
   begin
     if (pos('.', Text) = 0) and (pos('\', Text) = 0) then
     begin

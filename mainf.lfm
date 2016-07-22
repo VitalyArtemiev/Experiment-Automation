@@ -441,6 +441,7 @@ object MainForm: TMainForm
       Caption = 'Пошагово'
       ClientHeight = 164
       ClientWidth = 402
+      OnContextPopup = tsStepContextPopup
       object eStepStartF: TFloatSpinEdit
         AnchorSideLeft.Control = eFStep
         AnchorSideLeft.Side = asrBottom
@@ -716,7 +717,7 @@ object MainForm: TMainForm
         BorderSpacing.Top = 16
         Caption = 'Термоконтроллер'
         Enabled = False
-        OnChange = cbPointPerStepDetChange
+        OnChange = cbPointPerStepTempChange
         TabOrder = 8
       end
     end
@@ -1214,7 +1215,7 @@ object MainForm: TMainForm
       OnClick = btAutoConnectClick
     end
   end
-  object fneReportFileStub: TDirectoryEdit
+  object deReportFileStub: TDirectoryEdit
     AnchorSideLeft.Control = Label30
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btTrigger
@@ -1224,7 +1225,7 @@ object MainForm: TMainForm
     Top = 528
     Width = 104
     RootDir = 'Data'
-    OnAcceptDirectory = fneReportFileStubAcceptDirectory
+    OnAcceptDirectory = deReportFileStubAcceptDirectory
     ShowHidden = False
     ButtonWidth = 23
     NumGlyphs = 1
@@ -1233,12 +1234,11 @@ object MainForm: TMainForm
     ParentShowHint = False
     ShowHint = True
     TabOrder = 7
-    OnButtonClick = fneReportFileStubButtonClick
-    OnEditingDone = fneReportFileStubEditingDone
+    OnEditingDone = deReportFileStubEditingDone
   end
   object Label30: TLabel
     AnchorSideLeft.Control = btReset
-    AnchorSideTop.Control = fneReportFileStub
+    AnchorSideTop.Control = deReportFileStub
     AnchorSideTop.Side = asrCenter
     Left = 4
     Height = 30

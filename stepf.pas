@@ -230,10 +230,18 @@ begin
     sleep(MainForm.MinDelay);
     with DetControlForm do
       if ConnectionKind <> cNone then
+      begin
         btApplyClick(Self);
+        CreateFile(Log);
+        Log.GetExperimentNumber;
+      end;
     with TempControlForm do
       if ConnectionKind <> cNone then
+      begin
         btApplyClick(Self);
+        CreateFile(Log);
+        Log.GetExperimentNumber;
+      end;
 
     sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
              TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));

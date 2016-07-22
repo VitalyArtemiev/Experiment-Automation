@@ -30,7 +30,7 @@ type
 
   rConfig = record
     CfgFolder, WorkConfig, ParamFile, DefaultGens, DefaultDets, DefaultTemps: shortstring;
-    LoadParamsOnStart, SaveParamsOnExit, AutoExportParams, AutoComment,
+    LoadParamsOnStart, SaveParamsOnExit, AutoReport, AutoComment,
       AutoReadingConst, AutoReadingSweep, AutoReadingStep, KeepLog: boolean;
     OnConnect: ConnectAction;
     ReadingTime: longint;
@@ -136,6 +136,8 @@ type
     function ConnectUSB: longint; virtual;
     function AutoConnect: longint; virtual;
 
+    procedure AfterConnect; virtual;
+
     procedure EnableControls(Enable: boolean); virtual; abstract;
     function GetCommandName(c: variant): string;
     function CommandSupported(c: variant): boolean;
@@ -202,10 +204,13 @@ var
   ProgramLog: TFileStream;
   LogCS: TRTLCriticalSection;
 
+  Config: RConfig;
+  Params: RParams;
+
 implementation
 
 uses
-  sockets, LConvEncoding, Math, EditBtn, StrUtils, DeviceF, MainF;
+  sockets, LConvEncoding, Math, EditBtn, StrUtils, DeviceF, OptionF, MainF;
 
 function strf(x: double): string; inline;
 begin
@@ -244,11 +249,27 @@ end;
 function CopyFromTo(Origin: string; SearchStart: integer; Start, Stop: string
   ): string;
 var
-  p1, p2: integer;
+  p1, p2, i, l: integer;
 begin
   Delete(Origin, 1, SearchStart - 1);
-  p1:= Pos(Start, Origin) + 1;
+  l:= length(Start);
+  {if l > 1 then
+    inc(l); }
+
+  p1:= Pos(Start, Origin) + l;
+  //Delete(Origin, 1, p1 - 1);
+  //p1:= Pos(Start, Origin) + l;
   p2:= Pos(Stop, Origin);
+
+  i:= 2;
+  while p2 < p1 do
+  begin
+    p2:= NPos(Stop, Origin, i);
+    inc(i);
+    if i > 100 then
+      break;
+  end;
+
   Result:= Copy(Origin, p1, p2 - p1);
 end;
 
@@ -350,7 +371,7 @@ begin
       dTempController: Caption:= TempCaption + ' ' + CurrentDevice^.Model;
     end;
   end;
-  if (Result = 0) or debug then
+  if (Result = 0) {$IFDEF D+} or debug {$ENDIF}     then
   begin
     Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
     GetDeviceParams;
@@ -363,7 +384,7 @@ begin
       on E: Exception do
         ShowMessage(E.Message);
     end;
-    EnsureValidItemIndices;
+    AfterConnect;
 
     cbPortSelect.ItemIndex:= Crutch;
   end
@@ -677,8 +698,8 @@ begin
   ConnectionKind:= cSerial;
   SerPort:= TBlockSerial.Create;
   SerPort.ConvertLineEnd:= true;
-  SerPort.DeadLockTimeOut:= 2000;
-
+  SerPort.DeadLockTimeOut:= 4000;
+  //SerPort.RaiseExcept:= true;
   SerPort.TestDsr:= true;
   try
     SerPort.Connect(cbPortSelect.Text);
@@ -704,7 +725,6 @@ begin
             end;
             SerPort.Config(BaudRate, DataBits, P, StopBits, SoftFlow, HardFlow);
 
-            if Serport.raiseexcept then showmessage('HOWWW');
             InitDevice;
             TestResult:= RequestIdentity(seRecvTimeout.Value);
             WriteProgramLog('Ответ устройства: ' + TestResult);
@@ -803,6 +823,7 @@ function tConnectionForm.ConnectTelNet: longint;
 var
   i: integer;
   s: string;
+  enc: boolean;
 begin
   DeviceIndex:= iDefaultDevice;
   TestResult:= '';
@@ -891,7 +912,12 @@ begin
         -1: StatusBar.Panels[spStatus].Text:= 'Устройство не ответило';
         -2: StatusBar.Panels[spStatus].Text:= 'Устройство ' + TestResult + ' не опознано';
         -3: StatusBar.Panels[spStatus].Text:= 'Нет совместимых устройств - TelNet';
-        -4: StatusBar.Panels[spStatus].Text:= 'Ошибка подключения: ' + TelNetClient.Sock.LastErrorDesc;
+        -4:
+           begin
+            s:= TelNetClient.Sock.LastErrorDesc;
+            s:= ConvertEncodingToUTF8(s, GuessEncoding(s), enc);
+            StatusBar.Panels[spStatus].Text:= 'Ошибка подключения: ' + s;
+          end;
       end;
       if DisplayMessages then
         ShowMessage(StatusBar.Panels[spStatus].Text);
@@ -1062,9 +1088,14 @@ begin
   begin
     StatusBar.Panels[spDevice].Text:= CurrentDevice^.Model;
     StatusBar.Panels[spStatus].Text:= '';
+    case DeviceKind of
+      dGenerator:      Caption:= GenCaption + ' ' + CurrentDevice^.Model;
+      dDetector:       Caption:= DetCaption + ' ' + CurrentDevice^.Model;
+      dTempController: Caption:= TempCaption + ' ' + CurrentDevice^.Model;
+    end;
   end;
 
-  if (Result = 0) or debug then
+  if (Result = 0) {$IFDEF D+} or debug {$ENDIF} then
   begin
     Crutch:= cbPortSelect.ItemIndex;  //because it loads port too
     GetDeviceParams;
@@ -1077,11 +1108,23 @@ begin
       on E: Exception do
         ShowMessage(E.Message);
     end;
+    AfterConnect;
+
     cbPortSelect.ItemIndex:= Crutch;
   end
   else
     WriteProgramLog('Подключение - результат: ' + strf(Result));
   Update;
+end;
+
+procedure tConnectionForm.AfterConnect;
+begin
+  EnsureValidItemIndices;
+  case DeviceKind of
+    dGenerator: OptionForm.eDevice.ItemIndex:= DeviceIndex - 1;
+    dDetector: OptionForm.eDevice1.ItemIndex:= DeviceIndex - 1;
+    dTempController: OptionForm.eDevice2.ItemIndex:= DeviceIndex - 1;
+  end;
 end;
 
 function tConnectionForm.GetCommandName(c: variant): string;
@@ -1528,10 +1571,16 @@ begin
       FileStream.Write(s[1], length(s));
     end
     else
-    if Components[i] is TFileNameEdit then
-    with TFileNameEdit(Components[i]) do
+    if Components[i] is TDirectoryEdit then
+    with TDirectoryEdit(Components[i]) do
     begin
-      s:= Name + '=' + Text + LineEnding;
+      s:= Name + '=' + '2' + LineEnding;
+      FileStream.Write(s[1], length(s));
+
+      s:= '#Text=' + Text + LineEnding;
+      FileStream.Write(s[1], length(s));
+
+      s:= '#Directory=' + Directory + LineEnding;
       FileStream.Write(s[1], length(s));
     end;
   end;
@@ -1544,7 +1593,7 @@ var
   i, j, p, v, e: integer;
   d: double;
   StringStream: tStringStream;
-  s: string;
+  s, s1: string;
 begin
   if not Assigned(FileStream) then
     exit(-1);
@@ -1639,8 +1688,8 @@ begin
 
       for j:= 0 to min(v - 1, Items.Count - 1) do
       begin
-        p:= pos('#' + strf(j), s);
-        val(CopyFromTo(s, p, '=', LineEnding), v, e);
+        s1:= CopyFromTo(s, p, '#' + strf(j) + '=', LineEnding);
+        val(CopyFromTo(s, p, '#' + strf(j) + '=', LineEnding), v, e);
         if e = 0 then
           Checked[j]:= boolean(v)
         else
@@ -1664,16 +1713,18 @@ begin
         Result:= -7;
     end
     else
-    if Components[i] is TFileNameEdit then
-    with TFileNameEdit(Components[i]) do
+    if Components[i] is TDirectoryEdit then
+    with TDirectoryEdit(Components[i]) do
     begin
       p:= pos(Name, s);
       if p = 0 then
       begin
         Text:= '';
+        Directory:= '';
         continue;
       end;
-      Text:= CopyFromTo(s, p, '=', LineEnding);
+      Text:= CopyFromTo(s, p, '#Text=', LineEnding);
+      Directory:= CopyFromTo(s, p, '#Directory=', LineEnding);
     end;
   end;
   StringStream.Destroy;

@@ -1,7 +1,7 @@
 object TempControlForm: TTempControlForm
-  Left = 1015
+  Left = 1268
   Height = 600
-  Top = 161
+  Top = 410
   Width = 500
   Caption = 'Управление термоконтроллером'
   ClientHeight = 600
@@ -221,7 +221,7 @@ object TempControlForm: TTempControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
-      AnchorSideTop.Control = fneDataFileStub
+      AnchorSideTop.Control = deDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
@@ -267,7 +267,7 @@ object TempControlForm: TTempControlForm
     end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
-      AnchorSideTop.Control = fneDataFileStub
+      AnchorSideTop.Control = deDataFileStub
       Left = 222
       Height = 23
       Top = 96
@@ -382,7 +382,7 @@ object TempControlForm: TTempControlForm
       ParentColor = False
       Transparent = False
     end
-    object fneDataFileStub: TDirectoryEdit
+    object deDataFileStub: TDirectoryEdit
       AnchorSideLeft.Control = eDelay
       AnchorSideTop.Control = cbXAxis
       AnchorSideTop.Side = asrBottom
@@ -391,7 +391,7 @@ object TempControlForm: TTempControlForm
       Hint = 'Указать папку для сохранения и шаблон '#13#10'для имени файла'
       Top = 96
       Width = 104
-      OnAcceptDirectory = fneDataFileStubAcceptDirectory
+      OnAcceptDirectory = deDataFileStubAcceptDirectory
       ShowHidden = False
       ButtonWidth = 23
       NumGlyphs = 1
@@ -400,8 +400,7 @@ object TempControlForm: TTempControlForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
-      OnButtonClick = fneDataFileStubButtonClick
-      OnEditingDone = fneDataFileStubEditingDone
+      OnEditingDone = deDataFileStubEditingDone
     end
   end
   object StatusBar: TStatusBar

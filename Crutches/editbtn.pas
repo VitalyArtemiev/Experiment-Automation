@@ -31,15 +31,13 @@ interface
 
 uses
   Classes, SysUtils, LCLProc, LResources, LCLStrConsts, Types, LCLType, LMessages,
-  Graphics, Controls, Forms, FileUtil, Dialogs, StdCtrls, Buttons, Calendar,
-  ExtDlgs, CalendarPopup, MaskEdit, Menus;
+  Graphics, Controls, Forms, LazFileUtils, Dialogs, StdCtrls, Buttons, Calendar,
+  ExtDlgs, CalendarPopup, MaskEdit, Menus, StrUtils, DateUtils, TimePopup, CalcForm;
 
 const
   NullDate: TDateTime = 0;
 
 type
-
-
 
   { TEbEdit }
 
@@ -120,6 +118,9 @@ type
     function GetSpacing: Integer;
     function GetTabStop: Boolean;
     function GetText: TCaption;
+    function GetTextHint: TTranslateString;
+    function GetTextHintFontColor: TColor;
+    function GetTextHintFontStyle: TFontStyles;
     function IsCustomGlyph : Boolean;
 
     procedure FocusAndMaybeSelectAll;
@@ -182,6 +183,9 @@ type
     procedure SetSelText(AValue: String);
     procedure SetSpacing(const Value: integer);
     procedure SetTabStop(AValue: Boolean);
+    procedure SetTextHint(AValue: TTranslateString);
+    procedure SetTextHintFontColor(AValue: TColor);
+    procedure SetTextHintFontStyle(AValue: TFontStyles);
   protected
     class function GetControlClassDefaultSize: TSize; override;
     function CalcButtonVisible: Boolean; virtual;
@@ -294,6 +298,9 @@ type
     property SelText: String read GetSelText write SetSelText;
     property TabStop: Boolean read GetTabStop write SetTabStop default True;
     property Text: TCaption read GetText write SetText;
+    property TextHint: TTranslateString read GetTextHint write SetTextHint;
+    property TextHintFontColor: TColor read GetTextHintFontColor write SetTextHintFontColor default clGrayText;
+    property TextHintFontStyle: TFontStyles read GetTextHintFontStyle write SetTextHintFontStyle default [fsItalic];
 
     property OnChange: TNotifyEvent read FOnEditChange write FOnEditChange;
     property OnClick: TNotifyEvent read FOnEditClick write FOnEditClick;
@@ -394,6 +401,9 @@ type
     property TabOrder;
     property TabStop;
     property Text;
+    property TextHint;
+    property TextHintFontColor;
+    property TextHintFontStyle;
     property Visible;
   end;
 
@@ -425,6 +435,7 @@ type
     procedure SetUseFormActivate(AValue: Boolean);
     procedure FormActivate(Sender: TObject); // Connects to owning form.
     procedure FormDeactivate(Sender: TObject);
+    function IsTextHintStored: Boolean;
   protected
     fNeedUpdate: Boolean;
     fIsFirstUpdate: Boolean;
@@ -439,8 +450,12 @@ type
     procedure SortAndFilter; virtual; abstract;
     procedure ApplyFilter(Immediately: Boolean = False);
     procedure ApplyFilterCore; virtual; abstract;
-    procedure MoveNext; virtual; abstract;
-    procedure MovePrev; virtual; abstract;
+    procedure MoveNext(ASelect: Boolean = False); virtual; abstract;
+    procedure MovePrev(ASelect: Boolean = False); virtual; abstract;
+    procedure MovePageUp(ASelect: Boolean = False); virtual; abstract;
+    procedure MovePageDown(ASelect: Boolean = False); virtual; abstract;
+    procedure MoveHome(ASelect: Boolean = False); virtual; abstract;
+    procedure MoveEnd(ASelect: Boolean = False); virtual; abstract;
     function ReturnKeyHandled: Boolean; virtual; abstract;
     function GetDefaultGlyphName: String; override;
   public
@@ -521,6 +536,9 @@ type
     property OnStartDrag;
     property OnUTF8KeyPress;
     property Text;
+    property TextHint stored IsTextHintStored;
+    property TextHintFontColor;
+    property TextHintFontStyle;
   end;
 
   { TFileNameEdit }
@@ -633,6 +651,9 @@ type
     property OnStartDrag;
     property OnUTF8KeyPress;
     property Text;
+    property TextHint;
+    property TextHintFontColor;
+    property TextHintFontStyle;
   end;
 
 
@@ -642,6 +663,9 @@ type
   private
     FDialogTitle: String;
     FRootDir: String;
+    //<CRUTCH>
+    FDirectory: String;
+    //<\CRUTCH>
     FOnAcceptDir: TAcceptFileNameEvent;
     FShowHidden: Boolean;
     function GetDirectory: String;
@@ -723,6 +747,9 @@ type
     property OnStartDrag;
     property OnUTF8KeyPress;
     property Text;
+    property TextHint;
+    property TextHintFontColor;
+    property TextHintFontStyle;
   end;
 
 
@@ -743,9 +770,11 @@ type
     FOnCustomDate: TCustomDateEvent;
     FOKCaption: TCaption;
     FCancelCaption: TCaption;
-    FDateFormat: string;
+    FFixedDateFormat: string; //used when DateOrder <> doNone
+    FFreeDateFormat: String;  //used when DateOrder = doNone
     FDate: TDateTime;
     FUpdatingDate: Boolean;
+    procedure SetFreeDateFormat(AValue: String);
     function TextToDate(AText: String; ADefault: TDateTime): TDateTime;
     function GetDate: TDateTime;
     procedure SetDate(Value: TDateTime);
@@ -777,6 +806,7 @@ type
     property ReadOnly;
     property DefaultToday: Boolean read FDefaultToday write FDefaultToday default False;
     Property DateOrder : TDateOrder Read FDateOrder Write SetDateOrder;
+    property DateFormat: String read FFreeDateFormat write SetFreeDateFormat;
     property ButtonOnlyWhenFocused;
     property ButtonCaption;
     property ButtonCursor;
@@ -836,8 +866,111 @@ type
     property Spacing;
     property Visible;
     property Text;
+    property TextHint;
+    property TextHintFontColor;
+    property TextHintFontStyle;
   end;
+  
+  { TTimeEdit }
 
+  TAcceptTimeEvent = procedure (Sender : TObject; var ATime : TDateTime; var AcceptTime: Boolean) of object;
+  TCustomTimeEvent = procedure (Sender : TObject; var ATime : TDateTime) of object;
+
+  TTimeEdit = class(TCustomEditButton)
+    private
+      FTime: TTime;
+      IsEmptyTime: Boolean;
+      FDefaultNow: Boolean;
+      FDroppedDown: Boolean;
+      FSimpleLayout: Boolean;
+      FOnAcceptTime: TAcceptTimeEvent;
+      FOnCustomTime: TCustomTimeEvent;
+      function GetTime: TDateTime;
+      procedure SetTime(AValue: TDateTime);
+      procedure SetEmptyTime;
+      function GetLayout: Boolean;
+      procedure SetLayout(AValue: Boolean);
+      procedure TimePopupReturnTime(Sender: TObject; const ATime: TDateTime);
+      procedure TimePopupShowHide(Sender: TObject);
+      procedure OpenTimePopup;
+      procedure ParseInput;
+      function TryParseInput(AInput: String; out ParseResult: TDateTime): Boolean;
+    protected
+      function GetDefaultGlyph: TBitmap; override;
+      function GetDefaultGlyphName: String; override;
+      procedure ButtonClick; override;
+      procedure EditDblClick; override;
+      procedure EditEditingDone; override;
+    public
+      constructor Create(AOwner: TComponent); override;
+      property Time: TDateTime read GetTime write SetTime;
+      property Button;
+      property DroppedDown: Boolean read FDroppedDown;
+    published
+      property DefaultNow: Boolean read FDefaultNow write FDefaultNow default False;
+      property OnAcceptTime: TAcceptTimeEvent read FOnAcceptTime write FOnAcceptTime;
+      property OnCustomTime: TCustomTimeEvent read FOnCustomTime write FOnCustomTime;
+      property ReadOnly;
+      property ButtonOnlyWhenFocused;
+      property ButtonWidth;
+      property Action;
+      property Align;
+      property Anchors;
+      property AutoSize;
+      property AutoSelect;
+      property BidiMode;
+      property BorderSpacing;
+      property BorderStyle;
+      property CharCase;
+      property Color;
+      property Constraints;
+      property DirectInput;
+      property Glyph;
+      property NumGlyphs;
+      property DragMode;
+      property EchoMode;
+      property Enabled;
+      property Flat;
+      property FocusOnButtonClick;
+      property Font;
+      property MaxLength;
+      property OnButtonClick;
+      property OnChange;
+      property OnChangeBounds;
+      property OnClick;
+      property OnDblClick;
+      property OnEditingDone;
+      property OnEnter;
+      property OnExit;
+      property OnKeyDown;
+      property OnKeyPress;
+      property OnKeyUp;
+      property OnMouseDown;
+      property OnMouseEnter;
+      property OnMouseLeave;
+      property OnMouseMove;
+      property OnMouseUp;
+      property OnMouseWheel;
+      property OnMouseWheelDown;
+      property OnMouseWheelUp;
+      property OnResize;
+      property OnUTF8KeyPress;
+      property ParentBidiMode;
+      property ParentColor;
+      property ParentFont;
+      property ParentShowHint;
+      property PopupMenu;
+      property ShowHint;
+      property SimpleLayout: Boolean read GetLayout write SetLayout default True;
+      property TabStop;
+      property TabOrder;
+      property Visible;
+      property Text;
+      property TextHint;
+      property TextHintFontColor;
+      property TextHintFontStyle;
+  end;
+  
 
   { TCalcEdit }
 
@@ -929,6 +1062,9 @@ type
     property OnStartDrag;
     property OnUTF8KeyPress;
     property Text;
+    property TextHint;
+    property TextHintFontColor;
+    property TextHintFontStyle;
   end;
 
 
@@ -936,6 +1072,7 @@ var
   FileOpenGlyph: TBitmap;
   DateGlyph: TBitmap;
   CalcGlyph: TBitmap;
+  TimeGlyph: TBitmap;
 
 const
   ResBtnListFilter = 'btnfiltercancel';
@@ -943,6 +1080,7 @@ const
   ResBtnSelDir     = 'btnseldir';
   ResBtnCalendar   = 'btncalendar';
   ResBtnCalculator = 'btncalculator';
+  ResBtnTime       = 'btntime';
 
 procedure Register;
 
@@ -989,7 +1127,8 @@ end;
 
 procedure TCustomEditButton.InternalOnEditChange(Sender: TObject);
 begin
-  EditChange;
+  if not (csLoading in ComponentState) then
+    EditChange;
 end;
 
 procedure TCustomEditButton.InternalOnEditClick(Sender: TObject);
@@ -1167,6 +1306,21 @@ end;
 function TCustomEditButton.GetText: TCaption;
 begin
   Result := FEdit.Text;
+end;
+
+function TCustomEditButton.GetTextHint: TTranslateString;
+begin
+  Result := FEdit.TextHint;
+end;
+
+function TCustomEditButton.GetTextHintFontColor: TColor;
+begin
+  Result := FEdit.TextHintFontColor;
+end;
+
+function TCustomEditButton.GetTextHintFontStyle: TFontStyles;
+begin
+  Result := FEdit.TextHintFontStyle;
 end;
 
 function TCustomEditButton.IsCustomGlyph: Boolean;
@@ -1760,6 +1914,21 @@ begin
   FEdit.TabStop := AValue;
 end;
 
+procedure TCustomEditButton.SetTextHint(AValue: TTranslateString);
+begin
+  FEdit.TextHint := AValue;
+end;
+
+procedure TCustomEditButton.SetTextHintFontColor(AValue: TColor);
+begin
+  FEdit.TextHintFontColor := AValue;
+end;
+
+procedure TCustomEditButton.SetTextHintFontStyle(AValue: TFontStyles);
+begin
+  FEdit.TextHintFontStyle := AValue;
+end;
+
 constructor TCustomEditButton.Create(AOwner: TComponent);
 var
   B: TBitmap;
@@ -1778,8 +1947,7 @@ begin
   TabStop := True;
   FocusOnButtonClick := False;
 
-  with GetControlClassDefaultSize do
-    SetInitialBounds(0, 0, CX, CY);
+  SetInitialBounds(0, 0, GetControlClassDefaultSize.CX, GetControlClassDefaultSize.CY);
 
   with FButton do
   begin
@@ -1895,6 +2063,7 @@ begin
   Button.Enabled:=False;
   fIsFirstUpdate:=True;
   fIsFirstSetFormActivate:=True;
+  TextHint:=rsFilter;
 end;
 
 destructor TCustomControlFilterEdit.Destroy;
@@ -1960,7 +2129,7 @@ procedure TCustomControlFilterEdit.SetFilter(const AValue: string);
 var
   NewValue: String;
 begin
-  if AValue=rsFilter then
+  if (TextHint<>'') and (AValue=TextHint) then
     NewValue:=''
   else
     NewValue:=AValue;
@@ -1968,11 +2137,6 @@ begin
   if (NewValue<>'') or Focused or fJustActivated or (csDesigning in ComponentState) then
   begin
     Text:=NewValue;
-    Font.Color:=clDefault;
-  end
-  else begin
-    Text:=rsFilter;
-    Font.Color:=clBtnShadow;
   end;
   if fFilter=NewValue then exit;
   fFilter:=NewValue;
@@ -1996,10 +2160,25 @@ begin
   Handled:=False;
   if Shift = [] then
     case Key of
-      VK_UP:     begin MovePrev; Handled:=True; end;
-      VK_DOWN:   begin MoveNext; Handled:=True; end;
       VK_RETURN: Handled:=ReturnKeyHandled;
     end;
+
+  if (Shift = []) or (Shift = [ssShift]) then
+  begin
+    case Key of
+      VK_UP:     begin MovePrev(ssShift in Shift); Handled:=True; end;
+      VK_DOWN:   begin MoveNext(ssShift in Shift); Handled:=True; end;
+      VK_PRIOR:  begin MovePageUp(ssShift in Shift); Handled:=True; end;
+      VK_NEXT:   begin MovePageDown(ssShift in Shift); Handled:=True; end;
+    end;
+  end;
+  if (Shift = [ssCtrl]) or (Shift = [ssCtrl, ssShift]) then
+  begin
+    case Key of
+      VK_HOME:   begin MoveHome(ssShift in Shift); Handled:=True; end;
+      VK_END:    begin MoveEnd(ssShift in Shift); Handled:=True; end;
+    end;
+  end;
   if Handled then
     Key:=VK_UNKNOWN
   else
@@ -2016,8 +2195,6 @@ procedure TCustomControlFilterEdit.EditEnter;
 begin
 //  inherited;
   fJustActivated:=False;
-  if Text=rsFilter then
-    Text:='';
 end;
 
 procedure TCustomControlFilterEdit.EditExit;
@@ -2030,6 +2207,7 @@ end;
 procedure TCustomControlFilterEdit.ButtonClick;
 begin
   fJustActivated:=False;
+  Text:='';
   Filter:='';
   if FocusOnButtonClick then FEdit.SetFocus; //don't SelectAll here
 end;
@@ -2056,6 +2234,11 @@ procedure TCustomControlFilterEdit.InvalidateFilter;
 begin
   fNeedUpdate:=true;
   IdleConnected:=true;
+end;
+
+function TCustomControlFilterEdit.IsTextHintStored: Boolean;
+begin
+  Result := TextHint <> rsFilter;
 end;
 
 procedure TCustomControlFilterEdit.ResetFilter;
@@ -2240,8 +2423,10 @@ end;
 
 procedure TDirectoryEdit.SetDirectory(const AValue: String);
 begin
-  if (Text<>AValue) then
-    Text:=AValue;
+  //<CRUTCH>
+  if (fDirectory<>AValue) then
+    fDirectory:=AValue;
+  //<\CRUTCH>
 end;
 
 function TDirectoryEdit.CreateDialog: TCommonDialog;
@@ -2314,7 +2499,9 @@ end;
 
 function TDirectoryEdit.GetDirectory: String;
 begin
-  Result:=Text;
+  //<CRUTCH>
+  Result:= fDirectory;
+  //<\CRUTCH>
 end;
 
 { TDateEdit }
@@ -2342,7 +2529,7 @@ end;
 
 function TDateEdit.GetDateFormat: string;
 begin
-  Result := FDateFormat;
+  Result := FFixedDateFormat;
 end;
 
 function TDateEdit.GetDefaultGlyph: TBitmap;
@@ -2394,7 +2581,7 @@ begin
   if (not DirectInput) and not FUpdatingDate then
   begin
     //force a valid date and set FDate
-    debugln('TDateEdit.SetText: DirectInput = False');
+    //debugln('TDateEdit.SetText: DirectInput = False');
     if FDefaultToday then
       FDate := TextToDate(AValue, SysUtils.Date)
     else
@@ -2414,21 +2601,21 @@ begin
     doNone :
        begin
        S:=''; // no mask
-       FDateFormat:='';
+       FFixedDateFormat:='';
        end;
     doDMY,
     doMDY  :
       begin
       S:='99/99/9999;1;_';
       if DateOrder=doMDY then
-        FDateFormat:='mm/dd/yyyy'
+        FFixedDateFormat:='mm/dd/yyyy'
       else
-        FDateFormat:='dd/mm/yyyy';
+        FFixedDateFormat:='dd/mm/yyyy';
       end;
     doYMD  :
       begin
       S:='9999/99/99;1;_';
-      FDateFormat:='yyyy/mm/dd';
+      FFixedDateFormat:='yyyy/mm/dd';
       end;
   end;
   D:=GetDate;
@@ -2463,6 +2650,7 @@ begin
     doYMD : B:=TryEncodeDate(N1,N2,N3,Result);
     doMDY : B:=TryEncodeDate(N3,N1,N2,Result);
     doDMY : B:=TryEncodeDate(N3,N2,N1,Result);
+    else B:=false;
   end;
   If not B then // Not sure if TryEncodeDate touches Result.
     Result:=Def;
@@ -2662,19 +2850,39 @@ begin
 end;
 
 function TDateEdit.TextToDate(AText: String; ADefault: TDateTime): TDateTime;
+var
+  FS: TFormatSettings;
 begin
   if Assigned(FOnCustomDate) then
     FOnCustomDate(Self, AText);
   if (DateOrder = doNone) then
   begin
-    if not TryStrToDate(AText, Result) then
+    FS := DefaultFormatSettings;
+    if (FFreeDateFormat <> '') then
+      FS.ShortDateFormat := FFreeDateFormat;
+    if not TryStrToDate(AText, Result, FS) then
     begin
-      Result := ParseDateNoPredefinedOrder(AText, DefaultFormatSettings);
+      Result := ParseDateNoPredefinedOrder(AText, FS);
       if (Result = NullDate) then Result := ADefault;
     end;
   end
   else
     Result := ParseDate(AText,DateOrder,ADefault)
+end;
+
+procedure TDateEdit.SetFreeDateFormat(AValue: String);
+var
+  D: TDateTime;
+begin
+  if FFreeDateFormat = AValue then Exit;
+  if (Text <> '') and (FDateOrder = doNone) and (not (csDesigning in ComponentState)) then
+  begin
+    D := GetDate;
+    FFreeDateFormat := AValue;
+    SetDate(D); //will update the text
+  end
+  else
+    FFreeDateFormat := AValue;
 end;
 
 function TDateEdit.GetDate: TDateTime;
@@ -2748,16 +2956,156 @@ begin
 end;
 
 function TDateEdit.DateToText(Value: TDateTime): String;
+var
+  FS: TFormatSettings;
 begin
   if Value = NullDate then
     Result := ''
   else
   begin
-    if (FDateOrder = doNone) or (FDateFormat = '') then
-      Result := DateToStr(Value)
+    if (FDateOrder = doNone) or (FFixedDateFormat = '') then
+    begin
+      FS := DefaultFormatSettings;
+      if (FFreeDateFormat <> '') then
+        FS.ShortDateFormat := FFreeDateFormat;
+      Result := DateToStr(Value, FS)
+    end
     else
-      Result := FormatDateTime(FDateFormat, Value)
+      Result := FormatDateTime(FFixedDateFormat, Value)
   end;
+end;
+
+{ TTimeEdit }
+
+function TTimeEdit.GetTime: TDateTime;
+begin
+  Result := FTime;
+  if IsEmptyTime then begin
+    if FDefaultNow then
+      Result := TimeOf(Now);
+  end else begin
+    if Assigned(FOnCustomTime) then
+      FOnCustomTime(Self, Result);
+  end;
+end;
+
+function TTimeEdit.GetLayout: Boolean;
+begin
+  Result := FSimpleLayout;
+end;
+
+procedure TTimeEdit.SetLayout(AValue: Boolean);
+begin
+  FSimpleLayout := AValue;
+end;
+
+procedure TTimeEdit.SetTime(AValue: TDateTime);
+var
+  Output: String;
+begin
+  DateTimeToString(Output, DefaultFormatSettings.ShortTimeFormat, AValue);
+  Text := Output;
+  FTime := AValue;
+  IsEmptyTime := False;
+end;
+
+procedure TTimeEdit.SetEmptyTime;
+begin
+  Text := EmptyStr;
+  FTime := NullDate;
+  IsEmptyTime := True;
+end;
+
+procedure TTimeEdit.TimePopupReturnTime(Sender: TObject; const ATime: TDateTime);
+var
+  AcceptResult: Boolean;
+  ReturnedTime: TDateTime;
+begin
+  try
+    AcceptResult := True;
+    ReturnedTime := ATime;
+    if Assigned(FOnAcceptTime) then
+      FOnAcceptTime(Self, ReturnedTime, AcceptResult);
+    if AcceptResult then
+      Self.Time := ReturnedTime;
+  except
+    on E:Exception do
+      MessageDlg(E.Message, mtError, [mbOK], 0);
+  end;
+end;
+
+procedure TTimeEdit.TimePopupShowHide(Sender: TObject);
+begin
+  FDroppedDown := (Sender as TForm).Visible;
+end;
+
+procedure TTimeEdit.OpenTimePopup;
+var
+  PopupOrigin: TPoint;
+  ATime: TDateTime;
+begin
+  ParseInput;
+  PopupOrigin := ControlToScreen(Point(0, Height));
+  ATime := GetTime;
+  if ATime = NullDate then
+    ATime := SysUtils.Time;
+  ShowTimePopup(PopupOrigin, ATime, Self.DoubleBuffered, @TimePopupReturnTime, @TimePopupShowHide, FSimpleLayout);
+end;
+
+function TTimeEdit.TryParseInput(AInput: String; out ParseResult: TDateTime): Boolean;
+begin
+  AInput := Trim(AInput);
+  if (Length(AInput) in [3..4]) and (not AnsiContainsStr(AInput, DefaultFormatSettings.TimeSeparator)) then begin
+    Insert(DefaultFormatSettings.TimeSeparator, AInput, Length(AInput) - 1);
+  end;
+  Result := TryStrToTime(AInput, ParseResult);
+end;
+
+procedure TTimeEdit.ParseInput;
+var
+  TmpResult: TDateTime;
+begin
+  if Trim(Text) = EmptyStr then
+    SetEmptyTime
+  else if TryParseInput(Self.Text, TmpResult) then
+    SetTime(TmpResult)
+  else
+    SetTime(FTime);
+end;
+
+function TTimeEdit.GetDefaultGlyph: TBitmap;
+begin
+  Result := TimeGlyph;
+end;
+
+function TTimeEdit.GetDefaultGlyphName: String;
+begin
+  Result := ResBtnTime;
+end;
+
+procedure TTimeEdit.ButtonClick;
+begin
+  inherited ButtonClick;
+  OpenTimePopup;
+end;
+
+procedure TTimeEdit.EditDblClick;
+begin
+  inherited EditDblClick;
+  OpenTimePopup;
+end;
+
+procedure TTimeEdit.EditEditingDone;
+begin
+  ParseInput;
+  inherited EditEditingDone;
+end;
+
+constructor TTimeEdit.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  SetEmptyTime;
+  FSimpleLayout := True;
 end;
 
 { TCalcEdit }
@@ -2839,7 +3187,7 @@ end;
 procedure Register;
 begin
   RegisterComponents('Misc', [TEditButton,TFileNameEdit,TDirectoryEdit,
-                              TDateEdit,TCalcEdit]);
+                              TDateEdit,TTimeEdit,TCalcEdit]);
 end;
 
 end.

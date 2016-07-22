@@ -316,7 +316,7 @@ begin
     begin
       cgFiles.Checked[0]:= LoadParamsOnStart;
       cgFiles.Checked[1]:= SaveParamsOnExit;
-      cgFiles.Checked[2]:= AutoExportParams;
+      cgFiles.Checked[2]:= AutoReport;
       cgFiles.Checked[3]:= AutoComment;
       cgFiles.Checked[4]:= KeepLog;
       cgReadings.Checked[0]:= AutoReadingConst;
@@ -441,7 +441,7 @@ begin
   begin
     LoadParamsOnStart:= cgFiles.Checked[0];
     SaveParamsOnExit:=  cgFiles.Checked[1];
-    AutoExportParams:=  cgFiles.Checked[2];
+    AutoReport:=  cgFiles.Checked[2];
     AutoComment:=       cgFiles.Checked[3];
     KeepLog:=           cgFiles.Checked[4];
     AutoReadingConst:= cgReadings.Checked[0];

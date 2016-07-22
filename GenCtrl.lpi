@@ -20,6 +20,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="3"/>
       <MinorVersionNr Value="1"/>
+      <RevisionNr Value="3"/>
       <BuildNr Value="11"/>
       <Language Value="0419"/>
       <StringTable CompanyName="Кафедра Фотоники МФТИ" LegalCopyright="© 2015-2016 Виталий Артемьев" OriginalFilename="Experiment-Automation.exe" ProductVersion=""/>

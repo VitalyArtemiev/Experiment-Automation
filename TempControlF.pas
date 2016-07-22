@@ -30,7 +30,7 @@ type
     Divider: TMenuItem;
     eDelay: TSpinEdit;
     eUpdateInterval: TSpinEdit;
-    fneDataFileStub: TDirectoryEdit;
+    deDataFileStub: TDirectoryEdit;
     Label1: TLabel;
     Label11: TLabel;
     Label13: TLabel;
@@ -64,9 +64,8 @@ type
     procedure cgTransferItemClick(Sender: TObject; Index: integer);
     procedure DataPointHintToolHint(ATool: TDataPointHintTool;
       const APoint: TPoint; var AHint: String);
-    procedure fneDataFileStubAcceptDirectory(Sender: TObject; var Value: String);
-    procedure fneDataFileStubButtonClick(Sender: TObject);
-    procedure fneDataFileStubEditingDone(Sender: TObject);
+    procedure deDataFileStubAcceptDirectory(Sender: TObject; var Value: String);
+    procedure deDataFileStubEditingDone(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -84,7 +83,6 @@ type
     procedure ZoomOutClick(Sender: TObject);
   private
     { private declarations }
-    ReportHeader: boolean;
     srcFreq, srcAmpl: TAxisSource;
     t: double;
     ReadingMode: eReadMode;
@@ -99,7 +97,7 @@ type
     procedure Pause(Sender: tLogModule);
     procedure Continue(Sender: tLogModule);
     procedure Stop(Sender: tLogModule);
-    procedure CreateFile(Sender: tLogModule);
+    //also createfile
     function SaveLog(Sender: tLogModule): integer;
     procedure StateChange(Sender: tLogModule);
     procedure ProcessBuffers(Sender: tLogModule);
@@ -110,9 +108,12 @@ type
 
     ParToRead: array of shortint;
     LogTime, LogFreq, LogAmpl, OnePointPerStep, AutoApply: boolean;
+    //for logmodule
+    procedure CreateFile(Sender: tLogModule);
 
     procedure EnableControls(Enable: boolean); override;
     procedure GetDeviceParams; override;
+    procedure AfterConnect; override;
 
     function RecvSnap(p: array of shortint): PBuffer; //not really a snap since not guaranteed simult
   end;
@@ -157,7 +158,6 @@ begin
   t:= 0;
   DataFolder:= DefaultLogFolder;
   LogStub:= '';
-  ExperimentNumber:= 1;
   //DrawnBuffers:= 0;
   LogFreq:= false;
   LogTime:= true;
@@ -205,8 +205,29 @@ begin
 end;
 
 procedure TTempControlForm.btQueryClick(Sender: TObject);
+var
+  s: string;
+  i: integer;
 begin
+  EnterCriticalSection(CommCS);
+    Purge;
+    AddCommand(tSampleRate, true);
+    PassCommands;
+    s:= RecvString;
+  LeaveCriticalSection(CommCS);
 
+  if CurrentDevice^.Model = 'PTC10' then  //FUCK PTC10 it returns strings different from those it takes
+  begin
+    for i:= 0 to high(iBu) do
+      if AnsiContainsText(iBu[i], s) then
+        cbSampleRate.ItemIndex:= i;
+  end
+  else
+  begin
+    i:= AnsiIndexText(s, iBu);
+    if i>= 0 then
+      cbSampleRate.ItemIndex:= i;
+  end;
 end;
 
 procedure TTempControlForm.ChartMenuItemClick(Sender: TObject);
@@ -486,20 +507,6 @@ begin
     if LogAmpl then
       srcAmpl:= TAxisSource.Create(128);
 
-    {if ReadingMode = rBuffer then
-    begin
-      EnterCriticalSection(CommCS);
-        AddCommand(dStartStorage);
-        PassCommands;
-      LeaveCriticalSection(CommCS);
-      cbChart1Show.ItemIndex:= cbChart1Show.Items.IndexOf(cbCH1.Text);
-      cbChart2Show.ItemIndex:= cbChart2Show.Items.IndexOf(cbCH2.Text);
-    end;
-
-    if SampleRate <> 0 then
-      TimeStep:= 1/SampleRate
-    else
-      TimeStep:= 1;}
     if not OnePointPerStep then
     begin
       UpdateTimer.Interval:= eUpdateInterval.Value;
@@ -548,7 +555,7 @@ begin
           EnterCriticalSection(CommCS);
             AddCommand(tResetStorage);
             //AddCommand(tStartRealTime);
-            commandstring+= '; while (1) { ' + s;
+            commandstring+= '; name RTAMacro; while (1) { ' + s;
             MacroCrutch:= CommandString; //needed to continue
             PassCommands;
           LeaveCriticalSection(CommCS);
@@ -587,7 +594,7 @@ begin
       if CurrentDevice^.Model = 'PTC10' then
       begin
         EnterCriticalSection(CommCS);
-          CommandString:= 'abort';
+          CommandString:= 'kill RTAMacro';
           PassCommands;
         LeaveCriticalSection(CommCS);
       end
@@ -679,7 +686,7 @@ begin
       if CurrentDevice^.Model = 'PTC10' then
       begin
         EnterCriticalSection(CommCS);
-          CommandString:= 'abort';
+          CommandString:= 'kill RTAMacro';
           PassCommands;
         LeaveCriticalSection(CommCS);
       end
@@ -706,57 +713,28 @@ begin
 
   if Log.State <> lInActive then
   begin
-    if Config.AutoExportParams and DetControlForm.ReportSaved then
+    if Config.AutoReport and not DetControlForm.ReportSaved then
     begin
-      MainForm.ReportFolder:= Log.FilePath;
-      MainForm.SaveReport(false, ReportHeader);
+      MainForm.SaveReport(false, MainForm.ReportHeader);
     end;
-    inc(ExperimentNumber);
+    if not DetControlForm.ReportSaved then
+      inc(ExperimentNumber);
   end;
 end;
 
 procedure TTempControlForm.CreateFile(Sender: tLogModule);
 var
-  s1, s2: string;
   i: integer;
 begin
   with Sender do
   begin
-    Stub:= LogStub;
     FilePath:= DataFolder;
-
-    if Config.AutoExportParams then
-    begin
-      if ReportNumber = 0 then
-      begin
-        inc(ReportNumber);
-        str(ReportNumber, s1);
-        while FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + '.txt') or
-              FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + '_1' + LogExtensions[integer(dTempController)]) do        //to cfg?
-        begin
-          inc(ReportNumber);
-          str(ReportNumber, s1);
-        end;
-      end;
-
-      ReportHeader:= true;
-      str(ReportNumber, s1);
-      str(ExperimentNumber, s2);
-      FileName+= '_' + s1 + '_' + s2;
-    end
+    DateTimeToString(FileName, DefaultTimeFormat, Now);
+    Stub:= LogStub;
+    if LogExtension <> '' then
+      Extension:= LogExtension
     else
-    begin
-      str(ExperimentNumber, s1);
-      while FileExists(FilePath + '\' + LogStub + '_' + FileName + '_' + s1 + LogExtensions[integer(dTempController)]) do        //to cfg?
-      begin
-        inc(ExperimentNumber);
-        str(ExperimentNumber, s1);
-      end;
-
-      ReportHeader:= false;
-      FileName+= '_' + s1;
-    end;
-    FileName+= LogExtensions[integer(dTempController)];
+      Extension:= LogExtensions[integer(dTempController)];
 
     if LogTime then
       Header:= Header + cbXAxis.Items.Strings[0] + HT;
@@ -765,8 +743,8 @@ begin
     if LogAmpl then
       Header:= Header + 'Амплитуда (генератор)' + HT;
 
-        for i:= 0 to high(ParToRead) do
-          Header:= Header + cbChartShow.Items[ParToRead[i]] + HT;
+    for i:= 0 to high(ParToRead) do
+      Header:= Header + cbChartShow.Items[ParToRead[i]] + HT;
 
     Header:= Header + LineEnding;
   end;
@@ -1120,7 +1098,18 @@ begin
     cgTransfer.Checked[0]:= true;
   end;
 
-  fneDataFileStubEditingDone(Self);
+  deDataFileStubEditingDone(Self);
+end;
+
+procedure TTempControlForm.AfterConnect;
+begin
+  inherited AfterConnect;
+
+  Params.DetectorPort:= DetControlForm.CurrentDevice^.Port;
+  Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
+
+  cbReadingsModeChange(Self);
+  CheckTransferCount;
 end;
 
 function TTempControlForm.RecvSnap(p: array of shortint): PBuffer;
@@ -1211,21 +1200,7 @@ begin
     end;
   end;
 
-  OptionForm.TabControl.TabIndex:= 1;
-  OptionForm.DevicePage.TabIndex:= 2;
-
   inherited btnConnectClick(Sender);
-
-  if DeviceIndex = iDefaultDevice then
-    exit;
-
-  Params.DetectorPort:= DetControlForm.CurrentDevice^.Port;
-  Params.LastDetector:= DetControlForm.CurrentDevice^.Model;
-
-  OptionForm.eDevice2.ItemIndex:= DeviceIndex - 1;
-
-  cbReadingsModeChange(Self);
-  CheckTransferCount;
 end;
 
 procedure TTempControlForm.btClearClick(Sender: TObject);
@@ -1278,15 +1253,23 @@ begin
   case cbReadingsMode.ItemIndex of
     integer(rBuffer):
     begin
-      ShowMessage('В разработке');
-      cbReadingsMode.ItemIndex:= integer(rSimultaneous);
+      //ShowMessage('В разработке');
+      //cbReadingsMode.ItemIndex:= integer(rSimultaneous);
       //MainForm.cbPointPerStepTemp.Checked:= false;
+      if not CommandSupported(tStartStorage) then   { TODO 1 -cImprovement : Theese should be everywhere }
+      begin
+        ShowMessage('Режим не поддерживается прибором');
+        cbReadingsMode.ItemIndex:= integer(rSimultaneous);
+        exit;
+      end;
+      MainForm.cbPointPerStepTemp.Checked:= false;
+      cbXAxis.Items.Strings[0]:= 'Номер точки';
     end;
     integer(rSimultaneous):
     begin
       cbXAxis.Items.Strings[0]:= 'Время, с';
     end;
-    else
+    integer(rRealTime):
     begin
       MainForm.cbPointPerStepTemp.Checked:= false;
       cbXAxis.Items.Strings[0]:= 'Номер точки';
@@ -1327,31 +1310,17 @@ begin
   AHint+= s;
 end;
 
-procedure TTempControlForm.fneDataFileStubAcceptDirectory(Sender: TObject;
+procedure TTempControlForm.deDataFileStubAcceptDirectory(Sender: TObject;
   var Value: String);
 begin
-  DataFolder:= Value;
+  DataFolder:= Value;       //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
   if pos(GetCurrentDir, DataFolder) <> 0 then
     delete(DataFolder, 1, length(GetCurrentDir) + 1);
-  Value:= fneDataFileStub.Text;
 end;
 
-procedure TTempControlForm.fneDataFileStubButtonClick(Sender: TObject);
+procedure TTempControlForm.deDataFileStubEditingDone(Sender: TObject);
 begin
-  with fneDataFileStub do   //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
-  begin
-    if pos('\', DataFolder) = 0 then
-      RootDir:= GetCurrentDir + '\' + DataFolder
-    else
-      RootDir:= DataFolder;
-
-    Directory:= '';
-  end;
-end;
-
-procedure TTempControlForm.fneDataFileStubEditingDone(Sender: TObject);
-begin
-  with fneDataFileStub do
+  with deDataFileStub do
   begin
     if (pos('.', Text) = 0) and (pos('\', Text) = 0) then
     begin
