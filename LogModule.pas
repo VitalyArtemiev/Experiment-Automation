@@ -20,13 +20,12 @@ type
 
   tLogModule = class
   private
+    fExtension: string;
     fOnCreateFile: TLogEvent;
     fOnSaveLog: TLogEventEC;
     fHeader: string;
     fStub: string;
-    fTimeFormat: string;
     function GetAndResetHeader: string;
-    procedure SetTimeFormat(AValue: string);
   protected//???
     FOnBeforeStart: TLogEvent;
     FOnContinue: TLogEvent;
@@ -54,6 +53,7 @@ type
     constructor Create;
     destructor Destroy; override;
     //Methods you should call
+    procedure GetExperimentNumber;
     function CreateFile: integer;
     function SaveFile: integer;
     procedure Toggle;                                                           //convenient for start/pause buttons
@@ -64,8 +64,8 @@ type
     procedure ProcessBuffers;
     procedure Clear;
     //Set this in OnCreateFile, as well as FilePath
-    property TimeFormat: string read fTimeFormat write SetTimeFormat;           //this is always included into file name
     property Stub: string read fStub write fStub;                               //this is added to file name
+    property Extension: string read fExtension write fExtension;
     property Header: string read GetAndResetHeader write fHeader;               //this is written at the top of output file, it is reset every log automatically
     //Events you should assign
     property OnBeforeStart: TLogEvent read FOnBeforeStart write FOnBeforeStart; //apply settings, init data arrays
@@ -87,10 +87,73 @@ const
   DefaultLogExtension = '.log';
   DefaultTimeFormat = 'yyyy_mm_dd';
 
+var
+  ExperimentNumber: integer = 1;
+  ReportNumber: integer = 0;
+
 implementation
 
 uses
-  BaseConF;
+  BaseConF, MainF;
+
+procedure tLogModule.GetExperimentNumber;
+var //Filepath + '\'+ datetime + '_' + stub +'_' + reportnumber + '_' + experimentnumber + extension
+  st, s1, s2: string;
+  rec: tUnicodeSearchRec;
+begin
+  if Stub <> '' then
+    st:= '_' + Stub
+  else
+    st:= '';
+
+  if Config.AutoReport then
+  begin
+    if ReportNumber = 0 then   //when a new report needs to be formed
+    begin
+      inc(ReportNumber);
+      MainForm.ReportHeader:= true;
+
+      str(ReportNumber, s1);
+                                             //\/in case stub is emty - no extra '_'
+      while FindFirst(FilePath + DirectorySeparator + FileName + st + '_' + s1 + '_*' + Extension, faAnyFile, rec) = 0 do
+      begin
+        inc(ReportNumber);
+        str(ReportNumber, s1);
+      end;
+
+      str(ReportNumber, s1);
+      str(ExperimentNumber, s2);
+      findClose(rec);
+
+      ExperimentNumber:= 1;
+    end
+    else
+    begin
+      MainForm.ReportHeader:= false;
+      str(ReportNumber, s1);
+      str(ExperimentNumber, s2);
+      while FileExists(FilePath + DirectorySeparator + FileName + st + '_' + s1 + '_' + s2 + Extension) do
+      begin
+        inc(ExperimentNumber);
+        str(ExperimentNumber, s2);
+      end;
+
+    {while FileExists(FilePath + '\' + Stub + '_' + FileName + '_' + s1 + '.txt') or
+          FileExists(FilePath + '\' + Stub + '_' + FileName + '_' + s1 + '_1' + Extension) do       }
+    end;
+
+  end
+  else
+  begin
+    str(ExperimentNumber, s1);
+                                               //\/in case stub is emty - no extra '_'
+    while FileExists(FilePath + DirectorySeparator + FileName + st + '_' + s1 + Extension) do
+    begin
+      inc(ExperimentNumber);
+      str(ExperimentNumber, s1);
+    end;
+  end;
+end;
 
 { tLogModule }
 
@@ -100,7 +163,7 @@ begin
   fHeader:= '';
 end;
 
-procedure tLogModule.SetTimeFormat(AValue: string);
+{procedure tLogModule.SetTimeFormat(AValue: string);
 begin
   try
     FormatDateTime(AValue, now);
@@ -112,7 +175,7 @@ begin
     end;
   end;
   fTimeFormat:= AValue;
-end;
+end; }
 
 function tLogModule.GetTime: TDateTime;
 begin
@@ -130,7 +193,6 @@ constructor tLogModule.Create;
 begin
   State:= lInActive;
   Threadlist:= TThreadList.Create;
-  TimeFormat:= DefaultTimeFormat;
   FilePath:= DefaultLogFolder;
 end;
 
@@ -144,38 +206,59 @@ function tLogModule.CreateFile: integer;
 var
   s: string;   //crutch bc cant do header[1]
 begin
+  if Assigned(OnCreateFile) then
+    OnCreateFile(Self);
+
   if Header = '' then
     Result:= 2
   else
     Result:= 0;
 
-  DateTimeToString(FileName, TimeFormat, Now);    //check???
-
-  if Assigned(OnCreateFile) then
-    OnCreateFile(Self);
-
-  if Stub <> '' then
-    FileName:= Stub + '_' + FileName;
-
-  if pos('.', Filename) = 0 then
-    FileName+= DefaultLogExtension;
+  if Extension = '' then
+    Extension:= DefaultLogExtension;
 
   if not DirectoryExists(FilePath) then
     if not CreateDir(FilePath) then
     begin
-      WriteProgramLog('Could not create path');
+      WriteProgramLog('Ошибка: невозможно создать папку ''' + FilePath + '''');
       FilePath:= '';
     end;
 
+  GetExperimentNumber;
+
+  if Stub <> '' then
+    FileName:= FileName + '_' + Stub;
+
+  if Config.AutoReport then
+  begin
+    str(ReportNumber, s);
+    FileName+= '_' + s;
+  end;
+
+  str(ExperimentNumber, s);
+  FileName+= '_' + s;
+
+  Filename+= Extension;
+
   if FilePath <> '' then
-    FileName:= FilePath + '\' + FileName;
+    FileName:= FilePath + DirectorySeparator + FileName;
 
   try
+    if FileExists(FileName) then
+    begin
+       ShowMessage('Ошибка: файл ''' + FileName + ''' уже существует ');
+       {if Config.AutoReport then
+         inc(ReportNumber)
+       else
+         inc(ExperimentNumber);}
+       exit(3);
+    end;
+
     ExperimentLog:= TFileStream.Create(FileName, fmCreate)
   except
     on E:Exception do
     begin
-      ShowMessage('Файл ' + FileName + ' не создан: ' + E.Message);
+      ShowMessage('Ошибка: файл ''' + FileName + ''' не создан: ' + E.Message);
       exit(1);
     end;
   end;
@@ -187,7 +270,9 @@ end;
 function tLogModule.SaveFile: integer;
 begin
   if Assigned(OnSaveLog) then
-    Result:= OnSaveLog(Self);
+    Result:= OnSaveLog(Self)
+  else
+    Result:= -3;
 
   freeandnil(ExperimentLog);
 end;
@@ -202,6 +287,8 @@ begin
 end;
 
 procedure tLogModule.Start;
+var
+  Res: integer;
 begin
   if State = lActive then
     Stop;
@@ -328,7 +415,19 @@ begin
   }
 
   State:= lActive;
-  CreateFile;
+  Res:= CreateFile;
+  if Res <> 0 then
+  begin
+    WriteProgramLog('Ошибка при создании файла: ' + strf(Res));
+    State:= lInActive;
+      if Assigned(ReadingsThread) then
+    ReadingsThread.Terminate;
+
+    if Assigned(OnStop) then
+      OnStop(Self);
+    exit;
+  end;
+
   PauseLength:= 0;
   ReadPoints:= 0;
   ProcessedPoints:= 0;
@@ -356,7 +455,7 @@ begin
 
   WriteProgramLog('Data collection end');
 
-  if assigned(ReadingsThread) then
+  if Assigned(ReadingsThread) then
     ReadingsThread.Terminate;
 
   if Assigned(OnStop) then
@@ -377,7 +476,7 @@ begin
 
   if LogState <> lInActive then
   begin
-    if Config.AutoExportParams then
+    if Config.AutoReport then
        MainForm.ExportParams(false, ReportHeader);
     inc(ExperimentNumber);
   end;

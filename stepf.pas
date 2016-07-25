@@ -158,7 +158,16 @@ end;
 procedure TStepForm.FormShow(Sender: TObject);
 var
   s: string;
+  Result: integer;
 begin
+  with MainForm do
+  begin
+    if eStepStartF.Value = eStepStopF.Value then
+      eFStep.Value:= 0;
+    if eStepStartA.Value = eStepStopA.Value then
+      eAStep.Value:= 0;
+  end;
+
   CalcSteps;
   Frequency:= StartF;
   Amplitude:= StartA;
@@ -227,29 +236,13 @@ begin
   Cursor:= crHourGlass;
   if Config.AutoReadingStep then
   begin
-    sleep(MainForm.MinDelay);
-    with DetControlForm do
-      if ConnectionKind <> cNone then
-        btApplyClick(Self);
-    with TempControlForm do
-      if ConnectionKind <> cNone then
-        btApplyClick(Self);
-
-    sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
-             TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
-
-    with DetControlForm do
+    Result:= MainForm.StartLogs;
+    if Result <> 0 then
     begin
-      AutoApply:= false;
-      if ConnectionKind <> cNone then
-        Log.Start;
+      Hide;
+      exit;
     end;
-    with TempControlForm do
-    begin
-      AutoApply:= false;
-      if ConnectionKind <> cNone then
-        Log.Start;
-    end;
+
     {if MainForm.cbPointPerStepDet.Checked then
       DetControlForm.UpdateTimer.Enabled:= false; }
   end;
@@ -276,20 +269,7 @@ begin
     btPause.Caption:= 'Пауза';
     Sleep(Timer.Interval);
     if Config.AutoReadingStep then
-    begin
-      with DetControlForm do
-      if ConnectionKind <> cNone then
-      begin
-        Log.ProcessBuffers;
-        Log.Stop;
-      end;
-      with TempControlForm do
-      if ConnectionKind <> cNone then
-      begin
-        Log.ProcessBuffers;
-        Log.Stop;
-      end;
-    end;
+      MainForm.StopLogs;
   end
   else
   begin
@@ -328,7 +308,8 @@ begin
     f:= Frequency;
     a:= Amplitude;
 
-    if (Amplitude = StopA) and (Frequency = StopF) then Finished:= true
+    if (Amplitude = StopA) and (Frequency = StopF) then
+      Finished:= true
     else
     begin
       Frequency+= FStep;
@@ -382,6 +363,7 @@ begin
   DetControlForm.btStopLog.Enabled:= true;
   TempControlForm.btStartPauseLog.Enabled:= true;
   TempControlForm.btStopLog.Enabled:= true;
+  Finished:= true;
 end;
 
 procedure TStepForm.btPauseClick(Sender: TObject);

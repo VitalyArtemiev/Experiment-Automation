@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, DividerBevel, IDEWindowIntf, StrUtils, Forms,
   Controls, Graphics, Dialogs, Menus, StdCtrls, ComCtrls, DbCtrls, Spin,
-  ExtCtrls, Buttons, ActnList, EditBtn, BaseConF, Synaser, DeviceF;
+  ExtCtrls, Buttons, ActnList, EditBtn, BaseConF, Synaser, DeviceF, Types;
 
 type
   { TMainForm }
@@ -42,7 +42,7 @@ type
     eStepStopA: TFloatSpinEdit;
     eAStep: TFloatSpinEdit;
     eTimeStep: TSpinEdit;
-    fneReportFileStub: TDirectoryEdit;
+    deReportFileStub: TDirectoryEdit;
     FrequencyTab: TPageControl;
     Label1: TLabel;
     Label10: TLabel;
@@ -115,10 +115,10 @@ type
     procedure btAutoConnectClick(Sender: TObject);
     procedure cbPointPerStepDetChange(Sender: TObject);
     procedure cbAmplUnitChange(Sender: TObject);
-    procedure fneReportFileStubAcceptDirectory(Sender: TObject;
+    procedure cbPointPerStepTempChange(Sender: TObject);
+    procedure deReportFileStubAcceptDirectory(Sender: TObject;
       var Value: String);
-    procedure fneReportFileStubButtonClick(Sender: TObject);
-    procedure fneReportFileStubEditingDone(Sender: TObject);
+    procedure deReportFileStubEditingDone(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormShow(Sender: TObject);
 
@@ -157,6 +157,7 @@ type
     FrequencyLimits, MinAmplitudeLimits, MaxAmplitudeLimits: array of double;
   public
     { public declarations }
+    ReportHeader: boolean;
     FileResult: integer;
     ReportStub, ReportFolder: string;
 
@@ -170,6 +171,10 @@ type
 
     procedure EnableControls(Enable: boolean); override;
     procedure GetDeviceParams; override;
+    procedure AfterConnect; override;
+
+    function StartLogs: integer;
+    procedure Stoplogs;
   end;
 
 
@@ -190,12 +195,9 @@ var
   MainForm: TMainForm;
   PortList: string;
   PortCount: integer = 0;
-  ReportNumber: integer = 0;
-  ExperimentNumber: integer;
-  Debug: boolean;
-
-  Config: RConfig;
-  Params: RParams;
+  {$IFOPT D+}
+  Debug: boolean = false;
+  {$ENDIF}
 
 implementation
 
@@ -219,32 +221,37 @@ begin
     try
       FileStream:= TFilestream.Create(FileName, fmOpenRead);
       Result:= RestoreState(FileStream);
-      Result+= DetControlForm.RestoreState(FileStream);
-      Result+= TempControlForm.RestoreState(FileStream);
+      Result+= DetControlForm.RestoreState(FileStream) * 10;
+      Result+= TempControlForm.RestoreState(FileStream) * 100;
       StringStream:= tStringStream.Create('');
 
       StringStream.CopyFrom(FileStream, 0);    //0 = whole stream
 
-      p:= pos('Internal', StringStream.DataString);
-      s:= CopyFromTo(StringStream.DataString, p, '(', ')');
-
-      p:= pos('DetLogDir', s);
       with DetControlForm do
-        if p = 0 then
-          DataFolder:= DefaultLogFolder
-        else
-          DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+      begin
+        DataFolder:= deDataFileStub.Directory;
+        if DataFolder = '' then
+          DataFolder:= DefaultLogFolder;
+        LogStub:= deDataFileStub.Text;
+      end;
 
-      p:= pos('TempLogDir', s);
       with TempControlForm do
-        if p = 0 then
-          DataFolder:= DefaultLogFolder
-        else
-          DataFolder:= CopyFromTo(s, p, '=', LineEnding);
+      begin
+        DataFolder:= deDataFileStub.Directory;
+        if DataFolder = '' then
+          DataFolder:= DefaultLogFolder;
+        LogStub:= deDataFileStub.Text;
+      end;
+
+      ReportFolder:= deReportFileStub.Directory;
+      if ReportFolder = '' then
+        ReportFolder:= DefaultLogFolder;
+      ReportStub:= deReportFileStub.Text;
 
       StringStream.Destroy;
       FileStream.Destroy;
-      if Result < 0 then s:= 'неверный параметр ' + strf(Result);
+      if Result < 0 then
+        s:= 'неверный параметр. Код: ' + strf(Result);
     except
       on e:Exception do
       begin
@@ -287,17 +294,6 @@ begin
   SaveState(FileStream);
   DetControlForm.SaveState(FileStream);
   TempControlForm.SaveState(FileStream);
-  s:= 'Internal' + '(' + LineEnding;
-  FileStream.Write(s[1], length(s));
-
-  s:= 'DetLogDir' + '=' + DetControlForm.DataFolder + LineEnding;
-  FileStream.Write(s[1], length(s));
-
-  s:= 'TempLogDir' + '=' + TempControlForm.DataFolder + LineEnding;
-  FileStream.Write(s[1], length(s));
-
-  s:= ')' + LineEnding;
-  FileStream.Write(s[1], length(s));
   FileStream.Free;
 
   if Result <> 0 then
@@ -355,8 +351,9 @@ end;
 function tMainForm.SaveReport(Manual: boolean; Header: boolean): integer;
 var
   i: integer;
-  f: system.text;
+  f: system.text; //file of text
   FileName, s: string;
+  rec: tUnicodeSearchRec;
 begin
   DateTimeToString(FileName, 'yyyy_mm_dd', Now);
   if ReportFolder <> '' then
@@ -364,31 +361,39 @@ begin
     if not DirectoryExists(ReportFolder) then
     begin
       if CreateDir(ReportFolder) then
-        FileName:= ReportFolder + '\' + FileName
+        FileName:= ReportFolder + DirectorySeparator + FileName
       else
         WriteProgramLog('Error creating folder ' + ReportFolder);
     end
     else
-      FileName:= ReportFolder + '\' + FileName;
+      FileName:= ReportFolder + DirectorySeparator + FileName;
   end;
-  FileName+= '_' + ReportStub;
+
+  if ReportStub <> '' then
+    FileName+= '_' + ReportStub;
 
   if ReportNumber = 0 then
   begin
     inc(ReportNumber);
     str(ReportNumber, s);
-    while FileExists(FileName + '_' + s + '.txt') do        //to cfg?
+     //this only works with modified tDirectoryEdit (editbtn.pas), see README!
+    while FileExists(FileName + '_' + s + '.txt') or    //stub in *
+      (FindFirst(DetControlForm.deDataFileStub.Directory + DirectorySeparator +
+       FileName + '*_' + s + '_*' + ExtensionSeparator + '*', faAnyFile, rec) = 0) or
+      (FindFirst(TempControlForm.deDataFileStub.Directory + DirectorySeparator +
+       FileName + '*_' + s + '_*' + ExtensionSeparator + '*', faAnyFile, rec) = 0) do
     begin
       inc(ReportNumber);
       str(ReportNumber, s);
     end;
     FileName+= '_' + s + '.txt';
 
+    findClose(rec);
+
     Header:= true;
     {$I-}
     system.assign(f, FileName);
     rewrite(f);
-
     {$I+}
   end
   else
@@ -424,7 +429,7 @@ begin
   if MainForm.ConnectionKind <> cNone then
   begin
     writeln(f);
-    writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
+    writeln(f, CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
     writeln(f);
     if cbImpedance.Visible then
       writeln(f, 'Сопротивление:        ' + cbImpedance.Text);
@@ -481,7 +486,7 @@ begin
   if ConnectionKind <> cNone then
   begin
     writeln(f);
-    writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
+    writeln(f, CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
     writeln(f);
     writeln(f, Label6.Caption, ' ', cbTimeConstant.Text);
     writeln(f, Label7.Caption, ' ', cbSensitivity.Text);
@@ -510,9 +515,9 @@ begin
   if ConnectionKind <> cNone then
   begin
     writeln(f);
-    writeln(CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
+    writeln(f, CurrentDevice^.Manufacturer + ' ' + CurrentDevice^.Model);
     writeln(f);
-    writeln(f, Label3.Caption, ' ', cbSamplerate.Text);
+    writeln(f, Label13.Caption, ' ', cbSamplerate.Text);
     writeln(f, 'Данные в файле: ', Log.FileName);
     writeln(f);
   end;
@@ -533,7 +538,7 @@ begin
 
   Result:= IOResult;
   if Result <> 0 then
-    ShowMessage('Ошибка сохранения отчета')
+    ShowMessage('Ошибка сохранения отчета. Код: ' + strf(Result))
   else
     StatusBar.Panels[spStatus].Text:= 'Cохранено в ' + FileName;
 end;
@@ -609,7 +614,7 @@ begin
   begin
     FileResult:= LoadConfig(FullCfgDir + DefaultConfig);  //load default config
     if FileResult = 0 then
-      if Config.WorkConfig <> DefaultConfig then          //try to load config pointed to by defaultconfig
+      if Config.WorkConfig <> DefaultConfig then          //try to load config pointed to by workconfig
         FileResult:= LoadConfig(FullCfgDir + Config.WorkConfig);
   end
   else
@@ -698,33 +703,19 @@ begin
       ShowMessage('Единица ' + cbAmplUnit.Text + ' не поддерживается прибором');
 end;
 
-procedure tMainForm.fneReportFileStubAcceptDirectory(Sender: TObject;
+procedure tMainForm.deReportFileStubAcceptDirectory(Sender: TObject;
   var Value: String);
 begin
-  ReportFolder:= Value;
+  ReportFolder:= Value;    //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
   if pos(GetCurrentDir, ReportFolder) <> 0 then
     delete(ReportFolder, 1, length(GetCurrentDir) + 1);
-  Value:= fneReportFileStub.Text;
 end;
 
-procedure tMainForm.fneReportFileStubButtonClick(Sender: TObject);
+procedure tMainForm.deReportFileStubEditingDone(Sender: TObject);
 begin
-   with fneReportFileStub do  //i modified lcl (tdirectoryedit) in order for this to work. property text used to be the same as directory, which, i find, is inconsistent. i added a variable fdirectory and modified getdirectory and setdirectory, replacing ftext with fdirectory.
+  with deReportFileStub do
   begin
-    if pos('\', ReportFolder) = 0 then
-      RootDir:= GetCurrentDir + '\' + ReportFolder
-    else
-      RootDir:= ReportFolder;
-
-    Directory:= '';
-  end;
-end;
-
-procedure tMainForm.fneReportFileStubEditingDone(Sender: TObject);
-begin
-  with fneReportFileStub do
-  begin
-    if (pos('.', Text) = 0) and (pos('\', Text) = 0) then
+    if pos(DirectorySeparator, Text) = 0 then
     begin
       ReportStub:= Text;
     end
@@ -734,6 +725,7 @@ begin
 
       ReportFolder:= ExtractFileDir(Text);
       RootDir:= ReportFolder;
+      Directory:= ReportFolder;
       if pos(GetCurrentDir, ReportFolder) <> 0 then
         delete(ReportFolder, 1, length(GetCurrentDir) + 1);
       Text:= ReportStub;                                            //see comment above
@@ -787,10 +779,21 @@ end;
 
 procedure tMainForm.cbPointPerStepDetChange(Sender: TObject);
 begin
-  if cbPointPerStepDet.Checked and (DetControlForm.cbReadingsMode.ItemIndex = integer(rBuffer)) then
+  if cbPointPerStepDet.Checked and (DetControlForm.cbReadingsMode.ItemIndex <> integer(rSimultaneous)) then
   begin
     DetControlForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
     DetControlForm.cbReadingsModeChange(Self);
+    ShowMessage('Доступно только в режиме "Одновременный запрос".' + LineEnding +
+    'Режим снятия переключен');
+  end;
+end;
+
+procedure tMainForm.cbPointPerStepTempChange(Sender: TObject);
+begin
+   if cbPointPerStepTemp.Checked and (TempControlForm.cbReadingsMode.ItemIndex <> integer(rSimultaneous)) then
+  begin
+    TempControlForm.cbReadingsMode.ItemIndex:= integer(rSimultaneous);
+    TempControlForm.cbReadingsModeChange(Self);
     ShowMessage('Доступно только в режиме "Одновременный запрос".' + LineEnding +
     'Режим снятия переключен');
   end;
@@ -882,13 +885,7 @@ end;
 
 procedure tMainForm.ReadingTimerTimer(Sender: TObject);
 begin
-  with DetControlForm do
-    if Log.State = lActive then
-      Log.Stop;
-
-  with TempControlForm do
-    if Log.State = lActive then
-      Log.Stop;
+  StopLogs;
 
   ReadingTimer.Enabled:= false;
 end;
@@ -909,13 +906,13 @@ function tMainForm.FullCfgDir: string;
 begin
   if Config.CfgFolder <> '' then
   begin
-    if pos('\', Config.CfgFolder) = 0 then
-      Result:= GetCurrentDir + '\' + Config.CfgFolder + '\'
+    if pos(DirectorySeparator, Config.CfgFolder) = 0 then
+      Result:= GetCurrentDir + DirectorySeparator + Config.CfgFolder + DirectorySeparator
     else
-      Result:= Config.CfgFolder + '\'
+      Result:= Config.CfgFolder + DirectorySeparator
   end
   else
-    Result:= GetCurrentDir + '\';
+    Result:= GetCurrentDir + DirectorySeparator;
 end;
 
 procedure tMainForm.miLoadProfileClick(Sender: TObject);
@@ -1034,6 +1031,8 @@ begin                                                  { TODO 2 -cImprovement : 
 end;
 
 procedure tMainForm.btApplyClick(Sender: TObject);
+var
+  Result: integer;
 begin
   with Params do
   begin
@@ -1085,7 +1084,7 @@ begin
         StepForm.Show;
         SetCursorAll(crDefault);
 
-        if Config.AutoExportParams and not Config.AutoReadingStep then
+        if Config.AutoReport and not Config.AutoReadingStep then
         begin
           SaveReport(false);
         end;
@@ -1119,6 +1118,24 @@ begin
               CommandString:= '';
               exit
             end;
+        AutoSweep:= cbSweepRate.Checked;
+        SweepStartF:= eSweepStartF.Value;
+        SweepStopF:= eSweepStopF.Value;
+        SweepRate:= eSweepRate.Value;
+        SweepType:= cbSweepType.ItemIndex;
+        SweepDir:= cbSweepDirection.ItemIndex;
+        Modulation:= cbModulation.ItemIndex;
+        EnterCriticalSection(CommCS);
+          AddCommand(gSweepSource, false, integer(AutoSweep));
+          AddCommand(gSweepType, false, iST[SweepType]);
+          AddCommand(gSweepDirection, false, iSD[SweepDir]);
+          AddCommand(gModulationWaveform , false, iMF[Modulation]);
+          AddCommand(gSweepRate, false, SweepRate, uNone);
+          AddCommand(gSweepStartFrequency, false, SweepStartF, uNone);
+          AddCommand(gSweepStopFrequency, false, SweepStopF, uNone);
+          AddCommand(gSweepEnable, false, 1);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
 
         DetControlForm.LogFreq:= true;
         DetControlForm.cbUseGenFreq.Checked:= false;
@@ -1126,31 +1143,7 @@ begin
         if Config.AutoReadingSweep then
         begin
           SetCursorAll(crHourGlass);
-          sleep(MinDelay);
-
-          with DetControlForm do
-            if ConnectionKind <> cNone then
-              btApplyClick(Self);
-          with TempControlForm do
-            if ConnectionKind <> cNone then
-              btApplyClick(Self);
-
-          sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
-                   TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
-
-          with DetControlForm do
-          begin
-            AutoApply:= false;
-            if ConnectionKind <> cNone then
-              Log.Start;
-          end;
-          with TempControlForm do
-          begin
-            AutoApply:= false;
-            if ConnectionKind <> cNone then
-              Log.Start;
-          end;
-
+          StartLogs;
           SetCursorAll(crDefault);
 
           if ReadingTime > 0 then
@@ -1160,25 +1153,7 @@ begin
           end;
         end;
 
-        EnterCriticalSection(CommCS);
-          AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
-          AddCommand(gSweepType, false, iST[cbSweepType.ItemIndex]);
-          AddCommand(gSweepDirection, false, iSD[cbSweepDirection.ItemIndex]);
-          AddCommand(gModulationWaveform , false, iMF[cbModulation.ItemIndex]);
-          AddCommand(gSweepRate, false, eSweepRate.Value, uNone);
-          AddCommand(gSweepStartFrequency, false, eSweepStartF.Value, uNone);
-          AddCommand(gSweepStopFrequency, false, eSweepStopF.Value, uNone);
-          AddCommand(gSweepEnable, false, 1);
-          PassCommands;
-        LeaveCriticalSection(CommCS);
-
-        AutoSweep:= cbSweepRate.Checked;
-        SweepStartF:= eSweepStartF.Value;
-        SweepStopF:= eSweepStopF.Value;
-        SweepRate:= eSweepRate.Value;
-        SweepType:= cbSweepType.ItemIndex;
-        SweepDir:= cbSweepDirection.ItemIndex;
-        if Config.AutoExportParams and not Config.AutoReadingSweep then
+        if Config.AutoReport and not Config.AutoReadingSweep then
         begin
           SaveReport(false);
         end;
@@ -1197,36 +1172,19 @@ begin
               exit
             end;
 
+        Frequency:= eFrequency.Value;
+        EnterCriticalSection(CommCS);
+          AddCommand(gFrequency, false, Frequency, uNone);
+          AddCommand(gSweepEnable, false, 0);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+
         DetControlForm.LogFreq:= false;
         DetControlForm.LogAmpl:= false;
         if Config.AutoReadingConst then
         begin
           SetCursorAll(crHourGlass);
-          sleep(MinDelay);
-
-          with DetControlForm do
-            if ConnectionKind <> cNone then
-              btApplyClick(Self);
-          with TempControlForm do
-            if ConnectionKind <> cNone then
-              btApplyClick(Self);
-
-          sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
-                   TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
-
-          with DetControlForm do
-          begin
-            AutoApply:= false;
-            if ConnectionKind <> cNone then
-              Log.Start;
-          end;
-          with TempControlForm do
-          begin
-            AutoApply:= false;
-            if ConnectionKind <> cNone then
-              Log.Start;
-          end;
-
+          StartLogs;
           SetCursorAll(crDefault);
 
           if ReadingTime > 0 then
@@ -1235,15 +1193,8 @@ begin
             ReadingTimer.Enabled:= true;
           end;
         end;
-        Frequency:= eFrequency.Value;
 
-        EnterCriticalSection(CommCS);
-          AddCommand(gFrequency, false, Frequency, uNone);
-          AddCommand(gSweepEnable, false, 0);
-          PassCommands;
-        LeaveCriticalSection(CommCS);
-
-        if Config.AutoExportParams and not Config.AutoReadingConst then
+        if Config.AutoReport and not Config.AutoReadingConst then
         begin
           SaveReport(false);
         end;
@@ -1266,7 +1217,9 @@ begin
   enablecontrols(true);
   DetControlForm.enablecontrols(true);
   tempcontrolform.enablecontrols(true);
+  {$IFDEF D+}
   Debug:= true;
+  {$ENDIF}
   //DetControlForm.btnConnectClick(self);
 end;
 
@@ -1276,8 +1229,8 @@ var
   i, e, l: integer;
   d: double;
 begin
-  Purge;
   EnterCriticalSection(CommCS);
+    Purge;
     if cbImpedance.Visible then
       AddCommand(gResistance, true);
     AddCommand(gFunction, true);
@@ -1304,11 +1257,11 @@ begin
 
   if cbImpedance.Visible then
   begin
-    cbImpedance.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iIm);
+    cbImpedance.ItemIndex:= AnsiIndexText(copy(s, 1, pos(cs, s) - 1), iIm);
     delete(s, 1, pos(cs, s) + l);
   end;
 
-  cbFuncSelect.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iFu); ;
+  cbFuncSelect.ItemIndex:= AnsiIndexText(copy(s, 1, pos(cs, s) - 1), iFu); ;
   delete(s, 1, pos(cs, s) + l);
 
   os:= copy(s, 1, pos(cs, s) - 1);   //VP!
@@ -1349,15 +1302,15 @@ begin
   cbSweepRate.Checked:= boolean(i); { TODO 2 -cImprovement : lacks func for boolean }
   delete(s, 1, pos(cs, s) + l);
 
-  cbSweepType.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iST);
+  cbSweepType.ItemIndex:= AnsiIndexText(copy(s, 1, pos(cs, s) - 1), iST);
   delete(s, 1, pos(cs, s) + l);
 
-  cbSweepDirection.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iSD); ;
+  cbSweepDirection.ItemIndex:= AnsiIndexText(copy(s, 1, pos(cs, s) - 1), iSD); ;
   delete(s, 1, pos(cs, s) + l);
 
   if cbModulation.Visible then
   begin
-    cbModulation.ItemIndex:= AnsiIndexStr(copy(s, 1, pos(cs, s) - 1), iMF);
+    cbModulation.ItemIndex:= AnsiIndexText(copy(s, 1, pos(cs, s) - 1), iMF);
     delete(s, 1, pos(cs, s) + l);
   end;
 
@@ -1459,16 +1412,7 @@ begin
     end;
   end;
 
-  OptionForm.TabControl.TabIndex:= 0;
   inherited btnConnectClick(Sender);
-
-  if DeviceIndex = iDefaultDevice then
-    exit;
-
-  FrequencyTabChange(Self);
-
-  Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
-  Params.LastGenerator:= MainForm.CurrentDevice^.Model;
 end;
 
 procedure tMainForm.EnableControls(Enable: boolean);
@@ -1624,6 +1568,88 @@ begin
     cbSweepDirection.Width:= cbModulation.Width;
     cbSweepDirection.BorderSpacing.Left:= 5;
   end;
+end;
+
+procedure tMainForm.AfterConnect;
+begin
+  inherited AfterConnect;
+
+  FrequencyTabChange(Self);
+
+  Params.GeneratorPort:= MainForm.CurrentDevice^.Port;
+  Params.LastGenerator:= MainForm.CurrentDevice^.Model;
+end;
+
+function tMainForm.StartLogs: integer;
+begin
+  Result:= 0;
+
+  sleep(MainForm.MinDelay);
+  with DetControlForm do
+    if ConnectionKind <> cNone then
+    begin
+      btApplyClick(Self);
+      CreateFile(Log);
+      Log.GetExperimentNumber;
+    end;
+  with TempControlForm do
+    if ConnectionKind <> cNone then
+    begin
+      btApplyClick(Self);
+      CreateFile(Log);
+      Log.GetExperimentNumber;
+    end;
+
+  sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
+           TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
+
+  with DetControlForm do
+  begin
+    AutoApply:= false;
+    if ConnectionKind <> cNone then
+    begin
+      Log.Start;
+      if Log.State = lInactive then
+      begin
+        ShowMessage('Ошибка при начале снятия.');
+        exit(-1);
+      end;
+    end;
+  end;
+
+  with TempControlForm do
+  begin
+    AutoApply:= false;
+    if ConnectionKind <> cNone then
+    begin
+      Log.Start;
+      if Log.State = lInactive then
+      begin
+        ShowMessage('Ошибка при начале снятия.');
+        exit(-2);
+      end;
+    end;
+  end;
+end;
+
+procedure tMainForm.Stoplogs;
+begin
+  with DetControlForm do
+    if ConnectionKind <> cNone then
+    begin
+      Log.ProcessBuffers;
+      Log.Stop;
+    end;
+  with TempControlForm do
+    if ConnectionKind <> cNone then
+    begin
+      Log.ProcessBuffers;
+      Log.Stop;
+    end;
+
+  if Config.AutoReport then       { TODO 2 -cImprovement : a new texperiment class to keep track of conflicting shit like this }
+    MainForm.SaveReport(false, MainForm.ReportHeader);
+  inc(ExperimentNumber);
 end;
 
 end.

@@ -51,7 +51,7 @@ uses
 
 procedure TAboutForm.btReportIssueClick(Sender: TObject);
 begin
-  OpenURL('https://github.com/VitalyArtemiev/Generator-Amplifier-Control/issues');
+  OpenURL('https://github.com/VitalyArtemiev/Experiment-Automation/issues');
 end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
@@ -81,7 +81,7 @@ end;
 
 procedure TAboutForm.btOpenGitHubClick(Sender: TObject);
 begin
-  OpenURL('https://github.com/VitalyArtemiev/Generator-Amplifier-Control');
+  OpenURL('https://github.com/VitalyArtemiev/Experiment-Automation');
 end;
 
 procedure TAboutForm.btCopyEmailClick(Sender: TObject);

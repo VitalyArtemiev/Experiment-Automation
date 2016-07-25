@@ -1,7 +1,7 @@
 object DetControlForm: TDetControlForm
-  Left = 817
+  Left = 1041
   Height = 600
-  Top = 292
+  Top = 399
   Width = 800
   HorzScrollBar.Visible = False
   Caption = 'Управление детектором'
@@ -673,7 +673,7 @@ object DetControlForm: TDetControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
-      AnchorSideTop.Control = fneDataFileStub
+      AnchorSideTop.Control = deDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
@@ -720,7 +720,7 @@ object DetControlForm: TDetControlForm
     end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
-      AnchorSideTop.Control = fneDataFileStub
+      AnchorSideTop.Control = deDataFileStub
       AnchorSideBottom.Control = StatusBar
       Left = 222
       Height = 23
@@ -837,7 +837,7 @@ object DetControlForm: TDetControlForm
       ParentColor = False
       Transparent = False
     end
-    object fneDataFileStub: TDirectoryEdit
+    object deDataFileStub: TDirectoryEdit
       AnchorSideLeft.Control = eDelay
       AnchorSideTop.Control = cbXAxis
       AnchorSideTop.Side = asrBottom
@@ -847,7 +847,7 @@ object DetControlForm: TDetControlForm
       Top = 96
       Width = 104
       RootDir = 'Data'
-      OnAcceptDirectory = fneDataFileStubAcceptDirectory
+      OnAcceptDirectory = deDataFileStubAcceptDirectory
       ShowHidden = False
       ButtonWidth = 23
       NumGlyphs = 1
@@ -856,8 +856,7 @@ object DetControlForm: TDetControlForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
-      OnButtonClick = fneDataFileStubButtonClick
-      OnEditingDone = fneDataFileStubEditingDone
+      OnEditingDone = deDataFileStubEditingDone
     end
   end
   object sbParamScroll: TScrollBox
@@ -1315,7 +1314,6 @@ object DetControlForm: TDetControlForm
     top = 64
   end
   object pmChart: TPopupMenu
-    AutoPopup = False
     OnPopup = pmChartPopup
     left = 472
     top = 64
@@ -1351,8 +1349,6 @@ object DetControlForm: TDetControlForm
     top = 64
     object PanDragTool: TPanDragTool
       Shift = [ssRight]
-      OnAfterMouseDown = PanDragToolAfterMouseDown
-      OnAfterMouseMove = PanDragToolAfterMouseMove
     end
     object ZoomDragTool: TZoomDragTool
       Shift = [ssLeft]

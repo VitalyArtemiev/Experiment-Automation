@@ -1,7 +1,7 @@
 object TempControlForm: TTempControlForm
-  Left = 1015
+  Left = 1268
   Height = 600
-  Top = 161
+  Top = 410
   Width = 500
   Caption = 'Управление термоконтроллером'
   ClientHeight = 600
@@ -221,7 +221,7 @@ object TempControlForm: TTempControlForm
     end
     object Label4: TLabel
       AnchorSideLeft.Control = Label29
-      AnchorSideTop.Control = fneDataFileStub
+      AnchorSideTop.Control = deDataFileStub
       AnchorSideTop.Side = asrCenter
       Left = 4
       Height = 15
@@ -267,7 +267,7 @@ object TempControlForm: TTempControlForm
     end
     object btClear: TButton
       AnchorSideLeft.Control = btStartPauseLog
-      AnchorSideTop.Control = fneDataFileStub
+      AnchorSideTop.Control = deDataFileStub
       Left = 222
       Height = 23
       Top = 96
@@ -382,7 +382,7 @@ object TempControlForm: TTempControlForm
       ParentColor = False
       Transparent = False
     end
-    object fneDataFileStub: TDirectoryEdit
+    object deDataFileStub: TDirectoryEdit
       AnchorSideLeft.Control = eDelay
       AnchorSideTop.Control = cbXAxis
       AnchorSideTop.Side = asrBottom
@@ -391,7 +391,7 @@ object TempControlForm: TTempControlForm
       Hint = 'Указать папку для сохранения и шаблон '#13#10'для имени файла'
       Top = 96
       Width = 104
-      OnAcceptDirectory = fneDataFileStubAcceptDirectory
+      OnAcceptDirectory = deDataFileStubAcceptDirectory
       ShowHidden = False
       ButtonWidth = 23
       NumGlyphs = 1
@@ -400,8 +400,7 @@ object TempControlForm: TTempControlForm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 7
-      OnButtonClick = fneDataFileStubButtonClick
-      OnEditingDone = fneDataFileStubEditingDone
+      OnEditingDone = deDataFileStubEditingDone
     end
   end
   object StatusBar: TStatusBar
@@ -571,7 +570,6 @@ object TempControlForm: TTempControlForm
     AnchorSideRight.Side = asrBottom
     Left = 360
     Height = 23
-    Hint = 'Использовать команду TRCL (быстрее, внутренний'#13#10'буфер, снимаются параметры только с Ch1 и Ch2),'#13#10'либо команду SNAP (снятие от 2 до 6 параметров в'#13#10'один момент времени)'
     Top = 144
     Width = 136
     Anchors = [akTop, akRight]
@@ -671,7 +669,7 @@ object TempControlForm: TTempControlForm
       OnItemClick = cgTransferItemClick
       TabOrder = 0
       Data = {
-        09000000020202020202020202
+        09000000020202020203020202
       }
     end
   end
@@ -734,8 +732,6 @@ object TempControlForm: TTempControlForm
     top = 64
     object PanDragTool: TPanDragTool
       Shift = [ssRight]
-      OnAfterMouseDown = PanDragToolAfterMouseDown
-      OnAfterMouseMove = PanDragToolAfterMouseMove
     end
     object ZoomDragTool: TZoomDragTool
       Shift = [ssLeft]
