@@ -441,7 +441,6 @@ object MainForm: TMainForm
       Caption = 'Пошагово'
       ClientHeight = 164
       ClientWidth = 402
-      OnContextPopup = tsStepContextPopup
       object eStepStartF: TFloatSpinEdit
         AnchorSideLeft.Control = eFStep
         AnchorSideLeft.Side = asrBottom
