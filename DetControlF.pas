@@ -108,6 +108,11 @@ type
     procedure deDataFileStubAcceptDirectory(Sender: TObject; var Value: String
       );
     procedure deDataFileStubEditingDone(Sender: TObject);
+<<<<<<< HEAD
+=======
+    procedure PanDragToolAfterMouseDown(ATool: TChartTool; APoint: TPoint);
+    procedure PanDragToolAfterMouseMove(ATool: TChartTool; APoint: TPoint);
+>>>>>>> origin/master
     procedure ParamsChange(Sender: TObject);
     procedure cbShowPointsChange(Sender: TObject);
     procedure cbUseGenFreqChange(Sender: TObject);
@@ -272,6 +277,10 @@ begin
   t:= 0;
   DataFolder:= DefaultLogFolder;
   LogStub:= '';
+<<<<<<< HEAD
+=======
+  ReportSaved:= false;
+>>>>>>> origin/master
 
   LogFreq:= false;
   LogTime:= true;
@@ -776,6 +785,7 @@ begin
 
     t:= 0;
   end;
+  ReportSaved:= false;
 end;
 
 procedure TDetControlForm.Start(Sender: tLogModule);
@@ -863,8 +873,15 @@ begin
   if (Log.State <> lInActive) and AutoApply then
   begin
     if Config.AutoReport then       { TODO 2 -cImprovement : a new texperiment class to keep track of conflicting shit like this }
+<<<<<<< HEAD
       MainForm.SaveReport(false, MainForm.ReportHeader);
 
+=======
+    begin
+      MainForm.SaveReport(false, MainForm.ReportHeader);
+    end;
+    ReportSaved:= true;  //dont move this, it prevents double increase in expnum
+>>>>>>> origin/master
     inc(ExperimentNumber);
   end;
 end;

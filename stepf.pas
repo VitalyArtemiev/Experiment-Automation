@@ -236,8 +236,37 @@ begin
   Cursor:= crHourGlass;
   if Config.AutoReadingStep then
   begin
+<<<<<<< HEAD
     Result:= MainForm.StartLogs;
     if Result <> 0 then
+=======
+    sleep(MainForm.MinDelay);
+    with DetControlForm do
+      if ConnectionKind <> cNone then
+      begin
+        btApplyClick(Self);
+        CreateFile(Log);
+        Log.GetExperimentNumber;
+      end;
+    with TempControlForm do
+      if ConnectionKind <> cNone then
+      begin
+        btApplyClick(Self);
+        CreateFile(Log);
+        Log.GetExperimentNumber;
+      end;
+
+    sleep(max(DetControlForm.eDelay.Value * integer( DetControlForm.ConnectionKind <> cNone),
+             TempControlForm.eDelay.Value * integer(TempControlForm.ConnectionKind <> cNone)));
+
+    with DetControlForm do
+    begin
+      AutoApply:= false;
+      if ConnectionKind <> cNone then
+        Log.Start;
+    end;
+    with TempControlForm do
+>>>>>>> origin/master
     begin
       Hide;
       exit;

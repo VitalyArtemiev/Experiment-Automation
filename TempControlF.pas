@@ -699,10 +699,19 @@ begin
 
   if (Log.State <> lInActive) and AutoApply then
   begin
+<<<<<<< HEAD
     if Config.AutoReport  then
       MainForm.SaveReport(false, MainForm.ReportHeader);
     //to avoid increasing two times
     inc(ExperimentNumber);
+=======
+    if Config.AutoReport and not DetControlForm.ReportSaved then
+    begin
+      MainForm.SaveReport(false, MainForm.ReportHeader);
+    end;
+    if not DetControlForm.ReportSaved then
+      inc(ExperimentNumber);
+>>>>>>> origin/master
   end;
 end;
 

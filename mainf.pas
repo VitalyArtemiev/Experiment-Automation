@@ -151,6 +151,8 @@ type
     procedure ReadingTimerStartTimer(Sender: TObject);
     procedure ReadingTimerTimer(Sender: TObject);
     procedure StatusBarHint(Sender: TObject);
+    procedure tsStepContextPopup(Sender: TObject; MousePos: TPoint;
+      var Handled: Boolean);
   private
     { private declarations }
     iIm, iFu, iST, iSD, iMF: tStringArray;                                      //Index parameters for impedance, func commands etc.
@@ -172,9 +174,12 @@ type
     procedure EnableControls(Enable: boolean); override;
     procedure GetDeviceParams; override;
     procedure AfterConnect; override;
+<<<<<<< HEAD
 
     function StartLogs: integer;
     procedure Stoplogs;
+=======
+>>>>>>> origin/master
   end;
 
 
@@ -715,7 +720,11 @@ procedure tMainForm.deReportFileStubEditingDone(Sender: TObject);
 begin
   with deReportFileStub do
   begin
+<<<<<<< HEAD
     if pos(DirectorySeparator, Text) = 0 then
+=======
+    if pos('\', Text) = 0 then
+>>>>>>> origin/master
     begin
       ReportStub:= Text;
     end
@@ -900,6 +909,12 @@ begin
     if i >= 0 then
       Hint:= Panels[i].Text;
   end; }
+end;
+
+procedure tMainForm.tsStepContextPopup(Sender: TObject; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+
 end;
 
 function tMainForm.FullCfgDir: string;
@@ -1153,6 +1168,27 @@ begin
           end;
         end;
 
+<<<<<<< HEAD
+=======
+        EnterCriticalSection(CommCS);
+          AddCommand(gSweepSource, false, integer(cbSweepRate.Checked));
+          AddCommand(gSweepType, false, iST[cbSweepType.ItemIndex]);
+          AddCommand(gSweepDirection, false, iSD[cbSweepDirection.ItemIndex]);
+          AddCommand(gModulationWaveform , false, iMF[cbModulation.ItemIndex]);
+          AddCommand(gSweepRate, false, eSweepRate.Value, uNone);
+          AddCommand(gSweepStartFrequency, false, eSweepStartF.Value, uNone);
+          AddCommand(gSweepStopFrequency, false, eSweepStopF.Value, uNone);
+          AddCommand(gSweepEnable, false, 1);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+
+        AutoSweep:= cbSweepRate.Checked;
+        SweepStartF:= eSweepStartF.Value;
+        SweepStopF:= eSweepStopF.Value;
+        SweepRate:= eSweepRate.Value;
+        SweepType:= cbSweepType.ItemIndex;
+        SweepDir:= cbSweepDirection.ItemIndex;
+>>>>>>> origin/master
         if Config.AutoReport and not Config.AutoReadingSweep then
         begin
           SaveReport(false);
@@ -1194,6 +1230,15 @@ begin
           end;
         end;
 
+<<<<<<< HEAD
+=======
+        EnterCriticalSection(CommCS);
+          AddCommand(gFrequency, false, Frequency, uNone);
+          AddCommand(gSweepEnable, false, 0);
+          PassCommands;
+        LeaveCriticalSection(CommCS);
+
+>>>>>>> origin/master
         if Config.AutoReport and not Config.AutoReadingConst then
         begin
           SaveReport(false);
@@ -1580,6 +1625,7 @@ begin
   Params.LastGenerator:= MainForm.CurrentDevice^.Model;
 end;
 
+<<<<<<< HEAD
 function tMainForm.StartLogs: integer;
 begin
   Result:= 0;
@@ -1652,4 +1698,6 @@ begin
   inc(ExperimentNumber);
 end;
 
+=======
+>>>>>>> origin/master
 end.

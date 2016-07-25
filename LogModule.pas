@@ -98,6 +98,7 @@ uses
 
 procedure tLogModule.GetExperimentNumber;
 var //Filepath + '\'+ datetime + '_' + stub +'_' + reportnumber + '_' + experimentnumber + extension
+<<<<<<< HEAD
   st, s1, s2: string;
   rec: tUnicodeSearchRec;
 begin
@@ -109,10 +110,19 @@ begin
   if Config.AutoReport then
   begin
     if ReportNumber = 0 then   //when a new report needs to be formed
+=======
+  s1, s2: string;
+  rec: tUnicodeSearchRec;
+begin
+  if Config.AutoReport then
+  begin
+    if ReportNumber = 0 then
+>>>>>>> origin/master
     begin
       inc(ReportNumber);
       MainForm.ReportHeader:= true;
 
+<<<<<<< HEAD
       str(ReportNumber, s1);
                                              //\/in case stub is emty - no extra '_'
       while FindFirst(FilePath + DirectorySeparator + FileName + st + '_' + s1 + '_*' + Extension, faAnyFile, rec) = 0 do
@@ -120,6 +130,14 @@ begin
         inc(ReportNumber);
         str(ReportNumber, s1);
       end;
+=======
+      str(ReportNumber, s1);                 //asterisk in case no stub and no _
+      if FindFirst(FilePath + '\' + FileName + '*' + Stub + '_' + s1 + '_*' + Extension, faAnyFile, rec) = 0 then
+      repeat
+        inc(ReportNumber);
+        str(ReportNumber, s1);
+      until FindNext(rec) <> 0;
+>>>>>>> origin/master
 
       str(ReportNumber, s1);
       str(ExperimentNumber, s2);
@@ -128,6 +146,7 @@ begin
       ExperimentNumber:= 1;
     end
     else
+<<<<<<< HEAD
     begin
       MainForm.ReportHeader:= false;
       str(ReportNumber, s1);
@@ -141,13 +160,22 @@ begin
     {while FileExists(FilePath + '\' + Stub + '_' + FileName + '_' + s1 + '.txt') or
           FileExists(FilePath + '\' + Stub + '_' + FileName + '_' + s1 + '_1' + Extension) do       }
     end;
+=======
+      MainForm.ReportHeader:= false;
+    {while FileExists(FilePath + '\' + Stub + '_' + FileName + '_' + s1 + '.txt') or
+          FileExists(FilePath + '\' + Stub + '_' + FileName + '_' + s1 + '_1' + Extension) do       }
+>>>>>>> origin/master
 
   end
   else
   begin
     str(ExperimentNumber, s1);
+<<<<<<< HEAD
                                                //\/in case stub is emty - no extra '_'
     while FileExists(FilePath + DirectorySeparator + FileName + st + '_' + s1 + Extension) do
+=======
+    while FileExists(FilePath + '\' + FileName + '_' + Stub + '_' + s1 + Extension) do
+>>>>>>> origin/master
     begin
       inc(ExperimentNumber);
       str(ExperimentNumber, s1);
@@ -220,7 +248,11 @@ begin
   if not DirectoryExists(FilePath) then
     if not CreateDir(FilePath) then
     begin
+<<<<<<< HEAD
       WriteProgramLog('Ошибка: невозможно создать папку ''' + FilePath + '''');
+=======
+      WriteProgramLog('Невозможно создать папку ' + FilePath);
+>>>>>>> origin/master
       FilePath:= '';
     end;
 
@@ -246,11 +278,17 @@ begin
   try
     if FileExists(FileName) then
     begin
+<<<<<<< HEAD
        ShowMessage('Ошибка: файл ''' + FileName + ''' уже существует ');
        {if Config.AutoReport then
          inc(ReportNumber)
        else
          inc(ExperimentNumber);}
+=======
+       ShowMessage('Ошибка: файл ' + FileName + ' уже существует ');
+       if Config.AutoReport then
+         inc(ReportNumber);
+>>>>>>> origin/master
        exit(3);
     end;
 
@@ -420,7 +458,11 @@ begin
   begin
     WriteProgramLog('Ошибка при создании файла: ' + strf(Res));
     State:= lInActive;
+<<<<<<< HEAD
       if Assigned(ReadingsThread) then
+=======
+    if Assigned(ReadingsThread) then
+>>>>>>> origin/master
     ReadingsThread.Terminate;
 
     if Assigned(OnStop) then
