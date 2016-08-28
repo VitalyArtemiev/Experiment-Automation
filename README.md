@@ -25,4 +25,4 @@ It can be compiled and run on Windows x86 and x64 machines. It might work on Lin
 
 To workaround several problems in LCL and Synapse, I modified some files in those libraries, such as synaser.pas and editbtn.pas.
 You can find them in 'Crutches' folder. Replace them in folders of correlating libraries to achieve intended program behaviour.
-The modifications can be seen by searching '<CRUTCH>' in theese files.
+The modifications can be seen by searching 'CRUTCH' in theese files.
